@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace ViewStream.Domain.Entities;
 
 [Index("NormalizedEmail", Name = "IX_Users_NormalizedEmail")]
-public partial class User
+public partial class User : IdentityUser<long>
 {
     [Key]
     public long Id { get; set; }
@@ -112,18 +113,18 @@ public partial class User
     [InverseProperty("User")]
     public virtual ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
 
-    [InverseProperty("User")]
-    public virtual ICollection<UserClaim> UserClaims { get; set; } = new List<UserClaim>();
+    //[InverseProperty("User")]
+    //public virtual ICollection<UserClaim> UserClaims { get; set; } = new List<UserClaim>();
 
-    [InverseProperty("User")]
-    public virtual ICollection<UserLogin> UserLogins { get; set; } = new List<UserLogin>();
+    //[InverseProperty("User")]
+    //public virtual ICollection<UserLogin> UserLogins { get; set; } = new List<UserLogin>();
 
     [InverseProperty("User")]
     public virtual ICollection<UserPromoUsage> UserPromoUsages { get; set; } = new List<UserPromoUsage>();
 
-    [InverseProperty("User")]
-    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    //[InverseProperty("User")]
+    //public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
-    [InverseProperty("User")]
-    public virtual ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
+    //[InverseProperty("User")]
+    //public virtual ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
 }

@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace ViewStream.Domain.Entities;
 
 [PrimaryKey("UserId", "LoginProvider", "Name")]
-public partial class UserToken
+public partial class UserToken : IdentityUserToken<long>
 {
     [Key]
     public long UserId { get; set; }
@@ -22,7 +23,7 @@ public partial class UserToken
 
     public string? Value { get; set; }
 
-    [ForeignKey("UserId")]
-    [InverseProperty("UserTokens")]
-    public virtual User User { get; set; } = null!;
+    //[ForeignKey("UserId")]
+    //[InverseProperty("UserTokens")]
+    //public virtual User User { get; set; } = null!;
 }

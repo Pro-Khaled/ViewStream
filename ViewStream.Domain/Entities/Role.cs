@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace ViewStream.Domain.Entities;
 
 [Index("Name", Name = "UQ__Roles__737584F6F8E85D53", IsUnique = true)]
-public partial class Role
+public partial class Role : IdentityRole<long>
 {
     [Key]
     public long Id { get; set; }
@@ -29,11 +30,11 @@ public partial class Role
 
     public DateTime? UpdatedAt { get; set; }
 
-    [InverseProperty("Role")]
-    public virtual ICollection<RoleClaim> RoleClaims { get; set; } = new List<RoleClaim>();
+    //[InverseProperty("Role")]
+    //public virtual ICollection<RoleClaim> RoleClaims { get; set; } = new List<RoleClaim>();
 
-    [InverseProperty("Role")]
-    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    //[InverseProperty("Role")]
+    //public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
     [ForeignKey("RoleId")]
     [InverseProperty("Roles")]

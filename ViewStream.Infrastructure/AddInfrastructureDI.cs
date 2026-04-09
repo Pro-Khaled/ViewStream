@@ -1,14 +1,16 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using ViewStream.Application.Interfaces.Services;
+using ViewStream.Domain.Entities;
 using ViewStream.Domain.Interfaces;
 using ViewStream.Infrastructure.Persistence;
 using ViewStream.Infrastructure.Repositories;
+using ViewStream.Infrastructure.Services;
 using ViewStream.Infrastructure.UnitOfWorks;
 using ViewStream.Shared.Options;
-using ViewStream.Infrastructure.Services;
-using ViewStream.Application.Interfaces.Services;
 
 
 
@@ -52,6 +54,9 @@ namespace ViewStream.Infrastructure
                     options.EnableSensitiveDataLogging();
                 }
             });
+
+            // Register Identity Service
+            services.AddIdentity<User, Role>().AddEntityFrameworkStores<ViewStreamDbContext>().AddDefaultTokenProviders(); ;
 
             // Register Generic Repository
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

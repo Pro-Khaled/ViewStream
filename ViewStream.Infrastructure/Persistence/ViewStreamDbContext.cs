@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using ViewStream.Domain.Entities;
 
 namespace ViewStream.Infrastructure.Persistence;
 
-public partial class ViewStreamDbContext : DbContext
+public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>
 {
     public ViewStreamDbContext()
     {
@@ -126,12 +127,19 @@ public partial class ViewStreamDbContext : DbContext
 
     public virtual DbSet<WatchPartyParticipant> WatchPartyParticipants { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost;Database=ViewStreamDb;Trusted_Connection=yes;TrustServerCertificate=True;");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<UserRole>().ToTable("UserRoles");
+        modelBuilder.Entity<User>().ToTable("Users");
+        modelBuilder.Entity<Role>().ToTable("Roles");
+        modelBuilder.Entity<UserClaim>().ToTable("UserClaims");
+        modelBuilder.Entity<UserLogin>().ToTable("UserLogins");
+        modelBuilder.Entity<RoleClaim>().ToTable("RoleClaims");
+        modelBuilder.Entity<UserToken>().ToTable("UserTokens");
+
+
         modelBuilder.Entity<AudioTrack>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__AudioTra__3214EC0723BC2D93");
@@ -555,9 +563,9 @@ public partial class ViewStreamDbContext : DbContext
 
         modelBuilder.Entity<RoleClaim>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__RoleClai__3214EC073AB0459C");
+            //entity.HasKey(e => e.Id).HasName("PK__RoleClai__3214EC073AB0459C");
 
-            entity.HasOne(d => d.Role).WithMany(p => p.RoleClaims).HasConstraintName("FK__RoleClaim__RoleI__5629CD9C");
+            //entity.HasOne(d => d.Role).WithMany(p => p.RoleClaims).HasConstraintName("FK__RoleClaim__RoleI__5629CD9C");
         });
 
         modelBuilder.Entity<SearchLog>(entity =>
@@ -731,9 +739,9 @@ public partial class ViewStreamDbContext : DbContext
 
         modelBuilder.Entity<UserClaim>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__UserClai__3214EC0704FCA4E4");
+            //entity.HasKey(e => e.Id).HasName("PK__UserClai__3214EC0704FCA4E4");
 
-            entity.HasOne(d => d.User).WithMany(p => p.UserClaims).HasConstraintName("FK__UserClaim__UserI__534D60F1");
+            //entity.HasOne(d => d.User).WithMany(p => p.UserClaims).HasConstraintName("FK__UserClaim__UserI__534D60F1");
         });
 
         modelBuilder.Entity<UserInteraction>(entity =>
@@ -770,9 +778,9 @@ public partial class ViewStreamDbContext : DbContext
 
         modelBuilder.Entity<UserLogin>(entity =>
         {
-            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey }).HasName("PK__UserLogi__2B2C5B5244D7E952");
+            //entity.HasKey(e => new { e.LoginProvider, e.ProviderKey }).HasName("PK__UserLogi__2B2C5B5244D7E952");
 
-            entity.HasOne(d => d.User).WithMany(p => p.UserLogins).HasConstraintName("FK__UserLogin__UserI__59063A47");
+            //entity.HasOne(d => d.User).WithMany(p => p.UserLogins).HasConstraintName("FK__UserLogin__UserI__59063A47");
         });
 
         modelBuilder.Entity<UserPromoUsage>(entity =>
@@ -792,18 +800,18 @@ public partial class ViewStreamDbContext : DbContext
 
         modelBuilder.Entity<UserRole>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.RoleId }).HasName("PK__UserRole__AF2760AD64A9A449");
+            //entity.HasKey(e => new { e.UserId, e.RoleId }).HasName("PK__UserRole__AF2760AD64A9A449");
 
-            entity.HasOne(d => d.Role).WithMany(p => p.UserRoles).HasConstraintName("FK__UserRoles__RoleI__5070F446");
+            //entity.HasOne(d => d.Role).WithMany(p => p.UserRoles).HasConstraintName("FK__UserRoles__RoleI__5070F446");
 
-            entity.HasOne(d => d.User).WithMany(p => p.UserRoles).HasConstraintName("FK__UserRoles__UserI__4F7CD00D");
+            //entity.HasOne(d => d.User).WithMany(p => p.UserRoles).HasConstraintName("FK__UserRoles__UserI__4F7CD00D");
         });
 
         modelBuilder.Entity<UserToken>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name }).HasName("PK__UserToke__8CC4984128BBC30A");
+            //entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name }).HasName("PK__UserToke__8CC4984128BBC30A");
 
-            entity.HasOne(d => d.User).WithMany(p => p.UserTokens).HasConstraintName("FK__UserToken__UserI__5BE2A6F2");
+            //entity.HasOne(d => d.User).WithMany(p => p.UserTokens).HasConstraintName("FK__UserToken__UserI__5BE2A6F2");
         });
 
         modelBuilder.Entity<UserVector>(entity =>
