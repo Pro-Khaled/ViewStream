@@ -9,14 +9,14 @@ namespace ViewStream.Domain.Entities;
 
 public partial class RoleClaim : IdentityRoleClaim<long>
 {
-    [Key]
-    public int Id { get; set; }
+    //[Key]
+    //public int Id { get; set; }
 
-    public long RoleId { get; set; }
+    //public long RoleId { get; set; }
 
-    public string? ClaimType { get; set; }
+    //public string? ClaimType { get; set; }
 
-    public string? ClaimValue { get; set; }
+    //public string? ClaimValue { get; set; }
 
     //[ForeignKey("RoleId")]
     //[InverseProperty("RoleClaims")]

@@ -10,16 +10,16 @@ namespace ViewStream.Domain.Entities;
 [Index("Name", Name = "UQ__Roles__737584F6F8E85D53", IsUnique = true)]
 public partial class Role : IdentityRole<long>
 {
-    [Key]
-    public long Id { get; set; }
+    //[Key]
+    //public long Id { get; set; }
 
-    [StringLength(256)]
-    public string Name { get; set; } = null!;
+    //[StringLength(256)]
+    //public string Name { get; set; } = null!;
 
-    [StringLength(256)]
-    public string? NormalizedName { get; set; }
+    //[StringLength(256)]
+    //public string? NormalizedName { get; set; }
 
-    public string? ConcurrencyStamp { get; set; }
+    //public string? ConcurrencyStamp { get; set; }
 
     [StringLength(255)]
     public string? Description { get; set; }

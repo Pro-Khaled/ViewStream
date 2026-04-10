@@ -10,39 +10,39 @@ namespace ViewStream.Domain.Entities;
 [Index("NormalizedEmail", Name = "IX_Users_NormalizedEmail")]
 public partial class User : IdentityUser<long>
 {
-    [Key]
-    public long Id { get; set; }
+    //[Key]
+    //public long Id { get; set; }
 
-    public string? UserName { get; set; }
+    //public string? UserName { get; set; }
 
-    public string? NormalizedUserName { get; set; }
+    //public string? NormalizedUserName { get; set; }
 
-    [StringLength(256)]
-    public string Email { get; set; } = null!;
+    //[StringLength(256)]
+    //public string Email { get; set; } = null!;
 
-    [StringLength(256)]
-    public string? NormalizedEmail { get; set; }
+    //[StringLength(256)]
+    //public string? NormalizedEmail { get; set; }
 
-    public bool EmailConfirmed { get; set; }
+    //public bool EmailConfirmed { get; set; }
 
-    public string? PasswordHash { get; set; }
+    //public string? PasswordHash { get; set; }
 
-    public string? SecurityStamp { get; set; }
+    //public string? SecurityStamp { get; set; }
 
-    public string? ConcurrencyStamp { get; set; }
+    //public string? ConcurrencyStamp { get; set; }
 
-    [StringLength(20)]
-    public string? PhoneNumber { get; set; }
+    //[StringLength(20)]
+    //public string? PhoneNumber { get; set; }
 
-    public bool PhoneNumberConfirmed { get; set; }
+    //public bool PhoneNumberConfirmed { get; set; }
 
-    public bool TwoFactorEnabled { get; set; }
+    //public bool TwoFactorEnabled { get; set; }
 
-    public DateTimeOffset? LockoutEnd { get; set; }
+    //public DateTimeOffset? LockoutEnd { get; set; }
 
-    public bool LockoutEnabled { get; set; }
+    //public bool LockoutEnabled { get; set; }
 
-    public int AccessFailedCount { get; set; }
+    //public int AccessFailedCount { get; set; }
 
     [StringLength(100)]
     public string? FullName { get; set; }
@@ -51,11 +51,11 @@ public partial class User : IdentityUser<long>
     [Unicode(false)]
     public string? CountryCode { get; set; }
 
-    public bool? IsDeleted { get; set; }
+    public bool IsDeleted { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
-    public bool? IsBlocked { get; set; }
+    public bool IsBlocked { get; set; }
 
     [StringLength(500)]
     public string? BlockedReason { get; set; }

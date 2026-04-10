@@ -10,17 +10,17 @@ namespace ViewStream.Domain.Entities;
 [PrimaryKey("LoginProvider", "ProviderKey")]
 public partial class UserLogin : IdentityUserLogin<long>
 {
-    [Key]
-    [StringLength(128)]
-    public string LoginProvider { get; set; } = null!;
+    //[Key]
+    //[StringLength(128)]
+    //public string LoginProvider { get; set; } = null!;
 
-    [Key]
-    [StringLength(128)]
-    public string ProviderKey { get; set; } = null!;
+    //[Key]
+    //[StringLength(128)]
+    //public string ProviderKey { get; set; } = null!;
 
-    public string? ProviderDisplayName { get; set; }
+    //public string? ProviderDisplayName { get; set; }
 
-    public long UserId { get; set; }
+    //public long UserId { get; set; }
 
     //[ForeignKey("UserId")]
     //[InverseProperty("UserLogins")]

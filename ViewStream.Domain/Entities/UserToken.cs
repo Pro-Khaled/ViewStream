@@ -10,18 +10,18 @@ namespace ViewStream.Domain.Entities;
 [PrimaryKey("UserId", "LoginProvider", "Name")]
 public partial class UserToken : IdentityUserToken<long>
 {
-    [Key]
-    public long UserId { get; set; }
+    //[Key]
+    //public long UserId { get; set; }
 
-    [Key]
-    [StringLength(128)]
-    public string LoginProvider { get; set; } = null!;
+    //[Key]
+    //[StringLength(128)]
+    //public string LoginProvider { get; set; } = null!;
 
-    [Key]
-    [StringLength(128)]
-    public string Name { get; set; } = null!;
+    //[Key]
+    //[StringLength(128)]
+    //public string Name { get; set; } = null!;
 
-    public string? Value { get; set; }
+    //public string? Value { get; set; }
 
     //[ForeignKey("UserId")]
     //[InverseProperty("UserTokens")]

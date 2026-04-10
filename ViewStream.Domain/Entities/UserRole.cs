@@ -12,11 +12,11 @@ public partial class UserRole : IdentityUserRole<long>
 {
     public long Id { get; set; }
 
-    [Key]
-    public long UserId { get; set; }
+    //[Key]
+    //public long UserId { get; set; }
 
-    [Key]
-    public long RoleId { get; set; }
+    //[Key]
+    //public long RoleId { get; set; }
 
     //[ForeignKey("RoleId")]
     //[InverseProperty("UserRoles")]
