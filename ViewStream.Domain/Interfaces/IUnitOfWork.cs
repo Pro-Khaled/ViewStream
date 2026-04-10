@@ -9,8 +9,8 @@ namespace ViewStream.Domain.Interfaces
     public interface IUnitOfWork : IDisposable
     {
         /// <summary>Save all changes in a single transaction</summary>
-        Task<int> SaveChangesAsync();
-        
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
         /// <summary>Begin a new transaction</summary>
         Task BeginTransactionAsync();
         
@@ -75,5 +75,7 @@ namespace ViewStream.Domain.Interfaces
         IWatchHistoryRepository WatchHistorys { get; }
         IWatchPartyRepository WatchPartys { get; }
         IWatchPartyParticipantRepository WatchPartyParticipants { get; }
+
+        IRefreshTokenRepository RefreshTokens { get; }
     }
 }
