@@ -1,28 +1,25 @@
-using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
-using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
-using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Queries.User
 {
-
     using User = ViewStream.Domain.Entities.User;
 
-    public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto?>
+
+    public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, UserDto?>
     {
         private readonly UserManager<User> _userManager;
 
-        public GetUserByIdQueryHandler(UserManager<User> userManager)
+        public GetCurrentUserQueryHandler(UserManager<User> userManager)
         {
             _userManager = userManager;
         }
 
-        public async Task<UserDto?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+        public async Task<UserDto?> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByIdAsync(request.UserId.ToString());
-            if (user == null || user.IsDeleted)
+            if (user == null || user.IsDeleted || !user.IsActive)
                 return null;
 
             return new UserDto

@@ -3,8 +3,6 @@ using ViewStream.Application.Common;
 
 namespace ViewStream.Application.Commands.User.DeleteUser
 {
-//    public class DeleteUserCommand : IRequest<BaseResponse<bool>>
-//    {
-//        public int Id { get; set; }
-//    }
+    // Admin: Soft delete user
+    public record DeleteUserCommand(long UserId, long AdminUserId) : IRequest<bool>;
 }
