@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using ViewStream.Domain.Interfaces;
 using ViewStream.Infrastructure.Persistence;
@@ -70,6 +71,8 @@ namespace ViewStream.Infrastructure.UnitOfWorks
         public IWatchPartyRepository WatchPartys { get; private set; }
         public IWatchPartyParticipantRepository WatchPartyParticipants { get; private set; }
 
+        public IRefreshTokenRepository RefreshTokens { get; private set; }
+
         public UnitOfWork(ViewStreamDbContext context)
         {
             _context = context;
@@ -128,11 +131,12 @@ namespace ViewStream.Infrastructure.UnitOfWorks
             WatchHistorys = new WatchHistoryRepository(_context);
             WatchPartys = new WatchPartyRepository(_context);
             WatchPartyParticipants = new WatchPartyParticipantRepository(_context);
+            RefreshTokens = new RefreshTokenRepository(_context);
         }
 
-        public async Task<int> SaveChangesAsync()
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task BeginTransactionAsync()

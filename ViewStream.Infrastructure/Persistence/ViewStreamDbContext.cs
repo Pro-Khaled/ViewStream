@@ -127,6 +127,9 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
 
     public virtual DbSet<WatchPartyParticipant> WatchPartyParticipants { get; set; }
 
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -138,6 +141,16 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
         modelBuilder.Entity<UserLogin>().ToTable("UserLogins");
         modelBuilder.Entity<RoleClaim>().ToTable("RoleClaims");
         modelBuilder.Entity<UserToken>().ToTable("UserTokens");
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Token).IsUnique();
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
 
         modelBuilder.Entity<AudioTrack>(entity =>
