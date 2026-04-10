@@ -64,12 +64,23 @@ namespace ViewStream.Infrastructure
             // Register Unit of Work
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // Register JWT Token Service
+            // JWT Options
+            services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+            // Email Options 
+            services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
+
+
+            // Register JWT Service
             services.AddScoped<IJwtTokenService, JwtTokenService>();
 
             // Register Email Service
             services.AddScoped<IEmailService, EmailService>();
-            
+
+            // Register App Options
+            services.Configure<AppOptions>(configuration.GetSection(AppOptions.SectionName));
+
+
             return services;
         }
     }
