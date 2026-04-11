@@ -2,41 +2,50 @@ using MediatR;
 using AutoMapper;
 using ViewStream.Application.Common;
 //using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.Show.CreateShow
 {
-  //  public class CreateShowCommandHandler : IRequestHandler<CreateShowCommand, BaseResponse<ShowDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using Show = Domain.Entities.Show;
 
-  //      public CreateShowCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+    public class CreateShowCommandHandler : IRequestHandler<CreateShowCommand, long>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public async Task<BaseResponse<ShowDto>> Handle(CreateShowCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<Show>(request);
-  //              
-  //              // await _unitOfWork.Shows.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<ShowDto>(entity);
-  //              // return BaseResponse<ShowDto>.Ok(dto, "Show created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<ShowDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public CreateShowCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<long> Handle(CreateShowCommand request, CancellationToken cancellationToken)
+        {
+            var show = _mapper.Map<Show>(request.Dto);
+
+            // Handle Genres
+            if (request.Dto.GenreIds.Any())
+            {
+                var genres = await _unitOfWork.Genres.FindAsync(g => request.Dto.GenreIds.Contains(g.Id), cancellationToken: cancellationToken);
+                foreach (var genre in genres)
+                    show.Genres.Add(genre);
+            }
+
+            // Handle Tags
+            if (request.Dto.TagIds.Any())
+            {
+                var tags = await _unitOfWork.ContentTags.FindAsync(t => request.Dto.TagIds.Contains(t.Id), cancellationToken: cancellationToken);
+                foreach (var tag in tags)
+                    show.Tags.Add(tag);
+            }
+
+            await _unitOfWork.Shows.AddAsync(show, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Audit log (optional)
+            // ...
+
+            return show.Id;
+        }
+    }
 }

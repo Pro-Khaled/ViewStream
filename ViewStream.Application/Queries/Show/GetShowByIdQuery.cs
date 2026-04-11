@@ -1,11 +1,9 @@
 using MediatR;
 using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Queries.Show
 {
-//    public class GetShowByIdQuery : IRequest<BaseResponse<ShowDto>>
-//    {
-//        public int Id { get; set; }
-//    }
+    public record GetShowByIdQuery(long Id) : IRequest<ShowDto?>;
+
 }

@@ -61,5 +61,10 @@ namespace ViewStream.Domain.Interfaces
         /// Counts entities matching the predicate.
         /// </summary>
         Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Returns an IQueryable for building advanced queries.
+        /// </summary>
+        IQueryable<T> GetQueryable();
     }
 }

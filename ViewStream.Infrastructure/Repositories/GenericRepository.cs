@@ -80,5 +80,10 @@ namespace ViewStream.Infrastructure.Repositories
                 return await _dbSet.CountAsync(cancellationToken);
             return await _dbSet.CountAsync(predicate, cancellationToken);
         }
+
+        public virtual IQueryable<T> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
     }
 }
