@@ -1,42 +1,51 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.SharedList.CreateSharedList
 {
-  //  public class CreateSharedListCommandHandler : IRequestHandler<CreateSharedListCommand, BaseResponse<SharedListDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using SharedList = ViewStream.Domain.Entities.SharedList;
+    public class CreateSharedListCommandHandler : IRequestHandler<CreateSharedListCommand, SharedListDto>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public CreateSharedListCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+        public CreateSharedListCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-  //      public async Task<BaseResponse<SharedListDto>> Handle(CreateSharedListCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<SharedList>(request);
-  //              
-  //              // await _unitOfWork.SharedLists.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<SharedListDto>(entity);
-  //              // return BaseResponse<SharedListDto>.Ok(dto, "SharedList created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<SharedListDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public async Task<SharedListDto> Handle(CreateSharedListCommand request, CancellationToken cancellationToken)
+        {
+            var list = new SharedList
+            {
+                OwnerProfileId = request.OwnerProfileId,
+                Name = request.Dto.Name,
+                Description = request.Dto.Description,
+                IsPublic = request.Dto.IsPublic ?? false,
+                ShareCode = GenerateUniqueShareCode(),
+                IsDeleted = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.SharedLists.AddAsync(list, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var result = await _unitOfWork.SharedLists.FindAsync(
+                l => l.Id == list.Id,
+                include: q => q.Include(l => l.OwnerProfile).Include(l => l.SharedListItems),
+                cancellationToken: cancellationToken);
+
+            return _mapper.Map<SharedListDto>(result.First());
+        }
+
+        private string GenerateUniqueShareCode()
+        {
+            return Convert.ToBase64String(Guid.NewGuid().ToByteArray())
+                .Replace("=", "").Replace("+", "").Replace("/", "").Substring(0, 12);
+        }
+    }
 }

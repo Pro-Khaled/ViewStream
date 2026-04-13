@@ -1,4 +1,5 @@
 using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
 //using ViewStream.Application.DTOs;
@@ -7,26 +8,18 @@ namespace ViewStream.Application.Mappings
 {
     public class SharedListItemMappingProfile : MappingProfile
     {
-          public SharedListItemMappingProfile()
-          {
-//            // Entity → DTO
-//            CreateMap<SharedListItem, SharedListItemDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreateSharedListItemDto, SharedListItem>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdateSharedListItemDto, SharedListItem>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public SharedListItemMappingProfile()
+        {
+            CreateMap<SharedListItem, SharedListItemDto>()
+                .ForMember(dest => dest.ListName, opt => opt.MapFrom(src => src.List.Name))
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
+                .ForMember(dest => dest.ShowPosterUrl, opt => opt.MapFrom(src => src.Show.PosterUrl))
+                .ForMember(dest => dest.ReleaseYear, opt => opt.MapFrom(src => src.Show.ReleaseYear))
+                .ForMember(dest => dest.AddedByProfileName, opt => opt.MapFrom(src => src.AddedByProfile != null ? src.AddedByProfile.Name : null));
+
+            CreateMap<SharedListItem, SharedListItemListItemDto>()
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
+                .ForMember(dest => dest.ShowPosterUrl, opt => opt.MapFrom(src => src.Show.PosterUrl));
         }
     }
 }

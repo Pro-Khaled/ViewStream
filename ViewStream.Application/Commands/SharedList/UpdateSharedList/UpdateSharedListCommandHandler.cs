@@ -1,45 +1,42 @@
-using MediatR;
 using AutoMapper;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.SharedList.UpdateSharedList
 {
-//    public class UpdateSharedListCommandHandler : IRequestHandler<UpdateSharedListCommand, BaseResponse<SharedListDto>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public UpdateSharedListCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<SharedListDto>> Handle(UpdateSharedListCommand request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.SharedLists.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<SharedListDto>.Fail("SharedList not found");
-//                
-//                // TODO: Update entity properties
-//                // _mapper.Map(request, entity);
-//                // _unitOfWork.SharedLists.Update(entity);
-//                // await _unitOfWork.SaveChangesAsync();
-//                
-//                // var dto = _mapper.Map<SharedListDto>(entity);
-//                // return BaseResponse<SharedListDto>.Ok(dto, "SharedList updated successfully");
-//                
-//                throw new NotImplementedException();
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<SharedListDto>.Fail($"Error updating : {ex.Message}");
-//            }
-//        }
-//    }
+    public class UpdateSharedListCommandHandler : IRequestHandler<UpdateSharedListCommand, SharedListDto?>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public UpdateSharedListCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<SharedListDto?> Handle(UpdateSharedListCommand request, CancellationToken cancellationToken)
+        {
+            var list = await _unitOfWork.SharedLists.GetByIdAsync<long>(request.Id, cancellationToken);
+            if (list == null || list.OwnerProfileId != request.OwnerProfileId || list.IsDeleted == true)
+                return null;
+
+            list.Name = request.Dto.Name;
+            list.Description = request.Dto.Description;
+            list.IsPublic = request.Dto.IsPublic;
+
+            _unitOfWork.SharedLists.Update(list);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var result = await _unitOfWork.SharedLists.FindAsync(
+                l => l.Id == list.Id,
+                include: q => q.Include(l => l.OwnerProfile).Include(l => l.SharedListItems),
+                cancellationToken: cancellationToken);
+
+            return _mapper.Map<SharedListDto>(result.First());
+        }
+    }
 }

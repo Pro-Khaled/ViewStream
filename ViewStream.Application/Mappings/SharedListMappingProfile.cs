@@ -1,4 +1,5 @@
 using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
 //using ViewStream.Application.DTOs;
@@ -7,26 +8,15 @@ namespace ViewStream.Application.Mappings
 {
     public class SharedListMappingProfile : MappingProfile
     {
-          public SharedListMappingProfile()
-          {
-//            // Entity → DTO
-//            CreateMap<SharedList, SharedListDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreateSharedListDto, SharedList>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdateSharedListDto, SharedList>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public SharedListMappingProfile()
+        {
+            CreateMap<SharedList, SharedListDto>()
+                .ForMember(dest => dest.OwnerProfileName, opt => opt.MapFrom(src => src.OwnerProfile.Name))
+                .ForMember(dest => dest.ItemCount, opt => opt.MapFrom(src => src.SharedListItems.Count));
+
+            CreateMap<SharedList, SharedListListItemDto>()
+                .ForMember(dest => dest.OwnerProfileName, opt => opt.MapFrom(src => src.OwnerProfile.Name))
+                .ForMember(dest => dest.ItemCount, opt => opt.MapFrom(src => src.SharedListItems.Count));
         }
     }
 }
