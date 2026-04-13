@@ -1,10 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using ViewStream.Infrastructure;
-using ViewStream.Application;
-using ViewStream.Domain;
-using ViewStream.Shared;
 using ViewStream.API.Extensions;
+using ViewStream.API.Services.Hubs;
+using ViewStream.Application;
+using ViewStream.Application.Interfaces.Services.Hubs;
+using ViewStream.Domain;
+using ViewStream.Infrastructure;
+using ViewStream.Shared;
 
 
 
@@ -35,6 +37,16 @@ namespace ViewStream.API
 
             // Add Swagger (uses SwaggerOptions & JwtOptions)
             services.AddSwagger(configuration);
+
+            // SignalR service registration
+            services.AddSignalR();
+
+            // Add SignalR Hubs and Clients
+            services.AddScoped<IEpisodeHubClient, EpisodeHubClient>();
+
+            services.AddScoped<IShowHubClient, ShowHubClient>();
+
+
 
             return services;
         }

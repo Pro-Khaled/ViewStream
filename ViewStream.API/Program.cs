@@ -1,5 +1,8 @@
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using ViewStream.Api.Hubs;
 using ViewStream.API;
+using ViewStream.API.Hubs;
 using ViewStream.Infrastructure.Seeding;
 using ViewStream.Shared.Options;
 var builder = WebApplication.CreateBuilder(args);
@@ -32,10 +35,21 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.UseStaticFiles(); // Serves files from wwwroot
+
+// Optionally, if you want to serve from a custom physical folder outside wwwroot:
+//app.UseStaticFiles(new StaticFileOptions
+//{
+//    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
+//    RequestPath = "/uploads"
+//});
+
 //  Temporary test endpoint – place it here
 //app.MapGet("/config-test", (IOptions<JwtOptions> opts) =>
 //    new { opts.Value.Key, opts.Value.Issuer, opts.Value.Audience });
 
 app.MapControllers();
+app.MapHub<EpisodeHub>("/hubs/episode");
+app.MapHub<ShowHub>("/hubs/show");
 
 app.Run();
