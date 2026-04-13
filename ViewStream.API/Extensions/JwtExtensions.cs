@@ -1,7 +1,9 @@
-using ViewStream.Shared.Options;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
+using ViewStream.Shared.Options;
 
 namespace ViewStream.API.Extensions
 {
@@ -21,6 +23,11 @@ namespace ViewStream.API.Extensions
             {
                 throw new InvalidOperationException("JWT Key must be at least 32 characters long");
             }
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.ClaimsIdentity.RoleClaimType = jwtOptions.RoleClaimType ?? "role";
+            });
 
             services.AddAuthentication(options =>
             {
@@ -49,6 +56,37 @@ namespace ViewStream.API.Extensions
                 // For SignalR or WebSockets
                 options.Events = new JwtBearerEvents
                 {
+                    OnTokenValidated = context =>
+                    {
+                        var oldIdentity = context.Principal?.Identity as ClaimsIdentity;
+                        if (oldIdentity == null) return Task.CompletedTask;
+
+                        // Create a new identity with the correct role claim type
+                        var newIdentity = new ClaimsIdentity(
+                            oldIdentity.Claims,
+                            oldIdentity.AuthenticationType,
+                            jwtOptions.NameClaimType ?? ClaimTypes.Name,
+                            ClaimTypes.Role);  // Force role claim type to standard .NET Role
+
+                        // Extract role values from the original "role" claims
+                        var roleValues = oldIdentity.FindAll(jwtOptions.RoleClaimType)
+                            .Select(c => c.Value)
+                            .Distinct()
+                            .ToList();
+
+                        // Add standard Role claims for each role
+                        foreach (var role in roleValues)
+                        {
+                            newIdentity.AddClaim(new Claim(ClaimTypes.Role, role));
+                        }
+
+                        // Replace the principal
+                        context.Principal = new ClaimsPrincipal(newIdentity);
+                        context.Success();
+
+                        return Task.CompletedTask;
+                    },
+                
                     OnMessageReceived = context =>
                     {
                         var accessToken = context.Request.Query["access_token"];
