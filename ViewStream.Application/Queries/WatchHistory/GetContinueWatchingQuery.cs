@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ViewStream.Application.DTOs;
 
-namespace ViewStream.Application.Queries.WatchParty
+namespace ViewStream.Application.Queries.WatchHistory
 {
-    public record GetWatchPartyByIdQuery(long Id) : IRequest<WatchPartyDto?>;
+    public record GetContinueWatchingQuery(long ProfileId, int Limit = 10) : IRequest<List<WatchHistoryListItemDto>>;
 
 }

@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ViewStream.Application.DTOs;
 
-namespace ViewStream.Application.Queries.WatchParty
+namespace ViewStream.Application.Queries.WatchPartyParticipant
 {
-    public record GetWatchPartyByIdQuery(long Id) : IRequest<WatchPartyDto?>;
+    public record GetParticipantsByPartyQuery(long PartyId) : IRequest<List<WatchPartyParticipantDto>>;
 
 }

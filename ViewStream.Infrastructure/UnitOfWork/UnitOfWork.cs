@@ -61,14 +61,14 @@ namespace ViewStream.Infrastructure.UnitOfWorks
         public IUserRepository Users { get; private set; }
         public IUserClaimRepository UserClaims { get; private set; }
         public IUserInteractionRepository UserInteractions { get; private set; }
-        public IUserLibraryRepository UserLibrarys { get; private set; }
+        public IUserLibraryRepository UserLibraries { get; private set; }
         public IUserLoginRepository UserLogins { get; private set; }
         public IUserPromoUsageRepository UserPromoUsages { get; private set; }
         public IUserRoleRepository UserRoles { get; private set; }
         public IUserTokenRepository UserTokens { get; private set; }
         public IUserVectorRepository UserVectors { get; private set; }
-        public IWatchHistoryRepository WatchHistorys { get; private set; }
-        public IWatchPartyRepository WatchPartys { get; private set; }
+        public IWatchHistoryRepository WatchHistories { get; private set; }
+        public IWatchPartyRepository WatchParties { get; private set; }
         public IWatchPartyParticipantRepository WatchPartyParticipants { get; private set; }
 
         public IRefreshTokenRepository RefreshTokens { get; private set; }
@@ -122,14 +122,14 @@ namespace ViewStream.Infrastructure.UnitOfWorks
             Users = new UserRepository(_context);
             UserClaims = new UserClaimRepository(_context);
             UserInteractions = new UserInteractionRepository(_context);
-            UserLibrarys = new UserLibraryRepository(_context);
+            UserLibraries = new UserLibraryRepository(_context);
             UserLogins = new UserLoginRepository(_context);
             UserPromoUsages = new UserPromoUsageRepository(_context);
             UserRoles = new UserRoleRepository(_context);
             UserTokens = new UserTokenRepository(_context);
             UserVectors = new UserVectorRepository(_context);
-            WatchHistorys = new WatchHistoryRepository(_context);
-            WatchPartys = new WatchPartyRepository(_context);
+            WatchHistories = new WatchHistoryRepository(_context);
+            WatchParties = new WatchPartyRepository(_context);
             WatchPartyParticipants = new WatchPartyParticipantRepository(_context);
             RefreshTokens = new RefreshTokenRepository(_context);
         }

@@ -8,6 +8,6 @@ using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Queries.WatchParty
 {
-    public record GetWatchPartyByIdQuery(long Id) : IRequest<WatchPartyDto?>;
+    public record GetWatchPartyByCodeQuery(string PartyCode) : IRequest<WatchPartyDto?>;
 
 }

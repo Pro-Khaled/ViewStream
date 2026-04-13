@@ -66,14 +66,14 @@ namespace ViewStream.Domain.Interfaces
         IUserRepository Users { get; }
         IUserClaimRepository UserClaims { get; }
         IUserInteractionRepository UserInteractions { get; }
-        IUserLibraryRepository UserLibrarys { get; }
+        IUserLibraryRepository UserLibraries { get; }
         IUserLoginRepository UserLogins { get; }
         IUserPromoUsageRepository UserPromoUsages { get; }
         IUserRoleRepository UserRoles { get; }
         IUserTokenRepository UserTokens { get; }
         IUserVectorRepository UserVectors { get; }
-        IWatchHistoryRepository WatchHistorys { get; }
-        IWatchPartyRepository WatchPartys { get; }
+        IWatchHistoryRepository WatchHistories { get; }
+        IWatchPartyRepository WatchParties { get; }
         IWatchPartyParticipantRepository WatchPartyParticipants { get; }
 
         IRefreshTokenRepository RefreshTokens { get; }
