@@ -81,6 +81,12 @@ namespace ViewStream.Infrastructure
             services.Configure<AppOptions>(configuration.GetSection(AppOptions.SectionName));
 
 
+            // Register upload file storage service
+
+            services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+
+
             return services;
         }
     }
