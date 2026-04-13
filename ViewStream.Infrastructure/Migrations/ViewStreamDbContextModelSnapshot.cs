@@ -119,7 +119,7 @@ namespace ViewStream.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[TrackType] IS NOT NULL");
 
-                    b.ToTable("AudioTracks");
+                    b.ToTable("AudioTracks", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.AuditLog", b =>
@@ -178,7 +178,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex(new[] { "TableName", "RecordId" }, "IX_AuditLogs_TableName_RecordId");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Award", b =>
@@ -204,7 +204,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK__Awards__3214EC07C9780B76");
 
-                    b.ToTable("Awards");
+                    b.ToTable("Awards", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.CommentLike", b =>
@@ -231,7 +231,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("CommentLikes");
+                    b.ToTable("CommentLikes", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.CommentReport", b =>
@@ -286,7 +286,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "Status" }, "IX_CommentReports_Status")
                         .HasFilter("([Status]='pending')");
 
-                    b.ToTable("CommentReports");
+                    b.ToTable("CommentReports", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.ContentReport", b =>
@@ -337,7 +337,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ShowId");
 
-                    b.ToTable("ContentReports");
+                    b.ToTable("ContentReports", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.ContentTag", b =>
@@ -363,7 +363,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "Name" }, "UQ__ContentT__737584F6B9A5A42E")
                         .IsUnique();
 
-                    b.ToTable("ContentTags");
+                    b.ToTable("ContentTags", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Country", b =>
@@ -386,7 +386,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasKey("Code")
                         .HasName("PK__Countrie__A25C5AA6B7190258");
 
-                    b.ToTable("Countries");
+                    b.ToTable("Countries", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Credit", b =>
@@ -429,7 +429,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ShowId");
 
-                    b.ToTable("Credits");
+                    b.ToTable("Credits", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.DataDeletionRequest", b =>
@@ -466,7 +466,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("DataDeletionRequests");
+                    b.ToTable("DataDeletionRequests", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Device", b =>
@@ -509,7 +509,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "UserId", "DeviceId" }, "UQ_Devices_UserId_DeviceId")
                         .IsUnique();
 
-                    b.ToTable("Devices");
+                    b.ToTable("Devices", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.EmailPreference", b =>
@@ -540,7 +540,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasKey("UserId")
                         .HasName("PK__EmailPre__1788CC4CE42853B1");
 
-                    b.ToTable("EmailPreferences");
+                    b.ToTable("EmailPreferences", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Episode", b =>
@@ -605,7 +605,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "SeasonId", "EpisodeNumber" }, "UQ_Episodes_SeasonId_EpisodeNumber")
                         .IsUnique();
 
-                    b.ToTable("Episodes");
+                    b.ToTable("Episodes", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.EpisodeComment", b =>
@@ -662,7 +662,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ProfileId" }, "IX_EpisodeComments_ProfileId");
 
-                    b.ToTable("EpisodeComments");
+                    b.ToTable("EpisodeComments", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.ErrorLog", b =>
@@ -700,7 +700,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ErrorLogs");
+                    b.ToTable("ErrorLogs", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Friendship", b =>
@@ -730,7 +730,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("FriendId");
 
-                    b.ToTable("Friendships");
+                    b.ToTable("Friendships", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Genre", b =>
@@ -752,7 +752,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "Name" }, "UQ__Genres__737584F6BAE7C6A3")
                         .IsUnique();
 
-                    b.ToTable("Genres");
+                    b.ToTable("Genres", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Invoice", b =>
@@ -807,7 +807,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.ItemVector", b =>
@@ -826,7 +826,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasKey("ShowId")
                         .HasName("PK__ItemVect__6DE3E0B23338B579");
 
-                    b.ToTable("ItemVectors");
+                    b.ToTable("ItemVectors", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.LoginSession", b =>
@@ -877,7 +877,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "SessionToken" }, "UQ__LoginSes__46BDD124D09EBF84")
                         .IsUnique();
 
-                    b.ToTable("LoginSessions");
+                    b.ToTable("LoginSessions", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Notification", b =>
@@ -921,7 +921,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.OfflineDownload", b =>
@@ -967,7 +967,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "ProfileId", "EpisodeId", "DeviceId" }, "UQ_OfflineDownloads_ProfileId_EpisodeId_DeviceId")
                         .IsUnique();
 
-                    b.ToTable("OfflineDownloads");
+                    b.ToTable("OfflineDownloads", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.PaymentMethod", b =>
@@ -1022,7 +1022,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PaymentMethods");
+                    b.ToTable("PaymentMethods", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Permission", b =>
@@ -1057,7 +1057,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "Name" }, "UQ__Permissi__737584F69EDD8FB7")
                         .IsUnique();
 
-                    b.ToTable("Permissions");
+                    b.ToTable("Permissions", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Person", b =>
@@ -1086,7 +1086,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK__Persons__3214EC07AA1ED38C");
 
-                    b.ToTable("Persons");
+                    b.ToTable("Persons", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.PersonAward", b =>
@@ -1107,7 +1107,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("AwardId");
 
-                    b.ToTable("PersonAwards");
+                    b.ToTable("PersonAwards", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.PersonalizedRow", b =>
@@ -1131,7 +1131,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasKey("ProfileId", "RowName")
                         .HasName("PK__Personal__B84DEF6EE6F7535A");
 
-                    b.ToTable("PersonalizedRows");
+                    b.ToTable("PersonalizedRows", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.PlaybackEvent", b =>
@@ -1190,7 +1190,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("PlaybackEvents");
+                    b.ToTable("PlaybackEvents", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Profile", b =>
@@ -1254,7 +1254,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "UserId", "Name" }, "UQ_Profiles_UserId_Name")
                         .IsUnique();
 
-                    b.ToTable("Profiles");
+                    b.ToTable("Profiles", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.PromoCode", b =>
@@ -1299,7 +1299,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "Code" }, "UQ__PromoCod__A25C5AA7AA56D5B1")
                         .IsUnique();
 
-                    b.ToTable("PromoCodes");
+                    b.ToTable("PromoCodes", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.PushToken", b =>
@@ -1338,7 +1338,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "UserId", "DeviceId" }, "UQ_PushTokens_UserId_DeviceId")
                         .IsUnique();
 
-                    b.ToTable("PushTokens");
+                    b.ToTable("PushTokens", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Rating", b =>
@@ -1363,7 +1363,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ShowId");
 
-                    b.ToTable("Ratings");
+                    b.ToTable("Ratings", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.RefreshToken", b =>
@@ -1404,7 +1404,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Role", b =>
@@ -1519,7 +1519,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("SearchLogs");
+                    b.ToTable("SearchLogs", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Season", b =>
@@ -1571,7 +1571,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "ShowId", "SeasonNumber" }, "UQ_Seasons_ShowId_SeasonNumber")
                         .IsUnique();
 
-                    b.ToTable("Seasons");
+                    b.ToTable("Seasons", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.SharedList", b =>
@@ -1624,7 +1624,7 @@ namespace ViewStream.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[ShareCode] IS NOT NULL");
 
-                    b.ToTable("SharedLists");
+                    b.ToTable("SharedLists", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.SharedListItem", b =>
@@ -1650,7 +1650,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ShowId");
 
-                    b.ToTable("SharedListItems");
+                    b.ToTable("SharedListItems", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Show", b =>
@@ -1719,7 +1719,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "IsDeleted" }, "IX_Shows_IsDeleted")
                         .HasFilter("([IsDeleted]=(0))");
 
-                    b.ToTable("Shows");
+                    b.ToTable("Shows", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.ShowAvailability", b =>
@@ -1747,7 +1747,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("CountryCode");
 
-                    b.ToTable("ShowAvailability");
+                    b.ToTable("ShowAvailability", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.ShowAward", b =>
@@ -1768,7 +1768,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("AwardId");
 
-                    b.ToTable("ShowAwards");
+                    b.ToTable("ShowAwards", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Subscription", b =>
@@ -1817,7 +1817,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.Subtitle", b =>
@@ -1862,7 +1862,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "EpisodeId", "LanguageCode" }, "UQ_Subtitles_EpisodeId_LanguageCode")
                         .IsUnique();
 
-                    b.ToTable("Subtitles");
+                    b.ToTable("Subtitles", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.User", b =>
@@ -2049,7 +2049,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ShowId");
 
-                    b.ToTable("UserInteractions");
+                    b.ToTable("UserInteractions", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.UserLibrary", b =>
@@ -2109,7 +2109,7 @@ namespace ViewStream.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[ShowId] IS NOT NULL AND [SeasonId] IS NOT NULL");
 
-                    b.ToTable("UserLibrary");
+                    b.ToTable("UserLibrary", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.UserLogin", b =>
@@ -2153,7 +2153,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("PromoCodeId");
 
-                    b.ToTable("UserPromoUsage");
+                    b.ToTable("UserPromoUsage", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.UserRole", b =>
@@ -2211,7 +2211,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasKey("ProfileId")
                         .HasName("PK__UserVect__290C88E4B9482E78");
 
-                    b.ToTable("UserVectors");
+                    b.ToTable("UserVectors", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.WatchHistory", b =>
@@ -2250,7 +2250,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex(new[] { "ProfileId" }, "IX_WatchHistory_ProfileId");
 
-                    b.ToTable("WatchHistory");
+                    b.ToTable("WatchHistory", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.WatchParty", b =>
@@ -2295,7 +2295,7 @@ namespace ViewStream.Infrastructure.Migrations
                     b.HasIndex(new[] { "PartyCode" }, "UQ__WatchPar__39A9713DF754EFCA")
                         .IsUnique();
 
-                    b.ToTable("WatchParties");
+                    b.ToTable("WatchParties", (string)null);
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.WatchPartyParticipant", b =>
@@ -2319,7 +2319,7 @@ namespace ViewStream.Infrastructure.Migrations
 
                     b.HasIndex("ProfileId");
 
-                    b.ToTable("WatchPartyParticipants");
+                    b.ToTable("WatchPartyParticipants", (string)null);
                 });
 
             modelBuilder.Entity("RolePermission", b =>

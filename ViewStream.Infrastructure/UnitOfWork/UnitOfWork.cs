@@ -22,7 +22,7 @@ namespace ViewStream.Infrastructure.UnitOfWorks
         public ICommentReportRepository CommentReports { get; private set; }
         public IContentReportRepository ContentReports { get; private set; }
         public IContentTagRepository ContentTags { get; private set; }
-        public ICountryRepository Countrys { get; private set; }
+        public ICountryRepository Countries { get; private set; }
         public ICreditRepository Credits { get; private set; }
         public IDataDeletionRequestRepository DataDeletionRequests { get; private set; }
         public IDeviceRepository Devices { get; private set; }
@@ -54,7 +54,7 @@ namespace ViewStream.Infrastructure.UnitOfWorks
         public ISharedListRepository SharedLists { get; private set; }
         public ISharedListItemRepository SharedListItems { get; private set; }
         public IShowRepository Shows { get; private set; }
-        public IShowAvailabilityRepository ShowAvailabilitys { get; private set; }
+        public IShowAvailabilityRepository ShowAvailabilities { get; private set; }
         public IShowAwardRepository ShowAwards { get; private set; }
         public ISubscriptionRepository Subscriptions { get; private set; }
         public ISubtitleRepository Subtitles { get; private set; }
@@ -83,7 +83,7 @@ namespace ViewStream.Infrastructure.UnitOfWorks
             CommentReports = new CommentReportRepository(_context);
             ContentReports = new ContentReportRepository(_context);
             ContentTags = new ContentTagRepository(_context);
-            Countrys = new CountryRepository(_context);
+            Countries = new CountryRepository(_context);
             Credits = new CreditRepository(_context);
             DataDeletionRequests = new DataDeletionRequestRepository(_context);
             Devices = new DeviceRepository(_context);
@@ -115,7 +115,7 @@ namespace ViewStream.Infrastructure.UnitOfWorks
             SharedLists = new SharedListRepository(_context);
             SharedListItems = new SharedListItemRepository(_context);
             Shows = new ShowRepository(_context);
-            ShowAvailabilitys = new ShowAvailabilityRepository(_context);
+            ShowAvailabilities = new ShowAvailabilityRepository(_context);
             ShowAwards = new ShowAwardRepository(_context);
             Subscriptions = new SubscriptionRepository(_context);
             Subtitles = new SubtitleRepository(_context);

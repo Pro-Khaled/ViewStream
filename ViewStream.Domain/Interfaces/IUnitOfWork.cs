@@ -27,7 +27,7 @@ namespace ViewStream.Domain.Interfaces
         ICommentReportRepository CommentReports { get; }
         IContentReportRepository ContentReports { get; }
         IContentTagRepository ContentTags { get; }
-        ICountryRepository Countrys { get; }
+        ICountryRepository Countries { get; }
         ICreditRepository Credits { get; }
         IDataDeletionRequestRepository DataDeletionRequests { get; }
         IDeviceRepository Devices { get; }
@@ -59,7 +59,7 @@ namespace ViewStream.Domain.Interfaces
         ISharedListRepository SharedLists { get; }
         ISharedListItemRepository SharedListItems { get; }
         IShowRepository Shows { get; }
-        IShowAvailabilityRepository ShowAvailabilitys { get; }
+        IShowAvailabilityRepository ShowAvailabilities { get; }
         IShowAwardRepository ShowAwards { get; }
         ISubscriptionRepository Subscriptions { get; }
         ISubtitleRepository Subtitles { get; }

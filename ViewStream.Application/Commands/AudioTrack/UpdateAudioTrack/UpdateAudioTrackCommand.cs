@@ -1,12 +1,8 @@
 using MediatR;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.AudioTrack.UpdateAudioTrack
 {
-  //  public class UpdateAudioTrackCommand : IRequest<BaseResponse<AudioTrackDto>>
-  //  {
-  //      public int Id { get; set; }
-  //      // Add updatable properties
-  //  }
+    public record UpdateAudioTrackCommand(long Id, UpdateAudioTrackDto Dto) : IRequest<bool>;
+
 }
