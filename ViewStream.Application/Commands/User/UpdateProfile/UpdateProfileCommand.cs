@@ -9,5 +9,5 @@ using ViewStream.Application.DTOs;
 namespace ViewStream.Application.Commands.User.UpdateProfile
 {
     // Update own profile
-    public record UpdateProfileCommand(long UserId, UpdateProfileDto Dto) : IRequest<bool>;
+    public record UpdateProfileCommand(long UserId, UpdateUserDto Dto) : IRequest<bool>;
 }
