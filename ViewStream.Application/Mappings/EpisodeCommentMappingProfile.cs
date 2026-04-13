@@ -1,4 +1,5 @@
 using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
 //using ViewStream.Application.DTOs;
@@ -7,26 +8,24 @@ namespace ViewStream.Application.Mappings
 {
     public class EpisodeCommentMappingProfile : MappingProfile
     {
-          public EpisodeCommentMappingProfile()
-          {
-//            // Entity → DTO
-//            CreateMap<EpisodeComment, EpisodeCommentDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreateEpisodeCommentDto, EpisodeComment>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdateEpisodeCommentDto, EpisodeComment>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public EpisodeCommentMappingProfile()
+        {
+            CreateMap<EpisodeComment, EpisodeCommentDto>()
+                .ForMember(dest => dest.EpisodeTitle, opt => opt.MapFrom(src => src.Episode.Title))
+                .ForMember(dest => dest.ProfileName, opt => opt.MapFrom(src => src.Profile.Name))
+                .ForMember(dest => dest.ProfileAvatar, opt => opt.MapFrom(src => src.Profile.AvatarIcon))
+                .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(src => src.CommentLikes.Count))
+                .ForMember(dest => dest.ReplyCount, opt => opt.MapFrom(src => src.InverseParentComment.Count(r => r.IsDeleted != true)))
+                .ForMember(dest => dest.Replies, opt => opt.Ignore());
+
+            CreateMap<EpisodeComment, EpisodeCommentListItemDto>()
+                .ForMember(dest => dest.ProfileName, opt => opt.MapFrom(src => src.Profile.Name))
+                .ForMember(dest => dest.ProfileAvatar, opt => opt.MapFrom(src => src.Profile.AvatarIcon))
+                .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(src => src.CommentLikes.Count))
+                .ForMember(dest => dest.ReplyCount, opt => opt.MapFrom(src => src.InverseParentComment.Count(r => r.IsDeleted != true)));
+
+            CreateMap<CreateEpisodeCommentDto, EpisodeComment>();
+            CreateMap<UpdateEpisodeCommentDto, EpisodeComment>();
         }
     }
 }
