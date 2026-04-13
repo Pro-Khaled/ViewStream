@@ -1,45 +1,42 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.ContentReport.UpdateContentReport
 {
-//    public class UpdateContentReportCommandHandler : IRequestHandler<UpdateContentReportCommand, BaseResponse<ContentReportDto>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public UpdateContentReportCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<ContentReportDto>> Handle(UpdateContentReportCommand request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.ContentReports.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<ContentReportDto>.Fail("ContentReport not found");
-//                
-//                // TODO: Update entity properties
-//                // _mapper.Map(request, entity);
-//                // _unitOfWork.ContentReports.Update(entity);
-//                // await _unitOfWork.SaveChangesAsync();
-//                
-//                // var dto = _mapper.Map<ContentReportDto>(entity);
-//                // return BaseResponse<ContentReportDto>.Ok(dto, "ContentReport updated successfully");
-//                
-//                throw new NotImplementedException();
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<ContentReportDto>.Fail($"Error updating : {ex.Message}");
-//            }
-//        }
-//    }
+    public class UpdateContentReportStatusCommandHandler : IRequestHandler<UpdateContentReportStatusCommand, ContentReportDto?>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public UpdateContentReportStatusCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<ContentReportDto?> Handle(UpdateContentReportStatusCommand request, CancellationToken cancellationToken)
+        {
+            var report = await _unitOfWork.ContentReports.GetByIdAsync<long>(request.ReportId, cancellationToken);
+            if (report == null) return null;
+
+            report.Status = request.Dto.Status;
+            if (request.Dto.Status != "pending")
+                report.ResolvedAt = DateTime.UtcNow;
+
+            _unitOfWork.ContentReports.Update(report);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var result = await _unitOfWork.ContentReports.FindAsync(
+                r => r.Id == report.Id,
+                include: q => q.Include(r => r.Profile)
+                               .Include(r => r.Show)
+                               .Include(r => r.Episode),
+                cancellationToken: cancellationToken);
+
+            return _mapper.Map<ContentReportDto>(result.First());
+        }
+    }
 }
