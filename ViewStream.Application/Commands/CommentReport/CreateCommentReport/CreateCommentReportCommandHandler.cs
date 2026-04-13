@@ -1,42 +1,52 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.CommentReport.CreateCommentReport
 {
-  //  public class CreateCommentReportCommandHandler : IRequestHandler<CreateCommentReportCommand, BaseResponse<CommentReportDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using CommentReport = ViewStream.Domain.Entities.CommentReport;
+    public class CreateCommentReportCommandHandler : IRequestHandler<CreateCommentReportCommand, CommentReportDto>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public CreateCommentReportCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+        public CreateCommentReportCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-  //      public async Task<BaseResponse<CommentReportDto>> Handle(CreateCommentReportCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<CommentReport>(request);
-  //              
-  //              // await _unitOfWork.CommentReports.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<CommentReportDto>(entity);
-  //              // return BaseResponse<CommentReportDto>.Ok(dto, "CommentReport created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<CommentReportDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public async Task<CommentReportDto> Handle(CreateCommentReportCommand request, CancellationToken cancellationToken)
+        {
+            // Prevent duplicate reports from same profile on same comment
+            var existing = await _unitOfWork.CommentReports.FindAsync(
+                r => r.CommentId == request.Dto.CommentId && r.ReportedByProfileId == request.ProfileId,
+                cancellationToken: cancellationToken);
+
+            if (existing.Any())
+                throw new InvalidOperationException("You have already reported this comment.");
+
+            var report = new CommentReport
+            {
+                CommentId = request.Dto.CommentId,
+                ReportedByProfileId = request.ProfileId,
+                Reason = request.Dto.Reason,
+                Details = request.Dto.Details,
+                Status = "pending",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.CommentReports.AddAsync(report, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var result = await _unitOfWork.CommentReports.FindAsync(
+                r => r.Id == report.Id,
+                include: q => q.Include(r => r.Comment).Include(r => r.ReportedByProfile),
+                cancellationToken: cancellationToken);
+
+            return _mapper.Map<CommentReportDto>(result.First());
+        }
+    }
 }

@@ -1,46 +1,49 @@
-using MediatR;
 using AutoMapper;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Queries.CommentReport
 {
-//    public class GetAllCommentReportsQueryHandler : IRequestHandler<GetAllCommentReportsQuery, BaseResponse<PagedResult<CommentReportDto>>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public GetAllCommentReportsQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<PagedResult<CommentReportDto>>> Handle(GetAllCommentReportsQuery request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entities = await _unitOfWork.CommentReports.GetAllAsync();
-//                var entityList = entities.ToList();
-//                
-//                // TODO: Apply search, sort, pagination
-//                
-//                var dtos = _mapper.Map<List<CommentReportDto>>(entityList);
-//                var result = new PagedResult<CommentReportDto>
-//                {
-//                    Items = dtos,
-//                    TotalCount = entityList.Count,
-//                    PageNumber = request.PageNumber,
-//                    PageSize = request.PageSize
-//                };
-//                
-//                return BaseResponse<PagedResult<CommentReportDto>>.Ok(result);
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<PagedResult<CommentReportDto>>.Fail($"Error retrieving s: {ex.Message}");
-//            }
-//        }
-//    }
+    public class GetReportsPagedQueryHandler : IRequestHandler<GetReportsPagedQuery, PagedResult<CommentReportListItemDto>>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public GetReportsPagedQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<PagedResult<CommentReportListItemDto>> Handle(GetReportsPagedQuery request, CancellationToken cancellationToken)
+        {
+            var query = _unitOfWork.CommentReports.GetQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Status))
+                query = query.Where(r => r.Status == request.Status);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var reports = await query
+                .OrderBy(r => r.Status == "pending" ? 0 : 1)
+                .ThenByDescending(r => r.CreatedAt)
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Include(r => r.Comment)
+                .Include(r => r.ReportedByProfile)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            return new PagedResult<CommentReportListItemDto>
+            {
+                Items = _mapper.Map<List<CommentReportListItemDto>>(reports),
+                TotalCount = totalCount,
+                PageNumber = request.Page,
+                PageSize = request.PageSize
+            };
+        }
+    }
 }

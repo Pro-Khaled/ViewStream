@@ -1,37 +1,35 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Queries.CommentReport
 {
-//    public class GetCommentReportByIdQueryHandler : IRequestHandler<GetCommentReportByIdQuery, BaseResponse<CommentReportDto>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public GetCommentReportByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<CommentReportDto>> Handle(GetCommentReportByIdQuery request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.CommentReports.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<CommentReportDto>.Fail("CommentReport not found");
-//                
-//                var dto = _mapper.Map<CommentReportDto>(entity);
-//                return BaseResponse<CommentReportDto>.Ok(dto);
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<CommentReportDto>.Fail($"Error retrieving : {ex.Message}");
-//            }
-//        }
-//    }
+
+    public class GetReportByIdQueryHandler : IRequestHandler<GetReportByIdQuery, CommentReportDto?>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public GetReportByIdQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<CommentReportDto?> Handle(GetReportByIdQuery request, CancellationToken cancellationToken)
+        {
+            var reports = await _unitOfWork.CommentReports.FindAsync(
+                r => r.Id == request.Id,
+                include: q => q.Include(r => r.Comment)
+                               .Include(r => r.ReportedByProfile)
+                               .Include(r => r.ReviewedByUser),
+                asNoTracking: true,
+                cancellationToken: cancellationToken);
+
+            var report = reports.FirstOrDefault();
+            return report == null ? null : _mapper.Map<CommentReportDto>(report);
+        }
+    }
 }
