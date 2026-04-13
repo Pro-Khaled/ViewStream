@@ -1,42 +1,33 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.Profile.CreateProfile
 {
-  //  public class CreateProfileCommandHandler : IRequestHandler<CreateProfileCommand, BaseResponse<ProfileDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using Profile = ViewStream.Domain.Entities.Profile;
+    public class CreateProfileCommandHandler : IRequestHandler<CreateProfileCommand, ProfileDto>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public CreateProfileCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+        public CreateProfileCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-  //      public async Task<BaseResponse<ProfileDto>> Handle(CreateProfileCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<Profile>(request);
-  //              
-  //              // await _unitOfWork.Profiles.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<ProfileDto>(entity);
-  //              // return BaseResponse<ProfileDto>.Ok(dto, "Profile created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<ProfileDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public async Task<ProfileDto> Handle(CreateProfileCommand request, CancellationToken cancellationToken)
+        {
+            var profile = _mapper.Map<Profile>(request.Dto);
+            profile.UserId = request.UserId;
+            profile.CreatedAt = DateTime.UtcNow;
+            profile.IsDeleted = false;
+
+            await _unitOfWork.Profiles.AddAsync(profile, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return _mapper.Map<ProfileDto>(profile);
+        }
+    }
 }

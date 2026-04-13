@@ -3,8 +3,6 @@ using ViewStream.Application.Common;
 
 namespace ViewStream.Application.Commands.Profile.DeleteProfile
 {
-//    public class DeleteProfileCommand : IRequest<BaseResponse<bool>>
-//    {
-//        public int Id { get; set; }
-//    }
+    public record DeleteProfileCommand(long Id, long UserId) : IRequest<bool>; // Soft delete
+
 }

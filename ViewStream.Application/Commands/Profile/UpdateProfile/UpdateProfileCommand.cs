@@ -1,12 +1,8 @@
 using MediatR;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.Profile.UpdateProfile
 {
-  //  public class UpdateProfileCommand : IRequest<BaseResponse<ProfileDto>>
-  //  {
-  //      public int Id { get; set; }
-  //      // Add updatable properties
-  //  }
+    public record UpdateProfileCommand(long Id, long UserId, UpdateProfileDto Dto) : IRequest<ProfileDto?>;
+
 }

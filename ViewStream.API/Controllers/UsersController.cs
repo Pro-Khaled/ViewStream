@@ -30,7 +30,7 @@ namespace ViewStream.API.Controllers
         }
 
         [HttpPut("me")]
-        public async Task<IActionResult> UpdateProfile(UpdateProfileDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateProfile(UpdateUserDto dto, CancellationToken cancellationToken)
         {
             var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var result = await _mediator.Send(new UpdateProfileCommand(userId, dto), cancellationToken);

@@ -20,7 +20,7 @@ namespace ViewStream.Application.DTOs
         public DateTime? CreatedAt { get; set; }
         public List<string> Roles { get; set; } = new();
     }
-    public class UpdateProfileDto
+    public class UpdateUserDto
     {
         public string FullName { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
