@@ -1,10 +1,7 @@
 using MediatR;
-using ViewStream.Application.Common;
 
 namespace ViewStream.Application.Commands.Country.DeleteCountry
 {
-//    public class DeleteCountryCommand : IRequest<BaseResponse<bool>>
-//    {
-//        public int Id { get; set; }
-//    }
+    public record DeleteCountryCommand(string Code) : IRequest<bool>; // Hard delete (cascades to ShowAvailability)
+
 }
