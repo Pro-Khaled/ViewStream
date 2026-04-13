@@ -1,42 +1,43 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.Episode.CreateEpisode
 {
-  //  public class CreateEpisodeCommandHandler : IRequestHandler<CreateEpisodeCommand, BaseResponse<EpisodeDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using Episode = Domain.Entities.Episode;
+    public class CreateEpisodeCommandHandler : IRequestHandler<CreateEpisodeCommand, long>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly IFileStorageService _fileStorage;
 
-  //      public CreateEpisodeCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
 
-  //      public async Task<BaseResponse<EpisodeDto>> Handle(CreateEpisodeCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<Episode>(request);
-  //              
-  //              // await _unitOfWork.Episodes.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<EpisodeDto>(entity);
-  //              // return BaseResponse<EpisodeDto>.Ok(dto, "Episode created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<EpisodeDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public CreateEpisodeCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IFileStorageService fileStorage)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            _fileStorage = fileStorage;
+        }
+
+        public async Task<long> Handle(CreateEpisodeCommand request, CancellationToken cancellationToken)
+        {
+            var episode = _mapper.Map<Episode>(request.Dto);
+            episode.CreatedAt = DateTime.UtcNow;
+            episode.IsDeleted = false;
+
+            await _unitOfWork.Episodes.AddAsync(episode, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // Handle video file upload if present
+            if (request.Dto.VideoFile != null)
+            {
+                var videoUrl = await _fileStorage.SaveVideoAsync(request.Dto.VideoFile, episode.Id, cancellationToken);
+                episode.VideoUrl = videoUrl;
+                _unitOfWork.Episodes.Update(episode);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
+            return episode.Id;
+        }
+    }
 }

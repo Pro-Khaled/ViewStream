@@ -1,4 +1,5 @@
 using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
 //using ViewStream.Application.DTOs;
@@ -7,26 +8,16 @@ namespace ViewStream.Application.Mappings
 {
     public class EpisodeMappingProfile : MappingProfile
     {
-          public EpisodeMappingProfile()
-          {
-//            // Entity → DTO
-//            CreateMap<Episode, EpisodeDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreateEpisodeDto, Episode>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdateEpisodeDto, Episode>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public EpisodeMappingProfile()
+        {
+            CreateMap<Episode, EpisodeDto>()
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Season.Show.Title))
+                .ForMember(dest => dest.SeasonTitle, opt => opt.MapFrom(src => src.Season.Title))
+                .ForMember(dest => dest.SeasonNumber, opt => opt.MapFrom(src => src.Season.SeasonNumber));
+
+            CreateMap<Episode, EpisodeListItemDto>();
+            CreateMap<CreateEpisodeDto, Episode>();
+            CreateMap<UpdateEpisodeDto, Episode>();
         }
     }
 }
