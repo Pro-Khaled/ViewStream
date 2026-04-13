@@ -1,42 +1,43 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.UserInteraction.CreateUserInteraction
 {
-  //  public class CreateUserInteractionCommandHandler : IRequestHandler<CreateUserInteractionCommand, BaseResponse<UserInteractionDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using UserInteraction = ViewStream.Domain.Entities.UserInteraction;
+    public class CreateUserInteractionCommandHandler : IRequestHandler<CreateUserInteractionCommand, UserInteractionDto>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public CreateUserInteractionCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+        public CreateUserInteractionCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-  //      public async Task<BaseResponse<UserInteractionDto>> Handle(CreateUserInteractionCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<UserInteraction>(request);
-  //              
-  //              // await _unitOfWork.UserInteractions.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<UserInteractionDto>(entity);
-  //              // return BaseResponse<UserInteractionDto>.Ok(dto, "UserInteraction created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<UserInteractionDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public async Task<UserInteractionDto> Handle(CreateUserInteractionCommand request, CancellationToken cancellationToken)
+        {
+            var interaction = new UserInteraction
+            {
+                ProfileId = request.ProfileId,
+                ShowId = request.Dto.ShowId,
+                InteractionType = request.Dto.InteractionType,
+                Weight = request.Dto.Weight ?? 1.0m,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.UserInteractions.AddAsync(interaction, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var result = await _unitOfWork.UserInteractions.FindAsync(
+                i => i.Id == interaction.Id,
+                include: q => q.Include(i => i.Profile).Include(i => i.Show),
+                cancellationToken: cancellationToken);
+
+            return _mapper.Map<UserInteractionDto>(result.First());
+        }
+    }
 }
