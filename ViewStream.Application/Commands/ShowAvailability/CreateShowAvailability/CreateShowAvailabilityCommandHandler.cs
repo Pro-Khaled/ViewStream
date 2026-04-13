@@ -1,42 +1,27 @@
 using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.ShowAvailability.CreateShowAvailability
 {
-  //  public class CreateShowAvailabilityCommandHandler : IRequestHandler<CreateShowAvailabilityCommand, BaseResponse<ShowAvailabilityDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using ShowAvailability = Domain.Entities.ShowAvailability;
+    public class CreateShowAvailabilityCommandHandler : IRequestHandler<CreateShowAvailabilityCommand, (long ShowId, string CountryCode)>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public CreateShowAvailabilityCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+        public CreateShowAvailabilityCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-  //      public async Task<BaseResponse<ShowAvailabilityDto>> Handle(CreateShowAvailabilityCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<ShowAvailability>(request);
-  //              
-  //              // await _unitOfWork.ShowAvailabilitys.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<ShowAvailabilityDto>(entity);
-  //              // return BaseResponse<ShowAvailabilityDto>.Ok(dto, "ShowAvailability created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<ShowAvailabilityDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public async Task<(long ShowId, string CountryCode)> Handle(CreateShowAvailabilityCommand request, CancellationToken cancellationToken)
+        {
+            var availability = _mapper.Map<ShowAvailability>(request.Dto);
+            await _unitOfWork.ShowAvailabilities.AddAsync(availability, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return (availability.ShowId, availability.CountryCode);
+        }
+    }
 }
