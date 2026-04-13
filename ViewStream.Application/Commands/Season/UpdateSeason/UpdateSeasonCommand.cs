@@ -1,12 +1,7 @@
 using MediatR;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.Season.UpdateSeason
 {
-  //  public class UpdateSeasonCommand : IRequest<BaseResponse<SeasonDto>>
-  //  {
-  //      public int Id { get; set; }
-  //      // Add updatable properties
-  //  }
+    public record UpdateSeasonCommand(long Id, UpdateSeasonDto Dto, long UpdatedByUserId) : IRequest<bool>;
 }
