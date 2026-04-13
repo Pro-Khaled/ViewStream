@@ -1,15 +1,13 @@
 using MediatR;
 using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Queries.UserLibrary
 {
-//    public class GetAllUserLibrarysQuery : IRequest<BaseResponse<PagedResult<UserLibraryDto>>>
-//    {
-//        public int PageNumber { get; set; } = 1;
-//        public int PageSize { get; set; } = 10;
-//        public string? SearchTerm { get; set; }
-//        public string? SortBy { get; set; }
-//        public bool SortDescending { get; set; } = false;
-//    }
+    public record GetUserLibraryPagedQuery(
+        long ProfileId,
+        int Page = 1,
+        int PageSize = 20,
+        string? Status = null
+    ) : IRequest<PagedResult<UserLibraryListItemDto>>;
 }

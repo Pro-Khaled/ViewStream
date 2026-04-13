@@ -1,45 +1,47 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.UserLibrary.UpdateUserLibrary
 {
-//    public class UpdateUserLibraryCommandHandler : IRequestHandler<UpdateUserLibraryCommand, BaseResponse<UserLibraryDto>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public UpdateUserLibraryCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<UserLibraryDto>> Handle(UpdateUserLibraryCommand request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.UserLibrarys.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<UserLibraryDto>.Fail("UserLibrary not found");
-//                
-//                // TODO: Update entity properties
-//                // _mapper.Map(request, entity);
-//                // _unitOfWork.UserLibrarys.Update(entity);
-//                // await _unitOfWork.SaveChangesAsync();
-//                
-//                // var dto = _mapper.Map<UserLibraryDto>(entity);
-//                // return BaseResponse<UserLibraryDto>.Ok(dto, "UserLibrary updated successfully");
-//                
-//                throw new NotImplementedException();
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<UserLibraryDto>.Fail($"Error updating : {ex.Message}");
-//            }
-//        }
-//    }
+    public class UpdateUserLibraryCommandHandler : IRequestHandler<UpdateUserLibraryCommand, UserLibraryDto?>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public UpdateUserLibraryCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<UserLibraryDto?> Handle(UpdateUserLibraryCommand request, CancellationToken cancellationToken)
+        {
+            var library = await _unitOfWork.UserLibraries.GetByIdAsync<long>(request.Id, cancellationToken);
+            if (library == null || library.ProfileId != request.ProfileId)
+                return null;
+
+            var dto = request.Dto;
+            if (dto.Status != null) library.Status = dto.Status;
+            if (dto.EpisodesWatched.HasValue) library.EpisodesWatched = dto.EpisodesWatched;
+            if (dto.UserScore.HasValue) library.UserScore = dto.UserScore;
+            if (dto.StartedAt.HasValue) library.StartedAt = dto.StartedAt;
+            if (dto.CompletedAt.HasValue) library.CompletedAt = dto.CompletedAt;
+            library.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.UserLibraries.Update(library);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var result = await _unitOfWork.UserLibraries.FindAsync(
+                ul => ul.Id == library.Id,
+                include: q => q.Include(ul => ul.Profile)
+                               .Include(ul => ul.Show)
+                               .Include(ul => ul.Season).ThenInclude(s => s.Show),
+                cancellationToken: cancellationToken);
+
+            return _mapper.Map<UserLibraryDto>(result.First());
+        }
+    }
 }
