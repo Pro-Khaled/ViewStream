@@ -1,15 +1,14 @@
 using MediatR;
 using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Queries.Genre
 {
-//    public class GetAllGenresQuery : IRequest<BaseResponse<PagedResult<GenreDto>>>
-//    {
-//        public int PageNumber { get; set; } = 1;
-//        public int PageSize { get; set; } = 10;
-//        public string? SearchTerm { get; set; }
-//        public string? SortBy { get; set; }
-//        public bool SortDescending { get; set; } = false;
-//    }
+    public record GetGenresPagedQuery(
+        int Page = 1,
+        int PageSize = 20,
+        string? SearchTerm = null
+    ) : IRequest<PagedResult<GenreListItemDto>>;
+
+    public record GetAllGenresQuery : IRequest<List<GenreListItemDto>>; // For dropdowns
 }
