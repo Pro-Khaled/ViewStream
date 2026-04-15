@@ -1,45 +1,28 @@
-using MediatR;
 using AutoMapper;
+using MediatR;
 using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.PaymentMethod.UpdatePaymentMethod
 {
-//    public class UpdatePaymentMethodCommandHandler : IRequestHandler<UpdatePaymentMethodCommand, BaseResponse<PaymentMethodDto>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public UpdatePaymentMethodCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<PaymentMethodDto>> Handle(UpdatePaymentMethodCommand request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.PaymentMethods.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<PaymentMethodDto>.Fail("PaymentMethod not found");
-//                
-//                // TODO: Update entity properties
-//                // _mapper.Map(request, entity);
-//                // _unitOfWork.PaymentMethods.Update(entity);
-//                // await _unitOfWork.SaveChangesAsync();
-//                
-//                // var dto = _mapper.Map<PaymentMethodDto>(entity);
-//                // return BaseResponse<PaymentMethodDto>.Ok(dto, "PaymentMethod updated successfully");
-//                
-//                throw new NotImplementedException();
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<PaymentMethodDto>.Fail($"Error updating : {ex.Message}");
-//            }
-//        }
-//    }
+    public class UpdatePaymentMethodCommandHandler : IRequestHandler<UpdatePaymentMethodCommand, PaymentMethodDto?>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        public UpdatePaymentMethodCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+        public async Task<PaymentMethodDto?> Handle(UpdatePaymentMethodCommand request, CancellationToken cancellationToken)
+        {
+            var method = await _unitOfWork.PaymentMethods.GetByIdAsync<long>(request.Id, cancellationToken);
+            if (method == null || method.UserId != request.UserId) return null;
+            _mapper.Map(request.Dto, method);
+            _unitOfWork.PaymentMethods.Update(method);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return _mapper.Map<PaymentMethodDto>(method);
+        }
+    }
 }
