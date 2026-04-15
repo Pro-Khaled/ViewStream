@@ -1,32 +1,31 @@
 using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
-//using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Mappings
 {
     public class FriendshipMappingProfile : MappingProfile
     {
-          public FriendshipMappingProfile()
-          {
-//            // Entity → DTO
-//            CreateMap<Friendship, FriendshipDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreateFriendshipDto, Friendship>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdateFriendshipDto, Friendship>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public FriendshipMappingProfile()
+        {
+            CreateMap<Friendship, FriendshipDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.UserAvatar, opt => opt.MapFrom(src =>
+                    src.User.Profiles.Where(p => p.IsDeleted != true).Select(p => p.AvatarIcon).FirstOrDefault()))
+                .ForMember(dest => dest.FriendName, opt => opt.MapFrom(src => src.Friend.UserName))
+                .ForMember(dest => dest.FriendFullName, opt => opt.MapFrom(src => src.Friend.FullName))
+                .ForMember(dest => dest.FriendAvatar, opt => opt.MapFrom(src =>
+                    src.User.Profiles.Where(p => p.IsDeleted != true).Select(p => p.AvatarIcon).FirstOrDefault()));
+
+            CreateMap<Friendship, FriendshipListItemDto>()
+                .ForMember(dest => dest.FriendId, opt => opt.MapFrom(src => src.FriendId))
+                .ForMember(dest => dest.FriendName, opt => opt.MapFrom(src => src.Friend.UserName))
+                .ForMember(dest => dest.FriendFullName, opt => opt.MapFrom(src => src.Friend.FullName))
+                .ForMember(dest => dest.FriendAvatar, opt => opt.MapFrom(src =>
+                    src.User.Profiles.Where(p => p.IsDeleted != true).Select(p => p.AvatarIcon).FirstOrDefault()))
+                .ForMember(dest => dest.IsIncoming, opt => opt.MapFrom(src => false));
         }
     }
 }
