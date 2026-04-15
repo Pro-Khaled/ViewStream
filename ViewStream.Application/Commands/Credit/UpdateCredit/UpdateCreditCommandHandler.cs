@@ -1,45 +1,40 @@
-using MediatR;
 using AutoMapper;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.Credit.UpdateCredit
 {
-//    public class UpdateCreditCommandHandler : IRequestHandler<UpdateCreditCommand, BaseResponse<CreditDto>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public UpdateCreditCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<CreditDto>> Handle(UpdateCreditCommand request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.Credits.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<CreditDto>.Fail("Credit not found");
-//                
-//                // TODO: Update entity properties
-//                // _mapper.Map(request, entity);
-//                // _unitOfWork.Credits.Update(entity);
-//                // await _unitOfWork.SaveChangesAsync();
-//                
-//                // var dto = _mapper.Map<CreditDto>(entity);
-//                // return BaseResponse<CreditDto>.Ok(dto, "Credit updated successfully");
-//                
-//                throw new NotImplementedException();
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<CreditDto>.Fail($"Error updating : {ex.Message}");
-//            }
-//        }
-//    }
+    public class UpdateCreditCommandHandler : IRequestHandler<UpdateCreditCommand, CreditDto?>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public UpdateCreditCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<CreditDto?> Handle(UpdateCreditCommand request, CancellationToken cancellationToken)
+        {
+            var credit = await _unitOfWork.Credits.GetByIdAsync<long>(request.Id, cancellationToken);
+            if (credit == null) return null;
+
+            _mapper.Map(request.Dto, credit);
+            _unitOfWork.Credits.Update(credit);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var result = await _unitOfWork.Credits.FindAsync(
+                c => c.Id == credit.Id,
+                include: q => q.Include(c => c.Person)
+                               .Include(c => c.Show)
+                               .Include(c => c.Season).ThenInclude(s => s.Show)
+                               .Include(c => c.Episode).ThenInclude(e => e.Season).ThenInclude(s => s.Show),
+                cancellationToken: cancellationToken);
+            return _mapper.Map<CreditDto>(result.First());
+        }
+    }
 }
