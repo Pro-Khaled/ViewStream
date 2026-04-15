@@ -1,32 +1,23 @@
 using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
-//using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Mappings
 {
     public class PersonMappingProfile : MappingProfile
     {
-          public PersonMappingProfile()
-          {
-//            // Entity → DTO
-//            CreateMap<Person, PersonDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreatePersonDto, Person>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdatePersonDto, Person>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        public PersonMappingProfile()
+        {
+            CreateMap<Person, PersonDto>()
+                .ForMember(dest => dest.CreditCount, opt => opt.MapFrom(src => src.Credits.Count))
+                .ForMember(dest => dest.AwardCount, opt => opt.MapFrom(src => src.PersonAwards.Count));
+
+            CreateMap<Person, PersonListItemDto>()
+                .ForMember(dest => dest.CreditCount, opt => opt.MapFrom(src => src.Credits.Count));
+
+            CreateMap<CreatePersonDto, Person>();
+            CreateMap<UpdatePersonDto, Person>();
         }
     }
 }
