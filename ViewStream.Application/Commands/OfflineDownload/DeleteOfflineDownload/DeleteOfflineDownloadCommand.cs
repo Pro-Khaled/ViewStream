@@ -1,10 +1,7 @@
 using MediatR;
-using ViewStream.Application.Common;
 
 namespace ViewStream.Application.Commands.OfflineDownload.DeleteOfflineDownload
 {
-//    public class DeleteOfflineDownloadCommand : IRequest<BaseResponse<bool>>
-//    {
-//        public int Id { get; set; }
-//    }
+    public record DeleteOfflineDownloadCommand(long Id, long ProfileId) : IRequest<bool>;
+
 }
