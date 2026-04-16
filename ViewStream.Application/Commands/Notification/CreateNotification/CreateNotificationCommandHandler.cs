@@ -1,42 +1,32 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.Notification.CreateNotification
 {
-  //  public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificationCommand, BaseResponse<NotificationDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using Notification = ViewStream.Domain.Entities.Notification;
+    public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificationCommand, NotificationDto>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public CreateNotificationCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+        public CreateNotificationCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-  //      public async Task<BaseResponse<NotificationDto>> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<Notification>(request);
-  //              
-  //              // await _unitOfWork.Notifications.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<NotificationDto>(entity);
-  //              // return BaseResponse<NotificationDto>.Ok(dto, "Notification created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<NotificationDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public async Task<NotificationDto> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
+        {
+            var notification = _mapper.Map<Notification>(request.Dto);
+            notification.IsRead = false;
+            notification.CreatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.Notifications.AddAsync(notification, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return _mapper.Map<NotificationDto>(notification);
+        }
+    }
 }
