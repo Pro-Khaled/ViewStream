@@ -1,42 +1,32 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.PromoCode.CreatePromoCode
 {
-  //  public class CreatePromoCodeCommandHandler : IRequestHandler<CreatePromoCodeCommand, BaseResponse<PromoCodeDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using PromoCode = ViewStream.Domain.Entities.PromoCode;
+    public class CreatePromoCodeCommandHandler : IRequestHandler<CreatePromoCodeCommand, PromoCodeDto>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public CreatePromoCodeCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+        public CreatePromoCodeCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-  //      public async Task<BaseResponse<PromoCodeDto>> Handle(CreatePromoCodeCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<PromoCode>(request);
-  //              
-  //              // await _unitOfWork.PromoCodes.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<PromoCodeDto>(entity);
-  //              // return BaseResponse<PromoCodeDto>.Ok(dto, "PromoCode created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<PromoCodeDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public async Task<PromoCodeDto> Handle(CreatePromoCodeCommand request, CancellationToken cancellationToken)
+        {
+            var existing = await _unitOfWork.PromoCodes.FindAsync(p => p.Code == request.Dto.Code, cancellationToken: cancellationToken);
+            if (existing.Any()) throw new InvalidOperationException("Promo code already exists.");
+
+            var promo = _mapper.Map<PromoCode>(request.Dto);
+            promo.UsedCount = 0;
+            await _unitOfWork.PromoCodes.AddAsync(promo, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return _mapper.Map<PromoCodeDto>(promo);
+        }
+    }
 }

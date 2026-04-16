@@ -1,32 +1,30 @@
 using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
-//using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Mappings
 {
     public class PromoCodeMappingProfile : MappingProfile
     {
           public PromoCodeMappingProfile()
-          {
-//            // Entity → DTO
-//            CreateMap<PromoCode, PromoCodeDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreatePromoCodeDto, PromoCode>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdatePromoCodeDto, PromoCode>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        {
+            CreateMap<PromoCode, PromoCodeDto>()
+                .ForMember(dest => dest.IsValid, opt => opt.MapFrom(src =>
+                    src.ValidFrom <= DateOnly.FromDateTime(DateTime.UtcNow) &&
+                    (!src.ValidUntil.HasValue || src.ValidUntil.Value >= DateOnly.FromDateTime(DateTime.UtcNow)) &&
+                    (!src.MaxUses.HasValue || src.UsedCount < src.MaxUses)))
+                .ForMember(dest => dest.RemainingUses, opt => opt.MapFrom(src =>
+                    src.MaxUses.HasValue ? src.MaxUses.Value - (src.UsedCount ?? 0) : int.MaxValue));
+
+            CreateMap<PromoCode, PromoCodeListItemDto>()
+                .ForMember(dest => dest.IsValid, opt => opt.MapFrom(src =>
+                    src.ValidFrom <= DateOnly.FromDateTime(DateTime.UtcNow) &&
+                    (!src.ValidUntil.HasValue || src.ValidUntil.Value >= DateOnly.FromDateTime(DateTime.UtcNow)) &&
+                    (!src.MaxUses.HasValue || src.UsedCount < src.MaxUses)));
+
+            CreateMap<CreatePromoCodeDto, PromoCode>();
+            CreateMap<UpdatePromoCodeDto, PromoCode>();
         }
     }
 }
