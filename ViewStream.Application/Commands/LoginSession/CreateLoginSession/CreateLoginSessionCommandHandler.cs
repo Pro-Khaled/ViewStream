@@ -1,42 +1,45 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.LoginSession.CreateLoginSession
 {
-  //  public class CreateLoginSessionCommandHandler : IRequestHandler<CreateLoginSessionCommand, BaseResponse<LoginSessionDto>>
-  //  {
-  //      private readonly IUnitOfWork _unitOfWork;
-  //      private readonly IMapper _mapper;
+    using LoginSession = ViewStream.Domain.Entities.LoginSession;
+    public class CreateLoginSessionCommandHandler : IRequestHandler<CreateLoginSessionCommand, LoginSessionDto>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-  //      public CreateLoginSessionCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-  //      {
-  //          _unitOfWork = unitOfWork;
-  //          _mapper = mapper;
-  //      }
+        public CreateLoginSessionCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-  //      public async Task<BaseResponse<LoginSessionDto>> Handle(CreateLoginSessionCommand request, CancellationToken cancellationToken)
-  //      {
-  //          try
-  //          {
-  //              // TODO: Map request to entity
-  //              // var entity = _mapper.Map<LoginSession>(request);
-  //              
-  //              // await _unitOfWork.LoginSessions.AddAsync(entity);
-  //              // await _unitOfWork.SaveChangesAsync();
-  //              
-  //              // var dto = _mapper.Map<LoginSessionDto>(entity);
-  //              // return BaseResponse<LoginSessionDto>.Ok(dto, "LoginSession created successfully");
-  //              
-  //              throw new NotImplementedException();
-  //          }
-  //          catch (Exception ex)
-  //          {
-  //              return BaseResponse<LoginSessionDto>.Fail($"Error creating : {ex.Message}");
-  //          }
-  //      }
-  //  }
+        public async Task<LoginSessionDto> Handle(CreateLoginSessionCommand request, CancellationToken cancellationToken)
+        {
+            var session = new LoginSession
+            {
+                UserId = request.UserId,
+                DeviceId = request.DeviceId,
+                SessionToken = request.SessionToken,
+                IpAddress = request.IpAddress,
+                UserAgent = request.UserAgent,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = request.ExpiresAt
+            };
+
+            await _unitOfWork.LoginSessions.AddAsync(session, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var result = await _unitOfWork.LoginSessions.FindAsync(
+                s => s.Id == session.Id,
+                include: q => q.Include(s => s.Device),
+                cancellationToken: cancellationToken);
+
+            return _mapper.Map<LoginSessionDto>(result.First());
+        }
+    }
 }
