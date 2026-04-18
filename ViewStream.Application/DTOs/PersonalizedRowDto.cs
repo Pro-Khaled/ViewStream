@@ -18,5 +18,5 @@ namespace ViewStream.Application.DTOs
         public string RowName { get; set; } = string.Empty;
         public List<long> ShowIds { get; set; } = new();
     }
-    A
+    
 }
