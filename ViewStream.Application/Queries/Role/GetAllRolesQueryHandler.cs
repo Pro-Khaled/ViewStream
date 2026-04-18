@@ -1,46 +1,22 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Interfaces;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ViewStream.Application.DTOs;
+
 
 namespace ViewStream.Application.Queries.Role
 {
-//    public class GetAllRolesQueryHandler : IRequestHandler<GetAllRolesQuery, BaseResponse<PagedResult<RoleDto>>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public GetAllRolesQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<PagedResult<RoleDto>>> Handle(GetAllRolesQuery request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entities = await _unitOfWork.Roles.GetAllAsync();
-//                var entityList = entities.ToList();
-//                
-//                // TODO: Apply search, sort, pagination
-//                
-//                var dtos = _mapper.Map<List<RoleDto>>(entityList);
-//                var result = new PagedResult<RoleDto>
-//                {
-//                    Items = dtos,
-//                    TotalCount = entityList.Count,
-//                    PageNumber = request.PageNumber,
-//                    PageSize = request.PageSize
-//                };
-//                
-//                return BaseResponse<PagedResult<RoleDto>>.Ok(result);
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<PagedResult<RoleDto>>.Fail($"Error retrieving s: {ex.Message}");
-//            }
-//        }
-//    }
+    using Role = ViewStream.Domain.Entities.Role;
+    public class GetAllRolesQueryHandler : IRequestHandler<GetAllRolesQuery, List<RoleListItemDto>>
+    {
+        private readonly RoleManager<Role> _roleManager;
+        private readonly IMapper _mapper;
+        public GetAllRolesQueryHandler(RoleManager<Role> roleManager, IMapper mapper) { _roleManager = roleManager; _mapper = mapper; }
+        public async Task<List<RoleListItemDto>> Handle(GetAllRolesQuery request, CancellationToken cancellationToken)
+        {
+            var roles = await _roleManager.Roles.OrderBy(r => r.Name).AsNoTracking().ToListAsync(cancellationToken);
+            return _mapper.Map<List<RoleListItemDto>>(roles);
+        }
+    }
 }

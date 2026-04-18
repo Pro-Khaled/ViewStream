@@ -1,45 +1,31 @@
-using MediatR;
 using AutoMapper;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
-using ViewStream.Domain.Interfaces;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+using ViewStream.Application.DTOs;
+
 
 namespace ViewStream.Application.Commands.Role.UpdateRole
 {
-//    public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, BaseResponse<RoleDto>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//        private readonly IMapper _mapper;
-//
-//        public UpdateRoleCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
-//        {
-//            _unitOfWork = unitOfWork;
-//            _mapper = mapper;
-//        }
-//
-//        public async Task<BaseResponse<RoleDto>> Handle(UpdateRoleCommand request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.Roles.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<RoleDto>.Fail("Role not found");
-//                
-//                // TODO: Update entity properties
-//                // _mapper.Map(request, entity);
-//                // _unitOfWork.Roles.Update(entity);
-//                // await _unitOfWork.SaveChangesAsync();
-//                
-//                // var dto = _mapper.Map<RoleDto>(entity);
-//                // return BaseResponse<RoleDto>.Ok(dto, "Role updated successfully");
-//                
-//                throw new NotImplementedException();
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<RoleDto>.Fail($"Error updating : {ex.Message}");
-//            }
-//        }
-//    }
+    using Role = ViewStream.Domain.Entities.Role;
+    public class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, RoleDto?>
+    {
+        private readonly RoleManager<Role> _roleManager;
+        private readonly IMapper _mapper;
+
+        public UpdateRoleCommandHandler(RoleManager<Role> roleManager, IMapper mapper)
+        {
+            _roleManager = roleManager;
+            _mapper = mapper;
+        }
+
+        public async Task<RoleDto?> Handle(UpdateRoleCommand request, CancellationToken cancellationToken)
+        {
+            var role = await _roleManager.FindByIdAsync(request.Id.ToString());
+            if (role == null || role.IsSystem) return null;
+            role.Description = request.Dto.Description;
+            role.UpdatedAt = DateTime.UtcNow;
+            var result = await _roleManager.UpdateAsync(role);
+            return result.Succeeded ? _mapper.Map<RoleDto>(role) : null;
+        }
+    }
 }

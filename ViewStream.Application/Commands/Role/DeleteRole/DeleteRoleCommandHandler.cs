@@ -1,35 +1,20 @@
 using MediatR;
-using ViewStream.Application.Common;
-using ViewStream.Domain.Interfaces;
+using Microsoft.AspNetCore.Identity;
+
 
 namespace ViewStream.Application.Commands.Role.DeleteRole
 {
-//    public class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, BaseResponse<bool>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//
-//        public DeleteRoleCommandHandler(IUnitOfWork unitOfWork)
-//        {
-//            _unitOfWork = unitOfWork;
-//        }
-//
-//        public async Task<BaseResponse<bool>> Handle(DeleteRoleCommand request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.Roles.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<bool>.Fail("Role not found");
-//                
-//                _unitOfWork.Roles.Remove(entity);
-//                await _unitOfWork.SaveChangesAsync();
-//                
-//                return BaseResponse<bool>.Ok(true, "Role deleted successfully");
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<bool>.Fail($"Error deleting : {ex.Message}");
-//            }
-//        }
-//    }
+    using Role = ViewStream.Domain.Entities.Role;
+    public class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, bool>
+    {
+        private readonly RoleManager<Role> _roleManager;
+        public DeleteRoleCommandHandler(RoleManager<Role> roleManager) => _roleManager = roleManager;
+        public async Task<bool> Handle(DeleteRoleCommand request, CancellationToken cancellationToken)
+        {
+            var role = await _roleManager.FindByIdAsync(request.Id.ToString());
+            if (role == null || role.IsSystem) return false;
+            var result = await _roleManager.DeleteAsync(role);
+            return result.Succeeded;
+        }
+    }
 }
