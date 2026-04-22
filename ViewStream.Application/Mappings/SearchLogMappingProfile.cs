@@ -1,32 +1,21 @@
 using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
-//using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Mappings
 {
     public class SearchLogMappingProfile : MappingProfile
     {
           public SearchLogMappingProfile()
-          {
-//            // Entity → DTO
-//            CreateMap<SearchLog, SearchLogDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreateSearchLogDto, SearchLog>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdateSearchLogDto, SearchLog>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+        {
+            CreateMap<SearchLog, SearchLogDto>()
+                .ForMember(dest => dest.ProfileName, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.Name : null))
+                .ForMember(dest => dest.ClickedShowTitle, opt => opt.MapFrom(src => src.ClickedShow != null ? src.ClickedShow.Title : null));
+
+            CreateMap<SearchLog, SearchLogListItemDto>()
+                .ForMember(dest => dest.ProfileName, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.Name : null))
+                .ForMember(dest => dest.ClickedShowTitle, opt => opt.MapFrom(src => src.ClickedShow != null ? src.ClickedShow.Title : null));
         }
     }
 }
