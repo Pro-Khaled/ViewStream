@@ -1,6 +1,7 @@
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using ViewStream.Api.Hubs;
+using ViewStream.Api.Middleware;
 using ViewStream.API;
 using ViewStream.API.Hubs;
 using ViewStream.Infrastructure.Seeding;
@@ -30,12 +31,15 @@ if (app.Environment.IsDevelopment())
     app.UseApi(app.Configuration); // This sets up Swagger + JWT
 }
 
+//Register the custom exception handling middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseHttpsRedirection();
 
 
-app.UseAuthorization();
+//app.UseAuthorization();
 
-app.UseStaticFiles(); // Serves files from wwwroot
+//app.UseStaticFiles(); // Serves files from wwwroot
 
 // Optionally, if you want to serve from a custom physical folder outside wwwroot:
 //app.UseStaticFiles(new StaticFileOptions
