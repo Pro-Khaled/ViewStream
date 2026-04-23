@@ -85,6 +85,8 @@ namespace ViewStream.Infrastructure
 
             services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
+            // Register System Log Service
+            services.AddScoped<ISystemLogService, SystemLogService>();
 
 
             return services;
