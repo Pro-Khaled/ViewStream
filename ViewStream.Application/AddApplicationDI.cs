@@ -1,5 +1,8 @@
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using ViewStream.Application.Behaviors;
+using ViewStream.Application.Interfaces.Services;
 
 
 namespace ViewStream.Application
@@ -19,7 +22,17 @@ namespace ViewStream.Application
 
             // Register AutoMapper
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
-            
+
+
+            //Register AuditLogBehavior for all IAuditableCommand handlers
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(IAuditContext).Assembly);
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AuditLogBehavior<,>));
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ErrorLogBehavior<,>)); 
+
+            });
+
             return services;
         }
     }

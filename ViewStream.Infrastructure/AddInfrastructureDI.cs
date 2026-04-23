@@ -88,6 +88,11 @@ namespace ViewStream.Infrastructure
             // Register System Log Service
             services.AddScoped<ISystemLogService, SystemLogService>();
 
+            // Register Audit Context
+            services.AddScoped<IAuditContext, AuditContext>();
+
+
+
 
             return services;
         }
