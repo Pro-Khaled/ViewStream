@@ -1,7 +1,10 @@
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.ContentReport.CreateContentReport
@@ -11,22 +14,30 @@ namespace ViewStream.Application.Commands.ContentReport.CreateContentReport
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<CreateContentReportCommandHandler> _logger;
 
-        public CreateContentReportCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateContentReportCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAuditContext auditContext,
+            ILogger<CreateContentReportCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<ContentReportDto> Handle(CreateContentReportCommand request, CancellationToken cancellationToken)
         {
             var dto = request.Dto;
+            _logger.LogInformation("Submitting content report by ProfileId: {ProfileId}, ShowId: {ShowId}, EpisodeId: {EpisodeId}",
+                request.ProfileId, dto.ShowId, dto.EpisodeId);
 
-            // Ensure at least one target is specified
             if (!dto.ShowId.HasValue && !dto.EpisodeId.HasValue)
                 throw new ArgumentException("Either ShowId or EpisodeId must be provided.");
 
-            // Prevent duplicate reports from same profile on same target
             var existing = await _unitOfWork.ContentReports.FindAsync(
                 r => r.ProfileId == request.ProfileId &&
                      r.ShowId == dto.ShowId &&
@@ -49,6 +60,16 @@ namespace ViewStream.Application.Commands.ContentReport.CreateContentReport
 
             await _unitOfWork.ContentReports.AddAsync(report, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<ContentReport, CreateContentReportDto>(
+                tableName: "ContentReports",
+                recordId: report.Id,
+                action: "INSERT",
+                newValues: dto,
+                changedByUserId: request.UserId
+            );
+
+            _logger.LogInformation("Content report created with Id: {ReportId}", report.Id);
 
             var result = await _unitOfWork.ContentReports.FindAsync(
                 r => r.Id == report.Id,

@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.Friendship.SendFriendRequest
@@ -16,19 +14,28 @@ namespace ViewStream.Application.Commands.Friendship.SendFriendRequest
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<SendFriendRequestCommandHandler> _logger;
 
-        public SendFriendRequestCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public SendFriendRequestCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAuditContext auditContext,
+            ILogger<SendFriendRequestCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<FriendshipDto> Handle(SendFriendRequestCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("User {UserId} sending friend request to {FriendId}", request.UserId, request.Dto.FriendId);
+
             if (request.UserId == request.Dto.FriendId)
                 throw new InvalidOperationException("You cannot send a friend request to yourself.");
 
-            // Check existing relationship
             var existing = await _unitOfWork.Friendships.FindAsync(
                 f => (f.UserId == request.UserId && f.FriendId == request.Dto.FriendId) ||
                      (f.UserId == request.Dto.FriendId && f.FriendId == request.UserId),
@@ -57,6 +64,17 @@ namespace ViewStream.Application.Commands.Friendship.SendFriendRequest
 
             await _unitOfWork.Friendships.AddAsync(friendship, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<Friendship, object>(
+                tableName: "Friendships",
+                recordId: friendship.UserId.GetHashCode() ^ friendship.FriendId.GetHashCode(),
+                action: "INSERT",
+                oldValues: null,
+                newValues: new { friendship.UserId, friendship.FriendId, friendship.Status },
+                changedByUserId: request.ActorUserId
+            );
+
+            _logger.LogInformation("Friend request sent: User {UserId} -> Friend {FriendId}", request.UserId, request.Dto.FriendId);
 
             var result = await _unitOfWork.Friendships.FindAsync(
                 f => f.UserId == friendship.UserId && f.FriendId == friendship.FriendId,

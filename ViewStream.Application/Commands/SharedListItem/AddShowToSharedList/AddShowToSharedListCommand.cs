@@ -1,13 +1,12 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.SharedListItem.AddShowToSharedList
 {
-    public record AddShowToSharedListCommand(long ListId, long ProfileId, AddShowToSharedListDto Dto) : IRequest<SharedListItemDto>;
-
+    public record AddShowToSharedListCommand(long ListId, long ProfileId, AddShowToSharedListDto Dto, long ActorUserId)
+        : IRequest<SharedListItemDto>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

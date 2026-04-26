@@ -1,13 +1,12 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.ItemVector.UpsertItemVector
 {
-    public record UpsertItemVectorCommand(long ShowId, CreateUpdateItemVectorDto Dto) : IRequest<ItemVectorDto>;
-
+    public record UpsertItemVectorCommand(long ShowId, CreateUpdateItemVectorDto Dto, long ActorUserId)
+        : IRequest<ItemVectorDto>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

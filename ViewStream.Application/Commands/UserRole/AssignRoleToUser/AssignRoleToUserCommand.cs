@@ -1,13 +1,12 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.UserRole.AssignRoleToUser
 {
-    public record AssignRoleToUserCommand(long UserId, AssignRoleToUserDto Dto) : IRequest<UserRoleDto>;
-
+    public record AssignRoleToUserCommand(long UserId, AssignRoleToUserDto Dto, long ActorUserId)
+        : IRequest<UserRoleDto>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

@@ -1,12 +1,9 @@
-﻿using AutoMapper;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using System.Threading.Tasks;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.PersonalizedRow.UpsertPersonalizedRow
@@ -15,24 +12,34 @@ namespace ViewStream.Application.Commands.PersonalizedRow.UpsertPersonalizedRow
     public class UpsertPersonalizedRowCommandHandler : IRequestHandler<UpsertPersonalizedRowCommand, PersonalizedRowDto>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<UpsertPersonalizedRowCommandHandler> _logger;
 
-        public UpsertPersonalizedRowCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpsertPersonalizedRowCommandHandler(
+            IUnitOfWork unitOfWork,
+            IAuditContext auditContext,
+            ILogger<UpsertPersonalizedRowCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<PersonalizedRowDto> Handle(UpsertPersonalizedRowCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Upserting personalized row '{RowName}' for ProfileId: {ProfileId}",
+                request.Dto.RowName, request.ProfileId);
+
             var existing = await _unitOfWork.PersonalizedRows.FindAsync(
                 r => r.ProfileId == request.ProfileId && r.RowName == request.Dto.RowName,
                 cancellationToken: cancellationToken);
 
             var row = existing.FirstOrDefault();
             var showIdsJson = JsonSerializer.Serialize(request.Dto.ShowIds);
+            bool isNew = row == null;
+            string? oldShowIdsJson = row?.ShowIdsJson;
 
-            if (row == null)
+            if (isNew)
             {
                 row = new PersonalizedRow
                 {
@@ -51,6 +58,18 @@ namespace ViewStream.Application.Commands.PersonalizedRow.UpsertPersonalizedRow
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<PersonalizedRow, object>(
+                tableName: "PersonalizedRows",
+                recordId: row.ProfileId.GetHashCode() ^ row.RowName.GetHashCode(),
+                action: isNew ? "INSERT" : "UPDATE",
+                oldValues: isNew ? null : new { RowName = row.RowName, ShowIds = oldShowIdsJson },
+                newValues: new { row.RowName, ShowIds = showIdsJson },
+                changedByUserId: request.ActorUserId
+            );
+
+            _logger.LogInformation("Personalized row '{RowName}' {Action} for ProfileId: {ProfileId}",
+                row.RowName, isNew ? "created" : "updated", request.ProfileId);
 
             return new PersonalizedRowDto
             {

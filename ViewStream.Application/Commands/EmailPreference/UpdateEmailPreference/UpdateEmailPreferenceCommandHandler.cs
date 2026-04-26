@@ -1,9 +1,11 @@
 using AutoMapper;
 using MediatR;
-using ViewStream.Application.Common;
+using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
+
 //using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.EmailPreference.UpdateEmailPreference
@@ -13,31 +15,60 @@ namespace ViewStream.Application.Commands.EmailPreference.UpdateEmailPreference
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<UpdateEmailPreferenceCommandHandler> _logger;
 
-        public UpdateEmailPreferenceCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateEmailPreferenceCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAuditContext auditContext,
+            ILogger<UpdateEmailPreferenceCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<EmailPreferenceDto> Handle(UpdateEmailPreferenceCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Updating email preferences for UserId: {UserId}", request.UserId);
+
             var pref = await _unitOfWork.EmailPreferences.GetByIdAsync<long>(request.UserId, cancellationToken);
+            bool isNew = false;
+            EmailPreferenceDto? oldValues = null;
 
             if (pref == null)
             {
+                isNew = true;
                 pref = new EmailPreference { UserId = request.UserId };
                 ApplyChanges(pref, request.Dto);
                 await _unitOfWork.EmailPreferences.AddAsync(pref, cancellationToken);
             }
             else
             {
+                oldValues = _mapper.Map<EmailPreferenceDto>(pref);
                 ApplyChanges(pref, request.Dto);
                 _unitOfWork.EmailPreferences.Update(pref);
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return _mapper.Map<EmailPreferenceDto>(pref);
+
+            var newValues = _mapper.Map<EmailPreferenceDto>(pref);
+
+            _auditContext.SetAudit<EmailPreference, object>(
+                tableName: "EmailPreferences",
+                recordId: pref.UserId,
+                action: isNew ? "INSERT" : "UPDATE",
+                oldValues: oldValues,
+                newValues: newValues,
+                changedByUserId: request.ActorUserId
+            );
+
+            _logger.LogInformation("Email preferences {Action} for UserId: {UserId}",
+                isNew ? "created" : "updated", request.UserId);
+
+            return newValues;
         }
 
         private static void ApplyChanges(EmailPreference pref, UpdateEmailPreferenceDto dto)

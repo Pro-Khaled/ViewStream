@@ -16,31 +16,85 @@ namespace ViewStream.Api.Controllers;
 public class WatchPartyParticipantsController : ControllerBase
 {
     private readonly IMediator _mediator;
-    public WatchPartyParticipantsController(IMediator mediator) => _mediator = mediator;
-    private long GetCurrentProfileId() => long.Parse(User.FindFirstValue("ProfileId") ?? "0");
 
+    public WatchPartyParticipantsController(IMediator mediator) => _mediator = mediator;
+
+    private long GetCurrentProfileId() =>
+        long.Parse(User.FindFirstValue("ProfileId") ?? "0");
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    #region Queries
+
+    /// <summary>
+    /// Retrieves all participants of a watch party.
+    /// </summary>
+    /// <param name="partyId">The ID of the watch party.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of participants with join/leave times.</returns>
+    /// <response code="200">Returns the list of participants.</response>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<List<WatchPartyParticipantDto>>> GetParticipants(long partyId, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(List<WatchPartyParticipantDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<WatchPartyParticipantDto>>> GetParticipants(
+        long partyId,
+        CancellationToken cancellationToken)
     {
         var participants = await _mediator.Send(new GetParticipantsByPartyQuery(partyId), cancellationToken);
         return Ok(participants);
     }
 
+    #endregion
+
+    #region Commands
+
+    /// <summary>
+    /// Joins a watch party.
+    /// </summary>
+    /// <param name="partyId">The ID of the watch party to join.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The participant record.</returns>
+    /// <response code="200">Joined successfully (or already joined).</response>
+    /// <response code="400">Party not found or inactive.</response>
+    /// <response code="401">User is not authenticated.</response>
     [HttpPost("join")]
-    public async Task<ActionResult<WatchPartyParticipantDto>> Join(long partyId, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(WatchPartyParticipantDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<WatchPartyParticipantDto>> Join(
+        long partyId,
+        CancellationToken cancellationToken)
     {
         var profileId = GetCurrentProfileId();
-        var participant = await _mediator.Send(new JoinWatchPartyCommand(partyId, profileId), cancellationToken);
+        var userId = GetCurrentUserId();
+        var participant = await _mediator.Send(new JoinWatchPartyCommand(partyId, profileId, userId), cancellationToken);
         return Ok(participant);
     }
 
+    /// <summary>
+    /// Leaves a watch party.
+    /// </summary>
+    /// <param name="partyId">The ID of the watch party.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Left successfully.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="404">Participant record not found.</response>
     [HttpPost("leave")]
-    public async Task<IActionResult> Leave(long partyId, CancellationToken cancellationToken)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Leave(
+        long partyId,
+        CancellationToken cancellationToken)
     {
         var profileId = GetCurrentProfileId();
-        var result = await _mediator.Send(new LeaveWatchPartyCommand(partyId, profileId), cancellationToken);
+        var userId = GetCurrentUserId();
+        var result = await _mediator.Send(new LeaveWatchPartyCommand(partyId, profileId, userId), cancellationToken);
         if (!result) return NotFound();
         return NoContent();
     }
+
+    #endregion
 }

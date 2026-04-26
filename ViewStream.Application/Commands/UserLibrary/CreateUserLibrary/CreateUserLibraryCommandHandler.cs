@@ -1,7 +1,10 @@
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.UserLibrary.CreateUserLibrary
@@ -11,11 +14,19 @@ namespace ViewStream.Application.Commands.UserLibrary.CreateUserLibrary
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<CreateUserLibraryCommandHandler> _logger;
 
-        public CreateUserLibraryCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateUserLibraryCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAuditContext auditContext,
+            ILogger<CreateUserLibraryCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<UserLibraryDto> Handle(CreateUserLibraryCommand request, CancellationToken cancellationToken)
@@ -23,6 +34,9 @@ namespace ViewStream.Application.Commands.UserLibrary.CreateUserLibrary
             var dto = request.Dto;
             if (!dto.ShowId.HasValue && !dto.SeasonId.HasValue)
                 throw new ArgumentException("Either ShowId or SeasonId must be provided.");
+
+            _logger.LogInformation("Adding to library: ProfileId={ProfileId}, ShowId={ShowId}, SeasonId={SeasonId}, Status={Status}",
+                request.ProfileId, dto.ShowId, dto.SeasonId, dto.Status);
 
             // Check for existing entry
             var existing = await _unitOfWork.UserLibraries.FindAsync(
@@ -47,6 +61,17 @@ namespace ViewStream.Application.Commands.UserLibrary.CreateUserLibrary
 
             await _unitOfWork.UserLibraries.AddAsync(library, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<UserLibrary, object>(
+                tableName: "UserLibraries",
+                recordId: library.Id,
+                action: "INSERT",
+                oldValues: null,
+                newValues: new { library.ProfileId, library.ShowId, library.SeasonId, library.Status, library.UserScore },
+                changedByUserId: request.ActorUserId
+            );
+
+            _logger.LogInformation("Library entry created with Id: {LibraryId}", library.Id);
 
             var result = await _unitOfWork.UserLibraries.FindAsync(
                 ul => ul.Id == library.Id,

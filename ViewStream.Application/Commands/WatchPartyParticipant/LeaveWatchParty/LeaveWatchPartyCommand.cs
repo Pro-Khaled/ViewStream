@@ -1,12 +1,11 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 
 namespace ViewStream.Application.Commands.WatchPartyParticipant.LeaveWatchParty
 {
-    public record LeaveWatchPartyCommand(long PartyId, long ProfileId) : IRequest<bool>;
-
+    public record LeaveWatchPartyCommand(long PartyId, long ProfileId, long ActorUserId)
+        : IRequest<bool>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

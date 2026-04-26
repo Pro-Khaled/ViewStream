@@ -20,14 +20,33 @@ public class PlaybackEventsController : ControllerBase
     private long GetCurrentProfileId() =>
         long.Parse(User.FindFirstValue("ProfileId") ?? "0");
 
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    #region Commands
+
     /// <summary>
     /// Logs a playback event (play, pause, seek, buffer, etc.).
     /// </summary>
+    /// <param name="dto">The playback event details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The recorded playback event.</returns>
+    /// <response code="201">Playback event logged successfully.</response>
+    /// <response code="400">Invalid input.</response>
+    /// <response code="401">User is not authenticated.</response>
     [HttpPost]
     [ProducesResponseType(typeof(PlaybackEventDto), StatusCodes.Status201Created)]
-    public async Task<ActionResult<PlaybackEventDto>> LogEvent([FromBody] CreatePlaybackEventDto dto, CancellationToken cancellationToken)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PlaybackEventDto>> LogEvent(
+        [FromBody] CreatePlaybackEventDto dto,
+        CancellationToken cancellationToken)
     {
-        var evt = await _mediator.Send(new CreatePlaybackEventCommand(GetCurrentProfileId(), dto), cancellationToken);
+        var profileId = GetCurrentProfileId();
+        var userId = GetCurrentUserId();
+        var evt = await _mediator.Send(new CreatePlaybackEventCommand(profileId, dto, userId), cancellationToken);
         return CreatedAtAction(nameof(LogEvent), null, evt);
     }
+
+    #endregion
 }

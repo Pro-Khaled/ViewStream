@@ -1,10 +1,8 @@
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 //using ViewStream.Application.DTOs;
-using ViewStream.Domain.Entities;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.ErrorLog.CreateErrorLog

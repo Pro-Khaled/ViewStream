@@ -1,7 +1,10 @@
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.CommentReport.CreateCommentReport
@@ -11,15 +14,26 @@ namespace ViewStream.Application.Commands.CommentReport.CreateCommentReport
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<CreateCommentReportCommandHandler> _logger;
 
-        public CreateCommentReportCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateCommentReportCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAuditContext auditContext,
+            ILogger<CreateCommentReportCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<CommentReportDto> Handle(CreateCommentReportCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Submitting report for CommentId: {CommentId} by ProfileId: {ProfileId}",
+                request.Dto.CommentId, request.ProfileId);
+
             // Prevent duplicate reports from same profile on same comment
             var existing = await _unitOfWork.CommentReports.FindAsync(
                 r => r.CommentId == request.Dto.CommentId && r.ReportedByProfileId == request.ProfileId,
@@ -40,6 +54,16 @@ namespace ViewStream.Application.Commands.CommentReport.CreateCommentReport
 
             await _unitOfWork.CommentReports.AddAsync(report, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<CommentReport, CreateCommentReportDto>(
+                tableName: "CommentReports",
+                recordId: report.Id,
+                action: "INSERT",
+                newValues: request.Dto,
+                changedByUserId: request.UserId
+            );
+
+            _logger.LogInformation("Comment report created with Id: {ReportId}", report.Id);
 
             var result = await _unitOfWork.CommentReports.FindAsync(
                 r => r.Id == report.Id,

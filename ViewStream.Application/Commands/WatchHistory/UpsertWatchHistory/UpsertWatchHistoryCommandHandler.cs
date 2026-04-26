@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.WatchHistory.UpsertWatchHistory
@@ -16,21 +14,36 @@ namespace ViewStream.Application.Commands.WatchHistory.UpsertWatchHistory
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<UpsertWatchHistoryCommandHandler> _logger;
 
-        public UpsertWatchHistoryCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpsertWatchHistoryCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAuditContext auditContext,
+            ILogger<UpsertWatchHistoryCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<WatchHistoryDto> Handle(UpsertWatchHistoryCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Upserting watch history for ProfileId: {ProfileId}, EpisodeId: {EpisodeId}",
+                request.ProfileId, request.Dto.EpisodeId);
+
             var existing = await _unitOfWork.WatchHistories.FindAsync(
                 wh => wh.ProfileId == request.ProfileId && wh.EpisodeId == request.Dto.EpisodeId,
                 cancellationToken: cancellationToken);
 
             var history = existing.FirstOrDefault();
-            if (history == null)
+            bool isNew = history == null;
+            int? oldProgress = history?.ProgressSeconds;
+            bool? oldCompleted = history?.Completed;
+
+            if (isNew)
             {
                 history = new WatchHistory
                 {
@@ -51,6 +64,18 @@ namespace ViewStream.Application.Commands.WatchHistory.UpsertWatchHistory
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<WatchHistory, object>(
+                tableName: "WatchHistories",
+                recordId: history.Id,
+                action: isNew ? "INSERT" : "UPDATE",
+                oldValues: isNew ? null : new { oldProgress, oldCompleted },
+                newValues: new { history.ProgressSeconds, history.Completed },
+                changedByUserId: request.ActorUserId
+            );
+
+            _logger.LogInformation("Watch history {Action} for ProfileId: {ProfileId}, EpisodeId: {EpisodeId}",
+                isNew ? "created" : "updated", request.ProfileId, request.Dto.EpisodeId);
 
             var result = await _unitOfWork.WatchHistories.FindAsync(
                 wh => wh.Id == history.Id,

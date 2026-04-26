@@ -22,11 +22,23 @@ public class UserInteractionsController : ControllerBase
     private long GetCurrentProfileId() =>
         long.Parse(User.FindFirstValue("ProfileId") ?? "0");
 
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    #region Queries
+
     /// <summary>
-    /// Gets interaction summary for the current profile.
+    /// Retrieves an interaction summary for the current profile.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A summary of interactions by type and top shows.</returns>
+    /// <response code="200">Returns the interaction summary.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="404">Profile not found.</response>
     [HttpGet("summary")]
     [ProducesResponseType(typeof(UserInteractionSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserInteractionSummaryDto>> GetMySummary(CancellationToken cancellationToken)
     {
         var profileId = GetCurrentProfileId();
@@ -36,10 +48,17 @@ public class UserInteractionsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets paginated interaction history for the current profile.
+    /// Retrieves paginated interaction history for the current profile.
     /// </summary>
+    /// <param name="page">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of interactions.</returns>
+    /// <response code="200">Returns the paginated interactions.</response>
+    /// <response code="401">User is not authenticated.</response>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<UserInteractionListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<PagedResult<UserInteractionListItemDto>>> GetMyInteractions(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50,
@@ -51,22 +70,19 @@ public class UserInteractionsController : ControllerBase
     }
 
     /// <summary>
-    /// Logs a user interaction (e.g., view, click, search).
+    /// Retrieves a specific interaction by ID.
     /// </summary>
-    [HttpPost]
-    [ProducesResponseType(typeof(UserInteractionDto), StatusCodes.Status201Created)]
-    public async Task<IActionResult> LogInteraction([FromBody] CreateUserInteractionDto dto, CancellationToken cancellationToken)
-    {
-        var profileId = GetCurrentProfileId();
-        var interaction = await _mediator.Send(new CreateUserInteractionCommand(profileId, dto), cancellationToken);
-        return CreatedAtAction(nameof(GetInteraction), new { id = interaction.Id }, interaction);
-    }
-
-    /// <summary>
-    /// Gets a specific interaction by ID (must belong to current profile).
-    /// </summary>
+    /// <param name="id">The ID of the interaction.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The requested interaction.</returns>
+    /// <response code="200">Returns the interaction.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="403">Interaction does not belong to the current profile.</response>
+    /// <response code="404">Interaction not found.</response>
     [HttpGet("{id:long}")]
     [ProducesResponseType(typeof(UserInteractionDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserInteractionDto>> GetInteraction(long id, CancellationToken cancellationToken)
     {
@@ -75,4 +91,33 @@ public class UserInteractionsController : ControllerBase
             return NotFound();
         return Ok(interaction);
     }
+
+    #endregion
+
+    #region Commands
+
+    /// <summary>
+    /// Logs a user interaction (e.g., view, click, search).
+    /// </summary>
+    /// <param name="dto">The interaction details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The recorded interaction.</returns>
+    /// <response code="201">Interaction logged successfully.</response>
+    /// <response code="400">Invalid input.</response>
+    /// <response code="401">User is not authenticated.</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(UserInteractionDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> LogInteraction(
+        [FromBody] CreateUserInteractionDto dto,
+        CancellationToken cancellationToken)
+    {
+        var profileId = GetCurrentProfileId();
+        var userId = GetCurrentUserId();
+        var interaction = await _mediator.Send(new CreateUserInteractionCommand(profileId, dto, userId), cancellationToken);
+        return CreatedAtAction(nameof(GetInteraction), new { id = interaction.Id }, interaction);
+    }
+
+    #endregion
 }

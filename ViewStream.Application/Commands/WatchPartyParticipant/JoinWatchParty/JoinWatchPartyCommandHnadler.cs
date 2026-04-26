@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.WatchPartyParticipant.JoinWatchParty
@@ -16,15 +14,25 @@ namespace ViewStream.Application.Commands.WatchPartyParticipant.JoinWatchParty
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<JoinWatchPartyCommandHandler> _logger;
 
-        public JoinWatchPartyCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public JoinWatchPartyCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAuditContext auditContext,
+            ILogger<JoinWatchPartyCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<WatchPartyParticipantDto> Handle(JoinWatchPartyCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Profile {ProfileId} joining watch party {PartyId}", request.ProfileId, request.PartyId);
+
             var party = await _unitOfWork.WatchParties.GetByIdAsync<long>(request.PartyId, cancellationToken);
             if (party == null || party.IsActive != true)
                 throw new InvalidOperationException("Watch party not found or inactive.");
@@ -34,7 +42,10 @@ namespace ViewStream.Application.Commands.WatchPartyParticipant.JoinWatchParty
                 cancellationToken: cancellationToken);
 
             var participant = existing.FirstOrDefault();
-            if (participant == null)
+            bool isNew = participant == null;
+            DateTime? oldLeftAt = participant?.LeftAt;
+
+            if (isNew)
             {
                 participant = new WatchPartyParticipant
                 {
@@ -46,11 +57,23 @@ namespace ViewStream.Application.Commands.WatchPartyParticipant.JoinWatchParty
             }
             else
             {
-                participant.LeftAt = null;
+                participant.LeftAt = null; // re-join clears leave time
                 _unitOfWork.WatchPartyParticipants.Update(participant);
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<WatchPartyParticipant, object>(
+                tableName: "WatchPartyParticipants",
+                recordId: participant.PartyId.GetHashCode() ^ participant.ProfileId,
+                action: isNew ? "INSERT" : "UPDATE",
+                oldValues: isNew ? null : new { LeftAt = oldLeftAt },
+                newValues: new { participant.PartyId, participant.ProfileId, participant.JoinedAt, participant.LeftAt },
+                changedByUserId: request.ActorUserId
+            );
+
+            _logger.LogInformation("Profile {ProfileId} {Action} watch party {PartyId}",
+                request.ProfileId, isNew ? "joined" : "rejoined", request.PartyId);
 
             var result = await _unitOfWork.WatchPartyParticipants.FindAsync(
                 p => p.PartyId == participant.PartyId && p.ProfileId == participant.ProfileId,

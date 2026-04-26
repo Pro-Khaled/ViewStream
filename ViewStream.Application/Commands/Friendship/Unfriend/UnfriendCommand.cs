@@ -1,12 +1,11 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 
 namespace ViewStream.Application.Commands.Friendship.Unfriend
 {
-    public record UnfriendCommand(long UserId, long FriendId) : IRequest<bool>;
-
+    public record UnfriendCommand(long UserId, long FriendId, long ActorUserId)
+        : IRequest<bool>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

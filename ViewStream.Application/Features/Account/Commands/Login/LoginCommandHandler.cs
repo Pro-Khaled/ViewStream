@@ -1,11 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ViewStream.Application.DTOs.Account;
+using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Entities;
 namespace ViewStream.Application.Features.Account.Commands.Login
@@ -15,40 +17,53 @@ namespace ViewStream.Application.Features.Account.Commands.Login
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<LoginCommandHandler> _logger;
 
         public LoginCommandHandler(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            IJwtTokenService jwtTokenService)
+            IJwtTokenService jwtTokenService,
+            IAuditContext auditContext,
+            ILogger<LoginCommandHandler> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtTokenService = jwtTokenService;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<AuthResponseDto> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var model = request.Dto;
+            _logger.LogInformation("Login attempt for {Email}", model.Email);
+
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
                 throw new UnauthorizedAccessException("Invalid email or password.");
-            // Check if email is confirmed
-            if (!await _userManager.IsEmailConfirmedAsync(user))
-            {
-                throw new UnauthorizedAccessException("Please confirm your email before signing in.");
 
-            }
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+                throw new UnauthorizedAccessException("Please confirm your email before signing in.");
 
             if (user.IsDeleted || !user.IsActive || user.IsBlocked)
                 throw new UnauthorizedAccessException("Account is disabled or blocked.");
 
-            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, model.Password, true);
+            var signInResult = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: true);
             if (!signInResult.Succeeded)
                 throw new UnauthorizedAccessException("Invalid email or password.");
+
+            _logger.LogInformation("User {UserId} logged in", user.Id);
 
             var accessToken = await _jwtTokenService.GenerateAccessTokenAsync(user);
             var jwtId = Guid.NewGuid().ToString();
             var refreshToken = await _jwtTokenService.GenerateRefreshTokenAsync(user.Id, jwtId, cancellationToken);
+
+            // Audit the successful login
+            _auditContext.SetAudit<object, object>(
+                "Users", user.Id, "LOGIN",
+                newValues: new { user.Id, user.Email }, changedByUserId: user.Id
+            );
 
             return new AuthResponseDto
             {

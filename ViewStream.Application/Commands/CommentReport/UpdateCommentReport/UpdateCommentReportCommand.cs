@@ -1,8 +1,12 @@
 using MediatR;
+using ViewStream.Application.Behaviors;
 using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.CommentReport.UpdateCommentReport
 {
-    public record UpdateReportStatusCommand(long ReportId, UpdateReportStatusDto Dto, long ReviewedByUserId) : IRequest<CommentReportDto?>;
-
+    public record UpdateReportStatusCommand(long ReportId, UpdateReportStatusDto Dto, long ReviewedByUserId)
+        : IRequest<CommentReportDto?>, IHasUserId
+    {
+        long? IHasUserId.UserId => ReviewedByUserId;
+    }
 }

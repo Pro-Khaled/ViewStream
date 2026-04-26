@@ -18,10 +18,21 @@ public class AdminSearchLogsController : ControllerBase
     public AdminSearchLogsController(IMediator mediator) => _mediator = mediator;
 
     /// <summary>
-    /// Gets paginated search logs with optional filters.
+    /// Retrieves a paginated list of search logs with optional filters.
     /// </summary>
+    /// <param name="page">Page number (1‑indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="profileId">Optional filter by profile ID.</param>
+    /// <param name="query">Optional filter by search term.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Paginated list of search logs.</returns>
+    /// <response code="200">Returns the paginated search logs.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="403">User does not have permission.</response>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<SearchLogListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<PagedResult<SearchLogListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -34,12 +45,23 @@ public class AdminSearchLogsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets a specific search log by ID.
+    /// Retrieves a single search log entry by its ID.
     /// </summary>
+    /// <param name="id">The ID of the search log.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The detailed search log entry.</returns>
+    /// <response code="200">Returns the search log.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="403">User does not have permission.</response>
+    /// <response code="404">Search log not found.</response>
     [HttpGet("{id:long}")]
     [ProducesResponseType(typeof(SearchLogDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<SearchLogDto>> GetById(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult<SearchLogDto>> GetById(
+        long id,
+        CancellationToken cancellationToken)
     {
         var log = await _mediator.Send(new GetSearchLogByIdQuery(id), cancellationToken);
         if (log == null) return NotFound();

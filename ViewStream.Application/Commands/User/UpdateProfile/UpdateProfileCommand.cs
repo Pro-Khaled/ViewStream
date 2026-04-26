@@ -1,13 +1,13 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.User.UpdateProfile
 {
     // Update own profile
-    public record UpdateProfileCommand(long UserId, UpdateUserDto Dto) : IRequest<bool>;
+    public record UpdateProfileCommand(long UserId, UpdateUserDto Dto, long ActorUserId)
+        : IRequest<bool>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

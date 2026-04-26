@@ -1,13 +1,12 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.ShowAward.AddShowAward
 {
-    public record AddShowAwardCommand(long ShowId, CreateShowAwardDto Dto) : IRequest<ShowAwardDto>;
-
+    public record AddShowAwardCommand(long ShowId, CreateShowAwardDto Dto, long ActorUserId)
+        : IRequest<ShowAwardDto>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.Friendship.BlockUser
@@ -16,15 +14,25 @@ namespace ViewStream.Application.Commands.Friendship.BlockUser
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<BlockUserCommandHandler> _logger;
 
-        public BlockUserCommandHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public BlockUserCommandHandler(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IAuditContext auditContext,
+            ILogger<BlockUserCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _auditContext = auditContext;
+            _logger = logger;
         }
 
         public async Task<FriendshipDto> Handle(BlockUserCommand request, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("User {UserId} blocking user {FriendId}", request.UserId, request.FriendId);
+
             if (request.UserId == request.FriendId)
                 throw new InvalidOperationException("You cannot block yourself.");
 
@@ -34,6 +42,9 @@ namespace ViewStream.Application.Commands.Friendship.BlockUser
                 cancellationToken: cancellationToken);
 
             var friendship = existing.FirstOrDefault();
+            bool isNew = false;
+            string oldStatus = friendship?.Status ?? "none";
+
             if (friendship != null)
             {
                 friendship.Status = "blocked";
@@ -42,6 +53,7 @@ namespace ViewStream.Application.Commands.Friendship.BlockUser
             }
             else
             {
+                isNew = true;
                 friendship = new Friendship
                 {
                     UserId = request.UserId,
@@ -53,6 +65,17 @@ namespace ViewStream.Application.Commands.Friendship.BlockUser
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<Friendship, object>(
+                tableName: "Friendships",
+                recordId: friendship.UserId.GetHashCode() ^ friendship.FriendId.GetHashCode(),
+                action: isNew ? "INSERT" : "UPDATE",
+                oldValues: isNew ? null : new { oldStatus },
+                newValues: new { friendship.UserId, friendship.FriendId, friendship.Status },
+                changedByUserId: request.ActorUserId
+            );
+
+            _logger.LogInformation("User {UserId} blocked user {FriendId}", request.UserId, request.FriendId);
 
             var result = await _unitOfWork.Friendships.FindAsync(
                 f => f.UserId == friendship.UserId && f.FriendId == friendship.FriendId,

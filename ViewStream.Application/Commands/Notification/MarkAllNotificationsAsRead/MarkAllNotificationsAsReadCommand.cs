@@ -1,12 +1,11 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 
 namespace ViewStream.Application.Commands.Notification.MarkAllNotificationsAsRead
 {
-    public record MarkAllNotificationsAsReadCommand(long UserId) : IRequest<bool>;
-
+    public record MarkAllNotificationsAsReadCommand(long UserId, long ActorUserId)
+        : IRequest<bool>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

@@ -1,12 +1,12 @@
 ﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Commands.WatchHistory.UpsertWatchHistory
 {
-    public record UpsertWatchHistoryCommand(long ProfileId, CreateUpdateWatchHistoryDto Dto) : IRequest<WatchHistoryDto>;
+    public record UpsertWatchHistoryCommand(long ProfileId, CreateUpdateWatchHistoryDto Dto, long ActorUserId)
+        : IRequest<WatchHistoryDto>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }

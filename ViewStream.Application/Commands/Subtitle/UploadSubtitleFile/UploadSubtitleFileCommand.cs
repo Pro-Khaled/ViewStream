@@ -1,12 +1,12 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.Behaviors;
 
 namespace ViewStream.Application.Commands.Subtitle.UploadSubtitleFile
 {
-    public record UploadSubtitleFileCommand(long SubtitleId, IFormFile File, long UploadedByUserId) : IRequest<string>;
+    public record UploadSubtitleFileCommand(long SubtitleId, IFormFile File, long ActorUserId)
+        : IRequest<string>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }
