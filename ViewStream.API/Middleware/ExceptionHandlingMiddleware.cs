@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Interfaces.Services;
@@ -11,16 +9,16 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-    private readonly ISystemLogService _systemLog;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     public ExceptionHandlingMiddleware(
         RequestDelegate next,
         ILogger<ExceptionHandlingMiddleware> logger,
-        ISystemLogService systemLog)
+        IServiceScopeFactory scopeFactory)
     {
         _next = next;
         _logger = logger;
-        _systemLog = systemLog;
+        _scopeFactory = scopeFactory;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -34,7 +32,7 @@ public class ExceptionHandlingMiddleware
             // Log to developer console/file
             _logger.LogError(ex, "Unhandled exception at {Endpoint}", context.Request.Path);
 
-            // Fire-and-forget logging to ErrorLog table
+            // Fire-and-forget logging to ErrorLog table (via a fresh scope)
             _ = Task.Run(() => LogErrorToDatabaseAsync(context, ex));
 
             // Return standardized JSON error response
@@ -50,6 +48,10 @@ public class ExceptionHandlingMiddleware
     {
         try
         {
+            // Create a scope to resolve scoped services
+            using var scope = _scopeFactory.CreateScope();
+            var systemLog = scope.ServiceProvider.GetRequiredService<ISystemLogService>();
+
             var userId = context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var dto = new CreateErrorLogDto
             {
@@ -75,7 +77,7 @@ public class ExceptionHandlingMiddleware
                 }
             }
 
-            await _systemLog.LogErrorAsync(dto, CancellationToken.None);
+            await systemLog.LogErrorAsync(dto, CancellationToken.None);
         }
         catch (Exception logEx)
         {

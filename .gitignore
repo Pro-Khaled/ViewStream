@@ -364,3 +364,7 @@ FodyWeavers.xsd
 /ViewStream.API/ViewStream.API.csproj
 /ViewStream.Client/ViewStream.Client.csproj
 /ViewStream.Client/ViewStream.Client2.csproj
+/ViewStream.Web
+/ViewStream.sln
+/ViewStream.API/DependencyInjection.cs
+/ViewStream.Web/ViewStream.Web.csproj
