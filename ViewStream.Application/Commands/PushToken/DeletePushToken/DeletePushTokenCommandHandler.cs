@@ -1,35 +1,48 @@
 using MediatR;
-using ViewStream.Application.Common;
+using Microsoft.Extensions.Logging;
+using ViewStream.Application.Helpers;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.PushToken.DeletePushToken
 {
-//    public class DeletePushTokenCommandHandler : IRequestHandler<DeletePushTokenCommand, BaseResponse<bool>>
-//    {
-//        private readonly IUnitOfWork _unitOfWork;
-//
-//        public DeletePushTokenCommandHandler(IUnitOfWork unitOfWork)
-//        {
-//            _unitOfWork = unitOfWork;
-//        }
-//
-//        public async Task<BaseResponse<bool>> Handle(DeletePushTokenCommand request, CancellationToken cancellationToken)
-//        {
-//            try
-//            {
-//                var entity = await _unitOfWork.PushTokens.GetByIdAsync(request.Id);
-//                if (entity == null)
-//                    return BaseResponse<bool>.Fail("PushToken not found");
-//                
-//                _unitOfWork.PushTokens.Remove(entity);
-//                await _unitOfWork.SaveChangesAsync();
-//                
-//                return BaseResponse<bool>.Ok(true, "PushToken deleted successfully");
-//            }
-//            catch (Exception ex)
-//            {
-//                return BaseResponse<bool>.Fail($"Error deleting : {ex.Message}");
-//            }
-//        }
-//    }
+    using PushToken = ViewStream.Domain.Entities.PushToken;
+    public class DeletePushTokenCommandHandler : IRequestHandler<DeletePushTokenCommand, bool>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditContext _auditContext;
+        private readonly ILogger<DeletePushTokenCommandHandler> _logger;
+
+        public DeletePushTokenCommandHandler(
+            IUnitOfWork unitOfWork,
+            IAuditContext auditContext,
+            ILogger<DeletePushTokenCommandHandler> logger)
+        {
+            _unitOfWork = unitOfWork;
+            _auditContext = auditContext;
+            _logger = logger;
+        }
+
+        public async Task<bool> Handle(DeletePushTokenCommand request, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Deleting push token Id: {TokenId} for UserId: {UserId}", request.Id, request.UserId);
+
+            var token = await _unitOfWork.PushTokens.GetByIdAsync<long>(request.Id, cancellationToken);
+            if (token == null || token.UserId != request.UserId) return false;
+
+            _unitOfWork.PushTokens.Delete(token);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _auditContext.SetAudit<PushToken, object>(
+                tableName: "PushTokens",
+                recordId: request.Id,
+                action: "DELETE",
+                oldValues: new { token.DeviceId, token.Platform },
+                changedByUserId: request.UserId
+            );
+
+            _logger.LogInformation("Push token deleted. Id: {TokenId}", request.Id);
+            return true;
+        }
+    }
 }

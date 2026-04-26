@@ -1,10 +1,11 @@
 using MediatR;
-using ViewStream.Application.Common;
+using ViewStream.Application.Behaviors;
 
 namespace ViewStream.Application.Commands.PushToken.DeletePushToken
 {
-//    public class DeletePushTokenCommand : IRequest<BaseResponse<bool>>
-//    {
-//        public int Id { get; set; }
-//    }
+    public record DeletePushTokenCommand(long Id, long UserId, long ActorUserId)
+        : IRequest<bool>, IHasUserId
+    {
+        long? IHasUserId.UserId => ActorUserId;
+    }
 }
