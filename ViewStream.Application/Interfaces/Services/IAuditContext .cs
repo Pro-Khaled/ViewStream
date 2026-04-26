@@ -17,5 +17,6 @@ namespace ViewStream.Application.Interfaces.Services
 
         bool HasData { get; }
         void Clear();
+        //void SetAudit<T1, T2>(string tableName, long recordId, string action, T2 oldValues, T2 newValues, T2 changedByUserId);
     }
 }
