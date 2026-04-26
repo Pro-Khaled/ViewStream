@@ -1,11 +1,8 @@
 using MediatR;
-using ViewStream.Application.Common;
-//using ViewStream.Application.DTOs;
+using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Queries.DataDeletionRequest
 {
-//    public class GetDataDeletionRequestByIdQuery : IRequest<BaseResponse<DataDeletionRequestDto>>
-//    {
-//        public int Id { get; set; }
-//    }
+    public record GetDataDeletionRequestByIdQuery(long Id) : IRequest<DataDeletionRequestDto?>;
+
 }
