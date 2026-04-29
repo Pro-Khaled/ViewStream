@@ -1,64 +1,65 @@
 ﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ViewStream.Application.DTOs;
 using ViewStream.Application.Commands.AuditLog.CreateAuditLog;
 using ViewStream.Application.Commands.ErrorLog.CreateErrorLog;
 using ViewStream.Application.Commands.SearchLog.CreateSearchLog;
-using ViewStream.Application.DTOs;
 using ViewStream.Application.Interfaces.Services;
 
-namespace ViewStream.Infrastructure.Services
+namespace ViewStream.Infrastructure.Services;
+
+public class SystemLogService : ISystemLogService
 {
-    public class SystemLogService : ISystemLogService
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<SystemLogService> _logger;
+
+    public SystemLogService(IServiceScopeFactory scopeFactory, ILogger<SystemLogService> logger)
     {
-        private readonly IMediator _mediator;
-        private readonly ILogger<SystemLogService> _logger;
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+    }
 
-        public SystemLogService(IMediator mediator, ILogger<SystemLogService> logger)
+    public async Task LogAuditAsync(CreateAuditLogDto dto, CancellationToken cancellationToken = default)
+    {
+        try
         {
-            _mediator = mediator;
-            _logger = logger;
+            using var scope = _scopeFactory.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            await mediator.Send(new CreateAuditLogCommand(dto), cancellationToken);
         }
-
-        public async Task LogAuditAsync(CreateAuditLogDto dto, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            try
-            {
-                await _mediator.Send(new CreateAuditLogCommand(dto), cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                // Fallback to standard logging – do not rethrow
-                _logger.LogError(ex, "Failed to write audit log for table {TableName}, record {RecordId}", dto.TableName, dto.RecordId);
-            }
+            _logger.LogError(ex, "Failed to write audit log for table {TableName}, record {RecordId}",
+                dto.TableName, dto.RecordId);
         }
+    }
 
-        public async Task LogErrorAsync(CreateErrorLogDto dto, CancellationToken cancellationToken = default)
+    public async Task LogErrorAsync(CreateErrorLogDto dto, CancellationToken cancellationToken = default)
+    {
+        try
         {
-            try
-            {
-                await _mediator.Send(new CreateErrorLogCommand(dto), cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to write error log for endpoint {Endpoint}", dto.Endpoint);
-            }
+            using var scope = _scopeFactory.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            await mediator.Send(new CreateErrorLogCommand(dto), cancellationToken);
         }
-
-        public async Task LogSearchAsync(long? profileId, CreateSearchLogDto dto, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            try
-            {
-                await _mediator.Send(new CreateSearchLogCommand(profileId, dto), cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to write search log for query '{Query}'", dto.Query);
-            }
+            _logger.LogError(ex, "Failed to write error log for endpoint {Endpoint}", dto.Endpoint);
+        }
+    }
+
+    public async Task LogSearchAsync(long? profileId, CreateSearchLogDto dto, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            await mediator.Send(new CreateSearchLogCommand(profileId, dto), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to write search log for query '{Query}'", dto.Query);
         }
     }
 }

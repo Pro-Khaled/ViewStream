@@ -27,44 +27,20 @@ public class ErrorLogBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest,
         }
         catch (Exception ex)
         {
-            // Fire-and-forget logging (don't block the exception propagation)
-            _ = Task.Run(() => LogErrorAsync(request, ex), CancellationToken.None);
-
-            // Also log to standard ILogger for immediate visibility
-            _logger.LogError(ex, "Error handling {RequestType}", typeof(TRequest).Name);
-
-            // Re-throw to let the global exception middleware handle the HTTP response
-            throw;
-        }
-    }
-
-    private async Task LogErrorAsync(TRequest request, Exception ex)
-    {
-        try
-        {
-            // Build error message with custom data from ex.Data
+            // Build the error DTO (capture custom data and UserId if available)
             var errorMessage = ex.Message;
             var customData = new Dictionary<string, object>();
-
             foreach (DictionaryEntry entry in ex.Data)
             {
                 if (entry.Key is string key)
-                {
                     customData[key] = entry.Value ?? "null";
-                }
             }
-
             if (customData.Any())
-            {
                 errorMessage += $" | CustomData: {JsonSerializer.Serialize(customData)}";
-            }
 
-            // Attempt to extract UserId if the request implements IHasUserId (optional)
             long? userId = null;
             if (request is IHasUserId hasUserId)
-            {
                 userId = hasUserId.UserId;
-            }
 
             var dto = new CreateErrorLogDto
             {
@@ -75,16 +51,16 @@ public class ErrorLogBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest,
                 Endpoint = typeof(TRequest).Name
             };
 
-            await _systemLog.LogErrorAsync(dto, CancellationToken.None);
-        }
-        catch (Exception logEx)
-        {
-            _logger.LogError(logEx, "Failed to log error to database for {RequestType}", typeof(TRequest).Name);
+            // Fire‑and‑forget – the logging service opens its own safe scope
+            _ = _systemLog.LogErrorAsync(dto, CancellationToken.None);
+
+            _logger.LogError(ex, "Error handling {RequestType}", typeof(TRequest).Name);
+            throw; // re‑throw for the global exception middleware
         }
     }
 }
 
-// Optional interface for requests that carry a UserId
+// Optional interface – remains the same
 public interface IHasUserId
 {
     long? UserId { get; }
