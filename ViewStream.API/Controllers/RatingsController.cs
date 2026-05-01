@@ -27,69 +27,6 @@ public class RatingsController : ControllerBase
     #region Queries
 
     /// <summary>
-    /// Retrieves the rating summary for a specific show.
-    /// </summary>
-    /// <param name="showId">The ID of the show.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Average rating and total count.</returns>
-    /// <response code="200">Returns the rating summary.</response>
-    /// <response code="404">Show not found.</response>
-    [HttpGet("show/{showId:long}/summary")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(ShowRatingSummaryDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ShowRatingSummaryDto>> GetShowRatingSummary(
-        long showId,
-        CancellationToken cancellationToken)
-    {
-        var summary = await _mediator.Send(new GetShowRatingSummaryQuery(showId), cancellationToken);
-        if (summary == null) return NotFound();
-        return Ok(summary);
-    }
-
-    /// <summary>
-    /// Retrieves all ratings for a specific show.
-    /// </summary>
-    /// <param name="showId">The ID of the show.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of ratings.</returns>
-    /// <response code="200">Returns the list of ratings.</response>
-    [HttpGet("show/{showId:long}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(List<RatingListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<RatingListItemDto>>> GetRatingsByShow(
-        long showId,
-        CancellationToken cancellationToken)
-    {
-        var ratings = await _mediator.Send(new GetRatingsByShowQuery(showId), cancellationToken);
-        return Ok(ratings);
-    }
-
-    /// <summary>
-    /// Retrieves the current profile's rating for a specific show.
-    /// </summary>
-    /// <param name="showId">The ID of the show.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The user's rating if it exists.</returns>
-    /// <response code="200">Returns the rating.</response>
-    /// <response code="401">User is not authenticated.</response>
-    /// <response code="404">No rating found for this show.</response>
-    [HttpGet("show/{showId:long}/me")]
-    [Authorize]
-    [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<RatingDto>> GetMyRating(
-        long showId,
-        CancellationToken cancellationToken)
-    {
-        var profileId = GetCurrentProfileId();
-        var rating = await _mediator.Send(new GetUserRatingForShowQuery(profileId, showId), cancellationToken);
-        if (rating == null) return NotFound();
-        return Ok(rating);
-    }
-
-    /// <summary>
     /// Retrieves all ratings made by the current profile.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -138,23 +75,105 @@ public class RatingsController : ControllerBase
         return Ok(rating);
     }
 
-    /// <summary>
-    /// Deletes the current profile's rating for a show.
-    /// </summary>
+    #endregion
+}
+
+/// <summary>
+/// Nested controller for Ratings under a specific Show.
+/// GET    /api/Shows/{showId}/Ratings          → all ratings for the show
+/// GET    /api/Shows/{showId}/Ratings/summary   → average + total count
+/// GET    /api/Shows/{showId}/Ratings/me        → current profile's rating
+/// DELETE /api/Shows/{showId}/Ratings/me        → remove current profile's rating
+/// </summary>
+[ApiController]
+[Route("api/shows/{showId:long}/ratings")]
+[Produces("application/json")]
+public class ShowRatingsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public ShowRatingsController(IMediator mediator) => _mediator = mediator;
+
+    private long GetCurrentProfileId() =>
+        long.Parse(User.FindFirstValue("ProfileId") ?? "0");
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    #region Queries
+
+    /// <summary>Retrieves all ratings for a specific show.</summary>
+    /// <param name="showId">The ID of the show.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of ratings.</returns>
+    /// <response code="200">Returns the list of ratings.</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<RatingListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<RatingListItemDto>>> GetRatingsByShow(
+        long showId, CancellationToken cancellationToken)
+    {
+        var ratings = await _mediator.Send(new GetRatingsByShowQuery(showId), cancellationToken);
+        return Ok(ratings);
+    }
+
+    /// <summary>Retrieves the rating summary (average + count) for a specific show.</summary>
+    /// <param name="showId">The ID of the show.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Average rating and total count.</returns>
+    /// <response code="200">Returns the rating summary.</response>
+    /// <response code="404">Show not found.</response>
+    [HttpGet("summary")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ShowRatingSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ShowRatingSummaryDto>> GetShowRatingSummary(
+        long showId, CancellationToken cancellationToken)
+    {
+        var summary = await _mediator.Send(new GetShowRatingSummaryQuery(showId), cancellationToken);
+        if (summary == null) return NotFound();
+        return Ok(summary);
+    }
+
+    /// <summary>Retrieves the current profile's rating for a specific show.</summary>
+    /// <param name="showId">The ID of the show.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The user's rating if it exists.</returns>
+    /// <response code="200">Returns the rating.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="404">No rating found for this show.</response>
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<RatingDto>> GetMyRating(
+        long showId, CancellationToken cancellationToken)
+    {
+        var profileId = GetCurrentProfileId();
+        var rating = await _mediator.Send(new GetUserRatingForShowQuery(profileId, showId), cancellationToken);
+        if (rating == null) return NotFound();
+        return Ok(rating);
+    }
+
+    #endregion
+
+    #region Commands
+
+    /// <summary>Deletes the current profile's rating for this show.</summary>
     /// <param name="showId">The ID of the show.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>No content on success.</returns>
     /// <response code="204">Rating deleted successfully.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">Rating not found.</response>
-    [HttpDelete("show/{showId:long}")]
+    [HttpDelete("me")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> DeleteRating(
-        long showId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteMyRating(
+        long showId, CancellationToken cancellationToken)
     {
         var profileId = GetCurrentProfileId();
         var userId = GetCurrentUserId();

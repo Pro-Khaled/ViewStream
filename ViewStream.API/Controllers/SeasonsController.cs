@@ -26,24 +26,6 @@ public class SeasonsController : ControllerBase
     #region Queries
 
     /// <summary>
-    /// Retrieves all seasons belonging to a specific show.
-    /// </summary>
-    /// <param name="showId">The ID of the show.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of seasons for the show.</returns>
-    /// <response code="200">Returns the list of seasons.</response>
-    [HttpGet("show/{showId:long}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(List<SeasonListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<SeasonListItemDto>>> GetSeasonsByShow(
-        long showId,
-        CancellationToken cancellationToken)
-    {
-        var seasons = await _mediator.Send(new GetSeasonsByShowQuery(showId), cancellationToken);
-        return Ok(seasons);
-    }
-
-    /// <summary>
     /// Retrieves a single season by ID with full details.
     /// </summary>
     /// <param name="id">The ID of the season.</param>
@@ -176,4 +158,36 @@ public class SeasonsController : ControllerBase
     }
 
     #endregion
+}
+
+/// <summary>
+/// Nested controller: GET /api/Shows/{showId}/Seasons
+/// Returns all seasons belonging to a specific show.
+/// </summary>
+[ApiController]
+[Route("api/shows/{showId:long}/seasons")]
+[Produces("application/json")]
+public class ShowSeasonsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public ShowSeasonsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves all seasons belonging to a specific show.
+    /// </summary>
+    /// <param name="showId">The ID of the show.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of seasons for the show.</returns>
+    /// <response code="200">Returns the list of seasons.</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<SeasonListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<SeasonListItemDto>>> GetSeasonsByShow(
+        long showId,
+        CancellationToken cancellationToken)
+    {
+        var seasons = await _mediator.Send(new GetSeasonsByShowQuery(showId), cancellationToken);
+        return Ok(seasons);
+    }
 }

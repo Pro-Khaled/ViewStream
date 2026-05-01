@@ -68,77 +68,6 @@ public class CreditsController : ControllerBase
         return Ok(credit);
     }
 
-    /// <summary>
-    /// Retrieves all credits for a specific person.
-    /// </summary>
-    /// <param name="personId">The ID of the person.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of credits for the person.</returns>
-    /// <response code="200">Returns the list of credits.</response>
-    [HttpGet("by-person/{personId:long}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CreditListItemDto>>> GetByPerson(
-        long personId,
-        CancellationToken cancellationToken)
-    {
-        var credits = await _mediator.Send(new GetCreditsByPersonQuery(personId), cancellationToken);
-        return Ok(credits);
-    }
-
-    /// <summary>
-    /// Retrieves all credits for a specific show.
-    /// </summary>
-    /// <param name="showId">The ID of the show.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of credits for the show.</returns>
-    /// <response code="200">Returns the list of credits.</response>
-    [HttpGet("by-show/{showId:long}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CreditListItemDto>>> GetByShow(
-        long showId,
-        CancellationToken cancellationToken)
-    {
-        var credits = await _mediator.Send(new GetCreditsByShowQuery(showId), cancellationToken);
-        return Ok(credits);
-    }
-
-    /// <summary>
-    /// Retrieves all credits for a specific season.
-    /// </summary>
-    /// <param name="seasonId">The ID of the season.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of credits for the season.</returns>
-    /// <response code="200">Returns the list of credits.</response>
-    [HttpGet("by-season/{seasonId:long}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CreditListItemDto>>> GetBySeason(
-        long seasonId,
-        CancellationToken cancellationToken)
-    {
-        var credits = await _mediator.Send(new GetCreditsBySeasonQuery(seasonId), cancellationToken);
-        return Ok(credits);
-    }
-
-    /// <summary>
-    /// Retrieves all credits for a specific episode.
-    /// </summary>
-    /// <param name="episodeId">The ID of the episode.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of credits for the episode.</returns>
-    /// <response code="200">Returns the list of credits.</response>
-    [HttpGet("by-episode/{episodeId:long}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<CreditListItemDto>>> GetByEpisode(
-        long episodeId,
-        CancellationToken cancellationToken)
-    {
-        var credits = await _mediator.Send(new GetCreditsByEpisodeQuery(episodeId), cancellationToken);
-        return Ok(credits);
-    }
 
     #endregion
 
@@ -233,4 +162,128 @@ public class CreditsController : ControllerBase
     }
 
     #endregion
+}
+
+/// <summary>
+/// Nested controllers for Credits under their parent resources.
+/// GET /api/Shows/{showId}/Credits
+/// GET /api/Seasons/{seasonId}/Credits  
+/// GET /api/Episodes/{episodeId}/Credits
+/// GET /api/Persons/{personId}/Credits
+/// </summary>
+
+// ──────────────────────────────────────────────
+// GET /api/Shows/{showId}/Credits
+// ──────────────────────────────────────────────
+[ApiController]
+[Route("api/shows/{showId:long}/credits")]
+[Produces("application/json")]
+public class ShowCreditsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+    public ShowCreditsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves all credits for a specific show.
+    /// </summary>
+    /// <param name="showId">The ID of the show.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of credits for the show.</returns>
+    /// <response code="200">Returns the list of credits.</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<CreditListItemDto>>> GetByShow(
+        long showId, CancellationToken cancellationToken)
+    {
+        var credits = await _mediator.Send(new GetCreditsByShowQuery(showId), cancellationToken);
+        return Ok(credits);
+    }
+}
+
+// ──────────────────────────────────────────────
+// GET /api/Seasons/{seasonId}/Credits
+// ──────────────────────────────────────────────
+[ApiController]
+[Route("api/seasons/{seasonId:long}/credits")]
+[Produces("application/json")]
+public class SeasonCreditsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+    public SeasonCreditsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves all credits for a specific season.
+    /// </summary>
+    /// <param name="seasonId">The ID of the season.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of credits for the season.</returns>
+    /// <response code="200">Returns the list of credits.</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<CreditListItemDto>>> GetBySeason(
+        long seasonId, CancellationToken cancellationToken)
+    {
+        var credits = await _mediator.Send(new GetCreditsBySeasonQuery(seasonId), cancellationToken);
+        return Ok(credits);
+    }
+}
+
+// ──────────────────────────────────────────────
+// GET /api/Episodes/{episodeId}/Credits
+// ──────────────────────────────────────────────
+[ApiController]
+[Route("api/episodes/{episodeId:long}/credits")]
+[Produces("application/json")]
+public class EpisodeCreditsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+    public EpisodeCreditsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves all credits for a specific episode.
+    /// </summary>
+    /// <param name="episodeId">The ID of the episode.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of credits for the episode.</returns>
+    /// <response code="200">Returns the list of credits.</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<CreditListItemDto>>> GetByEpisode(
+        long episodeId, CancellationToken cancellationToken)
+    {
+        var credits = await _mediator.Send(new GetCreditsByEpisodeQuery(episodeId), cancellationToken);
+        return Ok(credits);
+    }
+}
+
+// ──────────────────────────────────────────────
+// GET /api/Persons/{personId}/Credits
+// ──────────────────────────────────────────────
+[ApiController]
+[Route("api/persons/{personId:long}/credits")]
+[Produces("application/json")]
+public class PersonCreditsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+    public PersonCreditsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves all credits for a specific person.
+    /// </summary>
+    /// <param name="personId">The ID of the person.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of credits for the person.</returns>
+    /// <response code="200">Returns the list of credits.</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<CreditListItemDto>>> GetByPerson(
+        long personId, CancellationToken cancellationToken)
+    {
+        var credits = await _mediator.Send(new GetCreditsByPersonQuery(personId), cancellationToken);
+        return Ok(credits);
+    }
 }

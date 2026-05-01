@@ -27,24 +27,6 @@ public class EpisodesController : ControllerBase
     #region Queries
 
     /// <summary>
-    /// Retrieves all episodes belonging to a specific season.
-    /// </summary>
-    /// <param name="seasonId">The ID of the season.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of episodes for the season.</returns>
-    /// <response code="200">Returns the list of episodes.</response>
-    [HttpGet("season/{seasonId:long}")]
-    [AllowAnonymous]
-    [ProducesResponseType(typeof(List<EpisodeListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<EpisodeListItemDto>>> GetEpisodesBySeason(
-        long seasonId,
-        CancellationToken cancellationToken)
-    {
-        var episodes = await _mediator.Send(new GetEpisodesBySeasonQuery(seasonId), cancellationToken);
-        return Ok(episodes);
-    }
-
-    /// <summary>
     /// Retrieves a single episode by ID with full details.
     /// </summary>
     /// <param name="id">The ID of the episode.</param>
@@ -209,4 +191,36 @@ public class EpisodesController : ControllerBase
     }
 
     #endregion
+}
+
+/// <summary>
+/// Nested controller: GET /api/Seasons/{seasonId}/Episodes
+/// Returns all episodes belonging to a specific season.
+/// </summary>
+[ApiController]
+[Route("api/seasons/{seasonId:long}/episodes")]
+[Produces("application/json")]
+public class SeasonEpisodesController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public SeasonEpisodesController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves all episodes belonging to a specific season.
+    /// </summary>
+    /// <param name="seasonId">The ID of the season.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of episodes for the season.</returns>
+    /// <response code="200">Returns the list of episodes.</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<EpisodeListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<EpisodeListItemDto>>> GetEpisodesBySeason(
+        long seasonId,
+        CancellationToken cancellationToken)
+    {
+        var episodes = await _mediator.Send(new GetEpisodesBySeasonQuery(seasonId), cancellationToken);
+        return Ok(episodes);
+    }
 }
