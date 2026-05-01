@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -40,10 +40,19 @@ namespace ViewStream.Application.Queries.Show
             if (request.ReleaseYear.HasValue)
                 query = query.Where(s => s.ReleaseYear == request.ReleaseYear.Value);
 
+            // Sorting
+            if (!string.IsNullOrWhiteSpace(request.OrderBy))
+            {
+                query = query.OrderByPropertyName(request.OrderBy, request.IsDescending);
+            }
+            else
+            {
+                query = query.OrderByDescending(s => s.AddedAt);
+            }
+
             var totalCount = await query.CountAsync(cancellationToken);
 
             var shows = await query
-                .OrderByDescending(s => s.AddedAt)
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Include(s => s.Genres)

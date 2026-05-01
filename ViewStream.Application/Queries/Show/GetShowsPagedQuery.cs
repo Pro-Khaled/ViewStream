@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +15,8 @@ namespace ViewStream.Application.Queries.Show
         string? SearchTerm = null,
         long? GenreId = null,
         int? ReleaseYear = null,
+        string? OrderBy = null,
+        bool IsDescending = false,
         bool IncludeDeleted = false
     ) : IRequest<PagedResult<ShowListItemDto>>;
 }

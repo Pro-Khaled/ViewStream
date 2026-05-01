@@ -47,9 +47,11 @@ public class ShowsController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] long? genreId = null,
         [FromQuery] int? year = null,
+        [FromQuery] string? orderBy = null,
+        [FromQuery] bool isDescending = false,
         CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetShowsPagedQuery(page, pageSize, search, genreId, year), cancellationToken);
+        var result = await _mediator.Send(new GetShowsPagedQuery(page, pageSize, search, genreId, year, orderBy, isDescending), cancellationToken);
         return Ok(result);
     }
 
