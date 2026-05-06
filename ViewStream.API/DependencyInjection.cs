@@ -46,6 +46,17 @@ namespace ViewStream.API
 
             services.AddScoped<IShowHubClient, ShowHubClient>();
 
+            // CORS
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowClient", policy =>
+                {
+                    policy.WithOrigins("https://localhost:7259") // Client URL 
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
 
 
             return services;
@@ -59,6 +70,19 @@ namespace ViewStream.API
 
             // Use JWT Authentication
             app.UseJwtAuthentication();
+
+            app.UseCors("AllowClient");
+
+
+            app.UseAuthentication();
+
+            app.UseAuthorization();
+
+
+
+            // Serve static files if client is in same project
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
             return app;
         }
