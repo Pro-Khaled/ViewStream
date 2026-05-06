@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViewStream</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-screen bg-vs-bg text-vs-text font-body">
+    <div id="app"></div>
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="modal-container"></div>
+    <div id="bg-particles" class="fixed inset-0 pointer-events-none z-0" aria-hidden="true"></div>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        vs: {
+                            bg: '#08080d', surface: '#111118', card: '#191924', elevated: '#222233',
+                            border: '#2a2a3e', muted: '#6b6b8a', text: '#e8e8f0', dim: '#9595ad',
+                            accent: '#e5a00d', accentHover: '#f5b731', accentDim: '#8b6914',
+                            success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#3b82f6',
+                            danger: '#dc2626'
+                        }
+                    },
+                    fontFamily: { display: ['Outfit'], body: ['DM Sans'] }
+                }
+            }
+        }
+    </script>
+
+    <!-- Core JS files (order matters) -->
+    <script src="js/config.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/components.js"></script>
+    <script>window.pages = window.pages || {};</script>
+
+    <!-- User-facing pages -->
+    <script src="js/pages/auth.js"></script>          <!-- login, register, confirmEmail -->
+    <script src="js/pages/home.js"></script>
+    <script src="js/pages/profile.js"></script>
+    <script src="js/pages/shows.js"></script>
+    <script src="js/pages/showDetail.js"></script>
+    <script src="js/pages/episode.js"></script>
+    <script src="js/pages/library.js"></script>
+    <script src="js/pages/history.js"></script>
+    <script src="js/pages/friends.js"></script>
+    <script src="js/pages/subscriptions.js"></script>
+    <script src="js/pages/notifications.js"></script>
+    <script src="js/pages/watchParties.js"></script>
+    <script src="js/pages/sharedLists.js"></script>
+    <script src="js/pages/genres.js"></script>
+    <script src="js/pages/persons.js"></script>
+    <script src="js/pages/personDetail.js"></script>
+    <script src="js/pages/notFound.js"></script>
+
+    <!-- Admin pages -->
+    <script src="js/pages/admin/dashboard.js"></script>
+    <script src="js/pages/admin/users.js"></script>
+    <script src="js/pages/admin/content.js"></script>
+    <script src="js/pages/admin/contentSub.js"></script>
+    <script src="js/pages/admin/moderation.js"></script>
+    <script src="js/pages/admin/audit.js"></script>
+    <script src="js/pages/admin/errors.js"></script>
+    <script src="js/pages/admin/deletion.js"></script>
+    <script src="js/pages/admin/promos.js"></script>
+    <script src="js/pages/admin/roles.js"></script>
+    <script src="js/pages/admin/notify.js"></script>
+    <script src="js/pages/admin/logs.js"></script>
+    <script src="js/pages/admin/reports.js"></script>
+    <script src="js/pages/admin/analytics.js"></script>
+    <script src="js/pages/admin/misc.js"></script>
+
+    <!-- Bootstrap -->
+    <script src="js/app.js"></script>
+</body>
+</html>

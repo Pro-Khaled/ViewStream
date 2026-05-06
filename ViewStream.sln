@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewStream.Infrastructure",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewStream.Shared", "ViewStream.Shared\ViewStream.Shared.csproj", "{C3B20F6C-8C53-4148-8663-20783F2F274C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewStream.ClientWeb", "ViewStream.ClientWeb\ViewStream.ClientWeb.csproj", "{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{C3B20F6C-8C53-4148-8663-20783F2F274C}.Release|x64.Build.0 = Release|Any CPU
 		{C3B20F6C-8C53-4148-8663-20783F2F274C}.Release|x86.ActiveCfg = Release|Any CPU
 		{C3B20F6C-8C53-4148-8663-20783F2F274C}.Release|x86.Build.0 = Release|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Debug|x64.Build.0 = Debug|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Debug|x86.Build.0 = Debug|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Release|x64.ActiveCfg = Release|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Release|x64.Build.0 = Release|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Release|x86.ActiveCfg = Release|Any CPU
+		{930DFF7B-D963-E2DD-E26E-1CEA58D74DCE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
