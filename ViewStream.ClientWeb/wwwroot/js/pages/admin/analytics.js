@@ -1,18 +1,21 @@
 ﻿pages.adminAnalytics = (() => {
-    // Tab management
     let activeTab = 'playback'; // or 'interactions'
-    // Playback Events state
     let playbackState = { page: 1, episodeId: '', profileId: '', data: null, loading: true };
-    // Interactions state
     let interactionState = { mode: 'profile', id: '', page: 1, data: null, summary: null, loading: false };
+
+    let playbackSortKey = 'createdAt';
+    let playbackSortDir = 'desc';
 
     async function loadPlayback() {
         playbackState.loading = true; render();
         try {
             playbackState.data = await api.get('/admin/playback/events', {
-                page: playbackState.page, pageSize: CONFIG.ANALYTICS_PAGE_SIZE,
+                page: playbackState.page,
+                pageSize: CONFIG.ANALYTICS_PAGE_SIZE,
                 episodeId: playbackState.episodeId || undefined,
                 profileId: playbackState.profileId || undefined,
+                orderBy: playbackSortKey,
+                isDescending: playbackSortDir === 'desc'
             });
         } catch (err) { toast.error('Failed to load playback events'); }
         playbackState.loading = false; render();
@@ -22,9 +25,15 @@
         interactionState.loading = true; render();
         try {
             if (interactionState.mode === 'profile' && interactionState.id) {
-                interactionState.data = await api.get(`/api/profiles/${interactionState.id}/interactions`, { page: interactionState.page, pageSize: CONFIG.ANALYTICS_PAGE_SIZE });
+                interactionState.data = await api.get(`/api/profiles/${interactionState.id}/interactions`, {
+                    page: interactionState.page,
+                    pageSize: CONFIG.ANALYTICS_PAGE_SIZE
+                });
             } else if (interactionState.mode === 'show' && interactionState.id) {
-                interactionState.data = await api.get(`/api/shows/${interactionState.id}/interactions`, { page: interactionState.page, pageSize: CONFIG.ANALYTICS_PAGE_SIZE });
+                interactionState.data = await api.get(`/api/shows/${interactionState.id}/interactions`, {
+                    page: interactionState.page,
+                    pageSize: CONFIG.ANALYTICS_PAGE_SIZE
+                });
             } else {
                 interactionState.data = null;
             }
@@ -59,21 +68,36 @@
         if (playbackState.loading) { h += Comp.pageLoader(); }
         else if (!playbackState.data?.items?.length) { h += Comp.emptyState('fa-play-circle', 'No playback events found.'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Episode</th><th>Profile</th><th>Type</th><th>Position</th><th>Quality</th><th>Device</th><th>Timestamp</th></tr></thead><tbody>`;
-            playbackState.data.items.forEach(e => {
-                h += `<tr>
-                    <td class="text-muted">${e.id}</td>
-                    <td>${e.episodeId || '—'}</td>
-                    <td>${toast.esc(e.profileName || '—')}</td>
-                    <td><span class="badge badge-info">${toast.esc(e.eventType || '—')}</span></td>
-                    <td class="text-muted">${e.positionSeconds != null ? Math.floor(e.positionSeconds) + 's' : '—'}</td>
-                    <td class="text-muted">${toast.esc(e.quality)}</td>
-                    <td class="text-muted text-sm">${toast.esc(e.deviceType)}</td>
-                    <td class="text-muted text-sm">${utils.formatDate(e.createdAt)}</td>
-                </tr>`;
-            });
-            h += `</tbody></table></div>`;
+            const rows = playbackState.data.items.map(e => `<tr>
+                <td class="text-muted">${e.id}</td>
+                <td>${e.episodeId || '—'}</td>
+                <td>${toast.esc(e.profileName || '—')}</td>
+                <td><span class="badge badge-info">${toast.esc(e.eventType || '—')}</span></td>
+                <td class="text-muted">${e.positionSeconds != null ? Math.floor(e.positionSeconds) + 's' : '—'}</td>
+                <td class="text-muted">${toast.esc(e.quality)}</td>
+                <td class="text-muted text-sm">${toast.esc(e.deviceType)}</td>
+                <td class="text-muted text-sm">${utils.formatDate(e.createdAt)}</td>
+            </tr>`).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'episodeId', label: 'Episode' },
+                    { key: 'profileName', label: 'Profile' },
+                    { key: 'eventType', label: 'Type' },
+                    { key: 'positionSeconds', label: 'Position' },
+                    { key: 'quality', label: 'Quality' },
+                    { key: 'deviceType', label: 'Device' },
+                    { key: 'createdAt', label: 'Timestamp' }
+                ],
+                rows,
+                'No playback events found.',
+                {
+                    tableId: 'playback-table',
+                    sortKey: playbackSortKey,
+                    sortDir: playbackSortDir,
+                    onSort: (key, dir) => { playbackSortKey = key; playbackSortDir = dir; loadPlayback(); }
+                }
+            );
             h += Comp.pagination(playbackState.data.pageNumber, playbackState.data.totalPages, p => { playbackState.page = p; loadPlayback(); });
         }
         return h;
@@ -124,15 +148,27 @@
 
         // Data table
         if (!interactionState.data?.items?.length) { h += Comp.emptyState('fa-chart-bar', 'No interactions found.'); return h; }
-        h += `<div class="card table-container"><table class="data-table"><thead><tr>
-            <th>ID</th><th>${isProfile ? 'Show' : 'Profile'}</th><th>Type</th><th>Timestamp</th></tr></thead><tbody>` +
-            interactionState.data.items.map(i => `<tr>
-                <td class="text-muted">${i.id}</td>
-                <td class="font-medium">${toast.esc(isProfile ? i.showTitle : i.profileName)}</td>
-                <td><span class="badge badge-info">${toast.esc(i.interactionType)}</span></td>
-                <td class="text-muted text-sm">${utils.formatDateShort(i.createdAt)}</td>
-            </tr>`).join('') +
-            `</tbody></table></div>`;
+        const rows = interactionState.data.items.map(i => `<tr>
+            <td class="text-muted">${i.id}</td>
+            <td class="font-medium">${toast.esc(isProfile ? i.showTitle : i.profileName)}</td>
+            <td><span class="badge badge-info">${toast.esc(i.interactionType)}</span></td>
+            <td class="text-muted text-sm">${utils.formatDateShort(i.createdAt)}</td>
+        </tr>`).join('');
+        h += Comp.dataTable(
+            [
+                { key: 'id', label: 'ID' },
+                { key: isProfile ? 'showTitle' : 'profileName', label: isProfile ? 'Show' : 'Profile' },
+                { key: 'interactionType', label: 'Type' },
+                { key: 'createdAt', label: 'Timestamp' }
+            ],
+            rows,
+            'No interactions found.',
+            {
+                tableId: 'interactions-table',
+                // No sorting for interactions because the data comes from a specific profile/show endpoint
+                // You can add local sorting later if needed
+            }
+        );
         h += Comp.pagination(interactionState.data.pageNumber, interactionState.data.totalPages, p => { interactionState.page = p; loadInteractions(); });
         return h;
     }

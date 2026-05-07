@@ -3,16 +3,35 @@
     let commentState = { page: 1, status: '', data: null, loading: true };
     let contentState = { page: 1, status: '', targetType: '', data: null, loading: true };
 
+    let commentSortKey = 'createdAt', commentSortDir = 'desc';
+    let contentSortKey = 'reportedAt', contentSortDir = 'desc';
+
     async function loadComments() {
         commentState.loading = true; render();
-        try { commentState.data = await api.get('/admin/reports/comments', { page: commentState.page, pageSize: CONFIG.PAGE_SIZE, status: commentState.status || undefined }); }
-        catch { toast.error('Failed to load comment reports'); }
+        try {
+            commentState.data = await api.get('/admin/reports/comments', {
+                page: commentState.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                status: commentState.status || undefined,
+                orderBy: commentSortKey,
+                isDescending: commentSortDir === 'desc'
+            });
+        } catch { toast.error('Failed to load comment reports'); }
         commentState.loading = false; render();
     }
+
     async function loadContent() {
         contentState.loading = true; render();
-        try { contentState.data = await api.get('/admin/reports/content', { page: contentState.page, pageSize: CONFIG.PAGE_SIZE, status: contentState.status || undefined, targetType: contentState.targetType || undefined }); }
-        catch { toast.error('Failed to load content reports'); }
+        try {
+            contentState.data = await api.get('/admin/reports/content', {
+                page: contentState.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                status: contentState.status || undefined,
+                targetType: contentState.targetType || undefined,
+                orderBy: contentSortKey,
+                isDescending: contentSortDir === 'desc'
+            });
+        } catch { toast.error('Failed to load content reports'); }
         contentState.loading = false; render();
     }
 
@@ -40,18 +59,34 @@
         if (commentState.loading) { h += Comp.pageLoader(); }
         else if (!commentState.data?.items?.length) { h += Comp.emptyState('fa-flag', 'No comment reports'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Comment</th><th>Reporter</th><th>Reason</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>` +
-                commentState.data.items.map(r => `<tr>
-                    <td class="text-muted">${r.id}</td>
-                    <td class="max-w-[200px]">${toast.esc(r.commentText)}</td>
-                    <td>${toast.esc(r.reportedByProfileName)}</td>
-                    <td>${toast.esc(r.reason)}</td>
-                    <td>${utils.statusBadge(r.status)}</td>
-                    <td class="text-muted text-sm">${utils.formatDateShort(r.createdAt)}</td>
-                    <td><button class="btn btn-ghost btn-sm view-cr-btn" data-id="${r.id}"><i class="fas fa-eye"></i></button></td>
-                </tr>`).join('') +
-                `</tbody></table></div>`;
+            const rows = commentState.data.items.map(r => `<tr>
+                <td class="text-muted">${r.id}</td>
+                <td class="max-w-[200px]">${toast.esc(r.commentText)}</td>
+                <td>${toast.esc(r.reportedByProfileName)}</td>
+                <td>${toast.esc(r.reason)}</td>
+                <td>${utils.statusBadge(r.status)}</td>
+                <td class="text-muted text-sm">${utils.formatDateShort(r.createdAt)}</td>
+                <td><button class="btn btn-ghost btn-sm view-cr-btn" data-id="${r.id}"><i class="fas fa-eye"></i></button></td>
+            </tr>`).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'commentText', label: 'Comment' },
+                    { key: 'reportedByProfileName', label: 'Reporter' },
+                    { key: 'reason', label: 'Reason' },
+                    { key: 'status', label: 'Status' },
+                    { key: 'createdAt', label: 'Date' },
+                    { key: '', label: '' }
+                ],
+                rows,
+                'No comment reports',
+                {
+                    tableId: 'comment-reports-table',
+                    sortKey: commentSortKey,
+                    sortDir: commentSortDir,
+                    onSort: (key, dir) => { commentSortKey = key; commentSortDir = dir; loadComments(); }
+                }
+            );
             h += Comp.pagination(commentState.data.pageNumber, commentState.data.totalPages, p => { commentState.page = p; loadComments(); });
         }
         return h;
@@ -67,19 +102,36 @@
         if (contentState.loading) { h += Comp.pageLoader(); }
         else if (!contentState.data?.items?.length) { h += Comp.emptyState('fa-flag', 'No content reports'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Type</th><th>Title</th><th>Reporter</th><th>Reason</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>` +
-                contentState.data.items.map(r => `<tr>
-                    <td class="text-muted">${r.id}</td>
-                    <td><span class="badge badge-info">${toast.esc(r.targetType)}</span></td>
-                    <td class="font-medium max-w-[200px]">${toast.esc(r.targetTitle)}</td>
-                    <td>${toast.esc(r.profileName)}</td>
-                    <td>${toast.esc(r.reason)}</td>
-                    <td>${utils.statusBadge(r.status)}</td>
-                    <td class="text-muted text-sm">${utils.formatDateShort(r.reportedAt)}</td>
-                    <td><button class="btn btn-ghost btn-sm view-ctr-btn" data-id="${r.id}"><i class="fas fa-eye"></i></button></td>
-                </tr>`).join('') +
-                `</tbody></table></div>`;
+            const rows = contentState.data.items.map(r => `<tr>
+                <td class="text-muted">${r.id}</td>
+                <td><span class="badge badge-info">${toast.esc(r.targetType)}</span></td>
+                <td class="font-medium max-w-[200px]">${toast.esc(r.targetTitle)}</td>
+                <td>${toast.esc(r.profileName)}</td>
+                <td>${toast.esc(r.reason)}</td>
+                <td>${utils.statusBadge(r.status)}</td>
+                <td class="text-muted text-sm">${utils.formatDateShort(r.reportedAt)}</td>
+                <td><button class="btn btn-ghost btn-sm view-ctr-btn" data-id="${r.id}"><i class="fas fa-eye"></i></button></td>
+            </tr>`).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'targetType', label: 'Type' },
+                    { key: 'targetTitle', label: 'Title' },
+                    { key: 'profileName', label: 'Reporter' },
+                    { key: 'reason', label: 'Reason' },
+                    { key: 'status', label: 'Status' },
+                    { key: 'reportedAt', label: 'Date' },
+                    { key: '', label: '' }
+                ],
+                rows,
+                'No content reports',
+                {
+                    tableId: 'content-reports-table',
+                    sortKey: contentSortKey,
+                    sortDir: contentSortDir,
+                    onSort: (key, dir) => { contentSortKey = key; contentSortDir = dir; loadContent(); }
+                }
+            );
             h += Comp.pagination(contentState.data.pageNumber, contentState.data.totalPages, p => { contentState.page = p; loadContent(); });
         }
         return h;
@@ -95,7 +147,7 @@
             });
         });
 
-        // Detail views
+        // Detail views delegated
         document.getElementById('admin-reports-content')?.addEventListener('click', e => {
             const btn = e.target.closest('button');
             if (!btn) return;
@@ -119,7 +171,8 @@
                     <select id="cr-status-select" class="input-field" style="width:auto">
                         ${['Pending', 'Reviewed', 'Dismissed', 'ActionTaken'].map(s => `<option value="${s}" ${r.status === s ? 'selected' : ''}>${s}</option>`).join('')}
                     </select>
-                    <button class="btn btn-primary" id="cr-update">Update Status</button>` }
+                    <button class="btn btn-primary" id="cr-update">Update Status</button>`
+                }
             );
             document.getElementById('cr-update')?.addEventListener('click', async () => {
                 await api.put(`/admin/reports/comments/${id}/status`, { status: document.getElementById('cr-status-select').value });
@@ -145,7 +198,8 @@
                     <select id="ctr-status-select" class="input-field" style="width:auto">
                         ${['Pending', 'Reviewed', 'Dismissed', 'ActionTaken'].map(s => `<option value="${s}" ${r.status === s ? 'selected' : ''}>${s}</option>`).join('')}
                     </select>
-                    <button class="btn btn-primary" id="ctr-update">Update Status</button>` }
+                    <button class="btn btn-primary" id="ctr-update">Update Status</button>`
+                }
             );
             document.getElementById('ctr-update')?.addEventListener('click', async () => {
                 await api.put(`/admin/reports/content/${id}/status`, { status: document.getElementById('ctr-status-select').value });

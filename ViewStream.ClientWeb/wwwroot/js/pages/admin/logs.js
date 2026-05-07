@@ -4,22 +4,50 @@
     let errorState = { page: 1, filters: {}, data: null, loading: true };
     let searchState = { page: 1, filters: {}, data: null, loading: true };
 
+    // Sorting states
+    let auditSortKey = 'changedAt', auditSortDir = 'desc';
+    let errorSortKey = 'occurredAt', errorSortDir = 'desc';
+    let searchSortKey = 'searchAt', searchSortDir = 'desc';
+
     async function loadAudit() {
         auditState.loading = true; render();
-        try { auditState.data = await api.get('/admin/audit/logs', { ...auditState.filters, page: auditState.page, pageSize: CONFIG.PAGE_SIZE }); }
-        catch { toast.error('Failed to load audit logs'); }
+        try {
+            auditState.data = await api.get('/admin/audit/logs', {
+                ...auditState.filters,
+                page: auditState.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                orderBy: auditSortKey,
+                isDescending: auditSortDir === 'desc'
+            });
+        } catch { toast.error('Failed to load audit logs'); }
         auditState.loading = false; render();
     }
+
     async function loadError() {
         errorState.loading = true; render();
-        try { errorState.data = await api.get('/admin/errors/logs', { ...errorState.filters, page: errorState.page, pageSize: CONFIG.PAGE_SIZE }); }
-        catch { toast.error('Failed to load error logs'); }
+        try {
+            errorState.data = await api.get('/admin/errors/logs', {
+                ...errorState.filters,
+                page: errorState.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                orderBy: errorSortKey,
+                isDescending: errorSortDir === 'desc'
+            });
+        } catch { toast.error('Failed to load error logs'); }
         errorState.loading = false; render();
     }
+
     async function loadSearch() {
         searchState.loading = true; render();
-        try { searchState.data = await api.get('/admin/search/logs', { ...searchState.filters, page: searchState.page, pageSize: CONFIG.PAGE_SIZE }); }
-        catch { toast.error('Failed to load search logs'); }
+        try {
+            searchState.data = await api.get('/admin/search/logs', {
+                ...searchState.filters,
+                page: searchState.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                orderBy: searchSortKey,
+                isDescending: searchSortDir === 'desc'
+            });
+        } catch { toast.error('Failed to load search logs'); }
         searchState.loading = false; render();
     }
 
@@ -47,20 +75,36 @@
             { key: 'recordId', label: 'Record ID', type: 'number' },
             { key: 'action', label: 'Action' }
         ], vals => { auditState.filters = vals; auditState.page = 1; loadAudit(); });
+
         if (auditState.loading) { h += Comp.pageLoader(); }
         else if (!auditState.data?.items?.length) { h += Comp.emptyState('fa-clipboard-list', 'No audit logs'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Table</th><th>Record</th><th>Action</th><th>Changed By</th><th>Timestamp</th></tr></thead><tbody>` +
-                auditState.data.items.map(l => `<tr>
-                    <td class="text-muted">${l.id}</td>
-                    <td class="font-mono text-sm">${toast.esc(l.tableName)}</td>
-                    <td class="text-muted">${l.recordId}</td>
-                    <td>${utils.statusBadge(l.action.toLowerCase())}</td>
-                    <td>${toast.esc(l.changedByUserName)}</td>
-                    <td class="text-muted text-sm">${utils.formatDateShort(l.changedAt)}</td>
-                </tr>`).join('') +
-                `</tbody></table></div>`;
+            const rows = auditState.data.items.map(l => `<tr>
+                <td class="text-muted">${l.id}</td>
+                <td class="font-mono text-sm">${toast.esc(l.tableName)}</td>
+                <td class="text-muted">${l.recordId}</td>
+                <td>${utils.statusBadge(l.action.toLowerCase())}</td>
+                <td>${toast.esc(l.changedByUserName)}</td>
+                <td class="text-muted text-sm">${utils.formatDateShort(l.changedAt)}</td>
+            </tr>`).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'tableName', label: 'Table' },
+                    { key: 'recordId', label: 'Record' },
+                    { key: 'action', label: 'Action' },
+                    { key: 'changedByUserName', label: 'Changed By' },
+                    { key: 'changedAt', label: 'Timestamp' }
+                ],
+                rows,
+                'No audit logs',
+                {
+                    tableId: 'audit-tab-table',
+                    sortKey: auditSortKey,
+                    sortDir: auditSortDir,
+                    onSort: (key, dir) => { auditSortKey = key; auditSortDir = dir; loadAudit(); }
+                }
+            );
             h += Comp.pagination(auditState.data.pageNumber, auditState.data.totalPages, p => { auditState.page = p; loadAudit(); });
         }
         return h;
@@ -72,19 +116,34 @@
             { key: 'errorCode', label: 'Error Code' },
             { key: 'endpoint', label: 'Endpoint' }
         ], vals => { errorState.filters = vals; errorState.page = 1; loadError(); });
+
         if (errorState.loading) { h += Comp.pageLoader(); }
         else if (!errorState.data?.items?.length) { h += Comp.emptyState('fa-bug', 'No errors'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Code</th><th>Message</th><th>Endpoint</th><th>Occurred</th></tr></thead><tbody>` +
-                errorState.data.items.map(e => `<tr>
-                    <td class="text-muted">${e.id}</td>
-                    <td><span class="badge badge-danger">${toast.esc(e.errorCode)}</span></td>
-                    <td class="max-w-[300px]">${toast.esc(e.errorMessage)}</td>
-                    <td class="font-mono text-sm text-muted">${toast.esc(utils.truncate(e.endpoint, 35))}</td>
-                    <td class="text-muted text-sm">${utils.formatDateShort(e.occurredAt)}</td>
-                </tr>`).join('') +
-                `</tbody></table></div>`;
+            const rows = errorState.data.items.map(e => `<tr>
+                <td class="text-muted">${e.id}</td>
+                <td><span class="badge badge-danger">${toast.esc(e.errorCode)}</span></td>
+                <td class="max-w-[300px]">${toast.esc(e.errorMessage)}</td>
+                <td class="font-mono text-sm text-muted">${toast.esc(utils.truncate(e.endpoint, 35))}</td>
+                <td class="text-muted text-sm">${utils.formatDateShort(e.occurredAt)}</td>
+            </tr>`).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'errorCode', label: 'Code' },
+                    { key: 'errorMessage', label: 'Message' },
+                    { key: 'endpoint', label: 'Endpoint' },
+                    { key: 'occurredAt', label: 'Occurred' }
+                ],
+                rows,
+                'No errors',
+                {
+                    tableId: 'error-tab-table',
+                    sortKey: errorSortKey,
+                    sortDir: errorSortDir,
+                    onSort: (key, dir) => { errorSortKey = key; errorSortDir = dir; loadError(); }
+                }
+            );
             h += Comp.pagination(errorState.data.pageNumber, errorState.data.totalPages, p => { errorState.page = p; loadError(); });
         }
         return h;
@@ -96,20 +155,36 @@
             { key: 'profileId', label: 'Profile ID', type: 'number' },
             { key: 'query', label: 'Search Term' }
         ], vals => { searchState.filters = vals; searchState.page = 1; loadSearch(); });
+
         if (searchState.loading) { h += Comp.pageLoader(); }
         else if (!searchState.data?.items?.length) { h += Comp.emptyState('fa-search', 'No search logs'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Profile</th><th>Query</th><th>Results</th><th>Clicked Show</th><th>Date</th></tr></thead><tbody>` +
-                searchState.data.items.map(l => `<tr>
-                    <td class="text-muted">${l.id}</td>
-                    <td>${toast.esc(l.profileName || '—')}</td>
-                    <td class="font-medium">${toast.esc(l.query)}</td>
-                    <td class="text-muted">${l.resultsCount ?? '—'}</td>
-                    <td>${toast.esc(l.clickedShowTitle || '—')}</td>
-                    <td class="text-muted text-sm">${utils.formatDateShort(l.searchAt)}</td>
-                </tr>`).join('') +
-                `</tbody></table></div>`;
+            const rows = searchState.data.items.map(l => `<tr>
+                <td class="text-muted">${l.id}</td>
+                <td>${toast.esc(l.profileName || '—')}</td>
+                <td class="font-medium">${toast.esc(l.query)}</td>
+                <td class="text-muted">${l.resultsCount ?? '—'}</td>
+                <td>${toast.esc(l.clickedShowTitle || '—')}</td>
+                <td class="text-muted text-sm">${utils.formatDateShort(l.searchAt)}</td>
+            </tr>`).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'profileName', label: 'Profile' },
+                    { key: 'query', label: 'Query' },
+                    { key: 'resultsCount', label: 'Results' },
+                    { key: 'clickedShowTitle', label: 'Clicked Show' },
+                    { key: 'searchAt', label: 'Date' }
+                ],
+                rows,
+                'No search logs',
+                {
+                    tableId: 'search-tab-table',
+                    sortKey: searchSortKey,
+                    sortDir: searchSortDir,
+                    onSort: (key, dir) => { searchSortKey = key; searchSortDir = dir; loadSearch(); }
+                }
+            );
             h += Comp.pagination(searchState.data.pageNumber, searchState.data.totalPages, p => { searchState.page = p; loadSearch(); });
         }
         return h;

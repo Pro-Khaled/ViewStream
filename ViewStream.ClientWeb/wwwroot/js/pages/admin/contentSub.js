@@ -1,5 +1,10 @@
 ﻿pages.adminContentSub = (() => {
-    let data, columns, type;
+    let data = [];
+    let columns = [];
+    let type = 'genres';
+
+    let sortKey = 'name';
+    let sortDir = 'asc';
 
     async function load(subType) {
         type = subType;
@@ -12,6 +17,19 @@
         } else {
             data = await api.get('/persons/all');
             columns = ['ID', 'Name', 'Credits', 'Awards', ''];
+        }
+
+        // Sort data locally (API returns full list, no pagination)
+        if (sortKey) {
+            data.sort((a, b) => {
+                let valA = a[sortKey];
+                let valB = b[sortKey];
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
         }
         render();
     }
@@ -30,29 +48,58 @@
             </button>
         </div>`;
 
-        h += `<div class="card table-container"><table class="data-table"><thead><tr>`;
-        columns.forEach(col => h += `<th>${col}</th>`);
-        h += `</tr></thead><tbody>`;
-
-        data.forEach(item => {
+        const rows = data.map(item => {
             const id = item.id || item.code; // countries have 'code'
             const name = item.name;
-            h += `<tr>
+            let row = `<tr>
                 <td class="text-muted">${id}</td>
                 <td class="font-medium text-vs-text">${toast.esc(name)}</td>`;
-            if (item.showCount !== undefined) h += `<td class="text-sm text-vs-dim">${item.showCount}</td>`;
-            if (item.category !== undefined) h += `<td class="text-xs text-vs-dim">${toast.esc(item.category || '—')}</td>`;
-            if (item.creditCount !== undefined) h += `<td class="text-sm text-vs-dim">${item.creditCount}</td>`;
-            if (item.awardCount !== undefined) h += `<td class="text-sm text-vs-dim">${item.awardCount}</td>`;
-            h += `<td>
+            if (item.showCount !== undefined) row += `<td class="text-sm text-vs-dim">${item.showCount}</td>`;
+            if (item.category !== undefined) row += `<td class="text-xs text-vs-dim">${toast.esc(item.category || '—')}</td>`;
+            if (item.creditCount !== undefined) row += `<td class="text-sm text-vs-dim">${item.creditCount}</td>`;
+            if (item.awardCount !== undefined) row += `<td class="text-sm text-vs-dim">${item.awardCount}</td>`;
+            row += `<td>
                 <button class="btn btn-ghost btn-sm"><i class="fas fa-edit"></i></button>
                 <button class="btn btn-ghost btn-sm text-vs-error"><i class="fas fa-trash"></i></button>
             </td></tr>`;
-        });
+            return row;
+        }).join('');
 
-        h += `</tbody></table></div>`;
+        // Build column definitions for dataTable
+        const colDefs = [];
+        colDefs.push({ key: 'id', label: 'ID' });
+        colDefs.push({ key: 'name', label: 'Name' });
+        if (type !== 'persons') colDefs.push({ key: 'showCount', label: 'Show Count' });
+        if (type === 'tags') colDefs.push({ key: 'category', label: 'Category' });
+        if (type === 'persons') {
+            colDefs.push({ key: 'creditCount', label: 'Credits' });
+            colDefs.push({ key: 'awardCount', label: 'Awards' });
+        }
+        colDefs.push({ key: '', label: '' }); // actions column
+
+        h += Comp.dataTable(
+            colDefs,
+            rows,
+            `No ${type} found`,
+            {
+                tableId: 'content-sub-table',
+                sortKey,
+                sortDir,
+                onSort: (key, dir) => {
+                    if (key) {
+                        sortKey = key;
+                        sortDir = dir;
+                        load(type); // re-sort by reloading
+                    }
+                }
+            }
+        );
+
         c.innerHTML = h;
+        bindEvents();
+    }
 
+    function bindEvents() {
         document.getElementById('add-item-btn')?.addEventListener('click', () => {
             const fields = type === 'genres'
                 ? [{ id: 'cg-name', label: 'Genre Name', type: 'text' }]
@@ -70,10 +117,10 @@
                  <button class="btn btn-primary" id="save-item-btn">Create</button>`);
 
             document.getElementById('save-item-btn')?.addEventListener('click', async () => {
-                // Create logic would go here – for now just toast
+                // Create logic here
                 toast.success('Created successfully');
                 modal.close();
-                load(type); // refresh
+                load(type);
             });
         });
     }

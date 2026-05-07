@@ -58,7 +58,7 @@
             adminNotify: ['SuperAdmin', 'Support'],
             adminDeletion: ['SuperAdmin', 'DataProtectionOfficer'],
             adminErrors: ['SuperAdmin', 'Support'],
-            adminAudit: ['SuperAdmin', 'Auditor'],
+            adminAudit: ['SuperAdmin', 'Auditor']
         };
 
         if (roleMap[pageKey] && !store.hasRole(...roleMap[pageKey])) {

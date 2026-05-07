@@ -2,14 +2,22 @@
     let activeTab = 'invoices'; // 'invoices', 'notifications', 'deletion'
     let invoiceState = { id: '', invoice: null, loading: false };
     let deletionState = { page: 1, data: null, loading: true };
+    let deletionSortKey = 'requestedAt';
+    let deletionSortDir = 'desc';
 
     async function loadInvoices() {
         // Not implemented as a list, just a lookup by ID
     }
     async function loadDeletions() {
         deletionState.loading = true; render();
-        try { deletionState.data = await api.get('/admin/data-deletion-requests', { page: deletionState.page, pageSize: CONFIG.PAGE_SIZE }); }
-        catch { toast.error('Failed to load deletion requests'); }
+        try {
+            deletionState.data = await api.get('/admin/data-deletion-requests', {
+                page: deletionState.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                orderBy: deletionSortKey,
+                isDescending: deletionSortDir === 'desc'
+            });
+        } catch { toast.error('Failed to load deletion requests'); }
         deletionState.loading = false; render();
     }
 
@@ -55,26 +63,40 @@
     }
 
     function renderDeletions() {
+        if (deletionState.loading) { return Comp.pageLoader(); }
+        if (!deletionState.data?.items?.length) { return Comp.emptyState('fa-trash-alt', 'No requests'); }
+
+        const rows = deletionState.data.items.map(r => `<tr>
+            <td class="text-muted">${r.id}</td>
+            <td class="font-medium">${toast.esc(r.userEmail)}</td>
+            <td>${utils.statusBadge(r.status)}</td>
+            <td class="text-muted text-sm">${utils.formatDateShort(r.requestedAt)}</td>
+            <td><button class="btn btn-ghost btn-sm view-dr-btn" data-id="${r.id}"><i class="fas fa-eye"></i></button></td>
+        </tr>`).join('');
+
         let h = Comp.pageHeader('Data Deletion Requests', 'Process user data deletion requests');
         h += Comp.filterBar([
             { key: 'status', label: 'Status', type: 'select', options: ['Pending', 'Processing', 'Completed', 'Rejected'] }
         ], vals => { deletionState.filters = vals; deletionState.page = 1; loadDeletions(); });
 
-        if (deletionState.loading) { h += Comp.pageLoader(); }
-        else if (!deletionState.data?.items?.length) { h += Comp.emptyState('fa-trash-alt', 'No requests'); }
-        else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Email</th><th>Status</th><th>Requested At</th><th></th></tr></thead><tbody>` +
-                deletionState.data.items.map(r => `<tr>
-                    <td class="text-muted">${r.id}</td>
-                    <td class="font-medium">${toast.esc(r.userEmail)}</td>
-                    <td>${utils.statusBadge(r.status)}</td>
-                    <td class="text-muted text-sm">${utils.formatDateShort(r.requestedAt)}</td>
-                    <td><button class="btn btn-ghost btn-sm view-dr-btn" data-id="${r.id}"><i class="fas fa-eye"></i></button></td>
-                </tr>`).join('') +
-                `</tbody></table></div>`;
-            h += Comp.pagination(deletionState.data.pageNumber, deletionState.data.totalPages, p => { deletionState.page = p; loadDeletions(); });
-        }
+        h += Comp.dataTable(
+            [
+                { key: 'id', label: 'ID' },
+                { key: 'userEmail', label: 'Email' },
+                { key: 'status', label: 'Status' },
+                { key: 'requestedAt', label: 'Requested At' },
+                { key: '', label: '' }
+            ],
+            rows,
+            'No requests',
+            {
+                tableId: 'misc-deletion-table',
+                sortKey: deletionSortKey,
+                sortDir: deletionSortDir,
+                onSort: (key, dir) => { if (key) { deletionSortKey = key; deletionSortDir = dir; loadDeletions(); } }
+            }
+        );
+        h += Comp.pagination(deletionState.data.pageNumber, deletionState.data.totalPages, p => { deletionState.page = p; loadDeletions(); });
         return h;
     }
 

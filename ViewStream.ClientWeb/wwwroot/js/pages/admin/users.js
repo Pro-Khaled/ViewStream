@@ -1,12 +1,22 @@
 ﻿pages.adminUsers = (() => {
     let state = { page: 1, search: '', data: null, loading: true };
+    let sortKey = 'id';
+    let sortDir = 'asc';
+
     async function loadData() {
         state.loading = true; render();
         try {
-            state.data = await api.get('/admin/users', { page: state.page, pageSize: CONFIG.PAGE_SIZE, search: state.search || undefined });
+            state.data = await api.get('/admin/users', {
+                page: state.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                search: state.search || undefined,
+                orderBy: sortKey,
+                isDescending: sortDir === 'desc'
+            });
         } catch (err) { toast.error('Failed to load users: ' + err.message); state.data = null; }
         state.loading = false; render();
     }
+
     function render() {
         const c = document.getElementById('admin-users-content');
         if (!c) return;
@@ -15,11 +25,9 @@
         if (state.loading) { h += Comp.pageLoader(); }
         else if (!state.data?.items?.length) { h += Comp.emptyState('fa-users', 'No users found'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Name</th><th>Email</th><th>Roles</th><th>Status</th><th>Blocked</th><th>Created</th><th></th></tr></thead><tbody>`;
-            state.data.items.forEach(u => {
+            const rows = state.data.items.map(u => {
                 const roles = (u.roles || []).slice(0, 2).map(r => utils.roleBadge(r)).join(' ');
-                h += `<tr data-user-id="${u.id}">
+                return `<tr data-user-id="${u.id}">
                     <td class="text-muted">${u.id}</td>
                     <td class="font-medium">${toast.esc(u.fullName || '—')}</td>
                     <td>${toast.esc(u.email)}</td>
@@ -29,13 +37,33 @@
                     <td class="text-muted text-sm">${utils.formatDateShort(u.createdAt)}</td>
                     <td><button class="btn btn-ghost btn-sm view-user-btn" data-id="${u.id}"><i class="fas fa-eye"></i></button></td>
                 </tr>`;
-            });
-            h += `</tbody></table></div>`;
+            }).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'fullName', label: 'Name' },
+                    { key: 'email', label: 'Email' },
+                    { key: '', label: 'Roles' },
+                    { key: 'isActive', label: 'Status' },
+                    { key: '', label: 'Blocked' },
+                    { key: 'createdAt', label: 'Created' },
+                    { key: '', label: '' }
+                ],
+                rows,
+                'No users found',
+                {
+                    tableId: 'users-table',
+                    sortKey,
+                    sortDir,
+                    onSort: (key, dir) => { if (key) { sortKey = key; sortDir = dir; loadData(); } }
+                }
+            );
             h += Comp.pagination(state.data.pageNumber, state.data.totalPages, p => { state.page = p; loadData(); });
         }
         c.innerHTML = h;
         bindEvents();
     }
+
     function bindEvents() {
         document.getElementById('users-refresh')?.addEventListener('click', loadData);
         document.getElementById('users-search-btn')?.addEventListener('click', () => {

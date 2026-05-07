@@ -1,12 +1,22 @@
 ﻿pages.adminContent = (() => {
     let state = { page: 1, data: null, loading: true };
+    let sortKey = 'id';
+    let sortDir = 'asc';
+
     async function loadData() {
         state.loading = true; render();
         try {
-            state.data = await api.get('/shows', { page: state.page, pageSize: CONFIG.PAGE_SIZE, includeDeleted: true });
+            state.data = await api.get('/shows', {
+                page: state.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                includeDeleted: true,
+                orderBy: sortKey,
+                isDescending: sortDir === 'desc'
+            });
         } catch (err) { toast.error('Failed to load shows'); state.data = null; }
         state.loading = false; render();
     }
+
     function render() {
         const c = document.getElementById('admin-content-management-content');
         if (!c) return;
@@ -19,26 +29,58 @@
         if (state.loading) { h += Comp.pageLoader(); }
         else if (!state.data?.items?.length) { h += Comp.emptyState('fa-film', 'No shows'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Poster</th><th>Title</th><th>Year</th><th>Rating</th><th>Genres</th><th></th></tr></thead><tbody>`;
-            state.data.items.forEach(s => {
-                h += `<tr>
+            const rows = state.data.items.map(s => {
+                const relationBtns = [
+                    `<a href="#/seasons?showId=${s.id}" class="btn btn-sm btn-outline-theme me-1" style="font-size:0.7rem; padding:0.25rem 0.6rem;" title="Seasons"><i class="fas fa-layer-group"></i></a>`,
+                    `<a href="#/credits?showId=${s.id}" class="btn btn-sm btn-outline-theme me-1" title="Credits"><i class="fas fa-user-tie"></i></a>`,
+                    `<a href="#/showawards?showId=${s.id}" class="btn btn-sm btn-outline-theme me-1" title="Awards"><i class="fas fa-trophy"></i></a>`,
+                    `<a href="#/showavailabilities?showId=${s.id}" class="btn btn-sm btn-outline-theme" title="Availability"><i class="fas fa-globe"></i></a>`
+                ].join('');
+                return `<tr>
                     <td class="text-muted">${s.id}</td>
-                    <td><img src="${toast.esc(s.posterUrl)}" class="w-10 h-14 rounded object-cover"></td>
                     <td class="font-medium">${toast.esc(s.title)}</td>
                     <td class="text-muted">${s.releaseYear || '—'}</td>
                     <td class="text-vs-accent">${s.imdbRating || '—'}</td>
                     <td class="text-xs text-vs-dim">${(s.genres || []).slice(0, 2).join(', ')}</td>
-                    <td><button class="btn btn-ghost btn-sm edit-show-btn" data-id="${s.id}"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-ghost btn-sm text-vs-error delete-show-btn" data-id="${s.id}"><i class="fas fa-trash"></i></button></td>
+                    <td nowrap>${relationBtns}</td>
+                    <td>
+                        <button class="btn btn-ghost btn-sm edit-show-btn" data-id="${s.id}"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-ghost btn-sm text-vs-error delete-show-btn" data-id="${s.id}"><i class="fas fa-trash"></i></button>
+                    </td>
                 </tr>`;
-            });
-            h += `</tbody></table></div>`;
+            }).join('');
+
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'title', label: 'Title' },
+                    { key: 'releaseYear', label: 'Year' },
+                    { key: 'imdbRating', label: 'Rating' },
+                    { key: '', label: 'Genres' },       // non-sortable
+                    { key: '', label: 'Relations' },    // non-sortable
+                    { key: '', label: 'Actions' }       // non-sortable
+                ],
+                rows,
+                'No shows found',
+                {
+                    tableId: 'shows-table',
+                    sortKey,
+                    sortDir,
+                    onSort: (key, dir) => {
+                        if (key) {
+                            sortKey = key;
+                            sortDir = dir;
+                            loadData();
+                        }
+                    }
+                }
+            );
             h += Comp.pagination(state.data.pageNumber, state.data.totalPages, p => { state.page = p; loadData(); });
         }
         c.innerHTML = h;
         bindEvents();
     }
+
     function bindEvents() {
         document.getElementById('create-show-btn')?.addEventListener('click', () => {
             modal.open('Create Show', `<div class="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
@@ -86,6 +128,7 @@
             }
         }));
     }
+
     return {
         render() { return '<div id="admin-content-management-content">' + Comp.pageLoader() + '</div>'; },
         init() { loadData(); }

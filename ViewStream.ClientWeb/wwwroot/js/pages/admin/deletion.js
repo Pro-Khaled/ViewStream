@@ -1,12 +1,21 @@
 ﻿pages.adminDeletion = (() => {
     let state = { page: 1, data: null, loading: true };
+    let sortKey = 'requestedAt';
+    let sortDir = 'desc';
+
     async function loadData() {
         state.loading = true; render();
         try {
-            state.data = await api.get('/admin/data-deletion-requests', { page: state.page, pageSize: CONFIG.PAGE_SIZE });
+            state.data = await api.get('/admin/data-deletion-requests', {
+                page: state.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                orderBy: sortKey,
+                isDescending: sortDir === 'desc'
+            });
         } catch (err) { toast.error('Failed to load deletion requests'); }
         state.loading = false; render();
     }
+
     function render() {
         const c = document.getElementById('admin-deletion-content');
         if (!c) return;
@@ -14,24 +23,40 @@
         if (state.loading) { h += Comp.pageLoader(); }
         else if (!state.data?.items?.length) { h += Comp.emptyState('fa-trash-alt', 'No requests'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>ID</th><th>Email</th><th>Status</th><th>Requested At</th><th></th></tr></thead><tbody>` +
-                state.data.items.map(r => `<tr>
-                    <td class="text-muted">${r.id}</td>
-                    <td class="font-medium">${toast.esc(r.userEmail)}</td>
-                    <td>${utils.statusBadge(r.status)}</td>
-                    <td class="text-muted text-sm">${utils.formatDateShort(r.requestedAt)}</td>
-                    <td><button class="btn btn-ghost btn-sm view-dr-btn" data-id="${r.id}"><i class="fas fa-eye"></i></button></td>
-                </tr>`).join('') +
-                `</tbody></table></div>`;
+            const rows = state.data.items.map(r => `<tr>
+                <td class="text-muted">${r.id}</td>
+                <td class="font-medium">${toast.esc(r.userEmail)}</td>
+                <td>${utils.statusBadge(r.status)}</td>
+                <td class="text-muted text-sm">${utils.formatDateShort(r.requestedAt)}</td>
+                <td><button class="btn btn-ghost btn-sm view-dr-btn" data-id="${r.id}"><i class="fas fa-eye"></i></button></td>
+            </tr>`).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'id', label: 'ID' },
+                    { key: 'userEmail', label: 'Email' },
+                    { key: 'status', label: 'Status' },
+                    { key: 'requestedAt', label: 'Requested At' },
+                    { key: '', label: '' }
+                ],
+                rows,
+                'No requests',
+                {
+                    tableId: 'deletion-table',
+                    sortKey,
+                    sortDir,
+                    onSort: (key, dir) => { if (key) { sortKey = key; sortDir = dir; loadData(); } }
+                }
+            );
             h += Comp.pagination(state.data.pageNumber, state.data.totalPages, p => { state.page = p; loadData(); });
         }
         c.innerHTML = h;
         bindEvents();
     }
+
     function bindEvents() {
         document.querySelectorAll('.view-dr-btn').forEach(b => b.addEventListener('click', () => showDetail(parseInt(b.dataset.id))));
     }
+
     async function showDetail(id) {
         modal.open('Deletion Request #' + id, Comp.pageLoader());
         try {
@@ -60,6 +85,7 @@
             });
         } catch (err) { toast.error('Failed: ' + err.message); modal.close(); }
     }
+
     return {
         render() { return '<div id="admin-deletion-content">' + Comp.pageLoader() + '</div>'; },
         init() { loadData(); }

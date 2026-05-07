@@ -78,9 +78,57 @@
         }
         return `<div class="star-rate flex items-center gap-1">${stars}</div>`;
     }
-    function dataTable(headers, rows, emptyMsg = 'No data found') {
-        if (!rows?.length) return `<div class="empty-state"><i class="fas fa-inbox text-3xl mb-3 block"></i><p>${emptyMsg}</p></div>`;
-        return `<div class="overflow-x-auto rounded-xl border border-vs-border"><table class="w-full text-sm"><thead><tr class="bg-vs-card border-b border-vs-border">${headers.map(h => `<th class="px-4 py-3 text-left font-semibold text-vs-dim whitespace-nowrap">${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+    function dataTable(headers, rows, emptyMsg = 'No data found', options = {}) {
+        if (!rows?.length) {
+            return `<div class="text-center py-16 text-vs-muted"><i class="fas fa-inbox text-3xl mb-3 block"></i><p>${emptyMsg}</p></div>`;
+        }
+
+        const { tableId, sortKey, sortDir, onSort } = options;
+
+        const headersHtml = headers.map(col => {
+            const key = col.key || '';
+            let icon = '';
+            if (key && sortKey === key) {
+                icon = sortDir === 'asc'
+                    ? '<i class="fas fa-sort-up ml-1"></i>'
+                    : '<i class="fas fa-sort-down ml-1"></i>';
+            } else if (key) {
+                icon = '<i class="fas fa-sort ml-1 opacity-25"></i>';
+            }
+            const sortAttr = key ? `data-sort="${key}"` : '';
+            const cursorClass = key ? 'cursor-pointer select-none' : '';
+            return `<th class="px-4 py-3 text-left font-semibold text-vs-dim whitespace-nowrap ${cursorClass}" ${sortAttr}>
+            <div class="flex items-center justify-between">${col.label}${icon}</div>
+        </th>`;
+        }).join('');
+
+        const html = `
+        <div class="overflow-x-auto rounded-xl border border-vs-border" id="${tableId || ''}">
+            <table class="w-full text-sm">
+                <thead><tr class="bg-vs-card border-b border-vs-border">${headersHtml}</tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`;
+
+        // Attach click events after DOM insertion
+        setTimeout(() => {
+            if (tableId && onSort) {
+                const tableEl = document.getElementById(tableId);
+                if (tableEl) {
+                    tableEl.querySelectorAll('th[data-sort]').forEach(th => {
+                        th.addEventListener('click', () => {
+                            const key = th.dataset.sort;
+                            const newDir = (sortKey === key && sortDir === 'asc') ? 'desc' : 'asc';
+                            onSort(key, newDir);
+                        });
+                    });
+                }
+            }
+        }, 0);
+
+        return html;
     }
+
+
     return { pageLoader, emptyState, statCard, pagination, pageHeader, filterBar, detailRow, showCard, showRow, skeletonCards, skeletonRows, starRating, dataTable };
 })();

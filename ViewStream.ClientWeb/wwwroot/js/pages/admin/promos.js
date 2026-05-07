@@ -1,12 +1,21 @@
 ﻿pages.adminPromos = (() => {
     let state = { page: 1, data: null, loading: true };
+    let sortKey = 'code';
+    let sortDir = 'asc';
+
     async function loadData() {
         state.loading = true; render();
         try {
-            state.data = await api.get('/promocodes', { page: state.page, pageSize: CONFIG.PAGE_SIZE });
+            state.data = await api.get('/promocodes', {
+                page: state.page,
+                pageSize: CONFIG.PAGE_SIZE,
+                orderBy: sortKey,
+                isDescending: sortDir === 'desc'
+            });
         } catch (err) { toast.error('Failed to load promos'); }
         state.loading = false; render();
     }
+
     function render() {
         const c = document.getElementById('admin-promos-content');
         if (!c) return;
@@ -14,24 +23,41 @@
         if (state.loading) { h += Comp.pageLoader(); }
         else if (!state.data?.items?.length) { h += Comp.emptyState('fa-tag', 'No promo codes'); }
         else {
-            h += `<div class="card table-container"><table class="data-table"><thead><tr>
-                <th>Code</th><th>Discount</th><th>Valid Until</th><th>Used</th><th>Remaining</th><th>Status</th><th></th></tr></thead><tbody>` +
-                state.data.items.map(p => `<tr>
-                    <td class="font-mono font-bold text-vs-accent">${toast.esc(p.code)}</td>
-                    <td class="text-sm text-vs-text">${p.discountPercent ? p.discountPercent + '%' : '$' + p.discountAmount}</td>
-                    <td class="text-sm text-vs-dim">${utils.formatDateShort(p.validUntil)}</td>
-                    <td class="text-sm text-vs-dim">${p.usedCount}/${p.maxUses || '∞'}</td>
-                    <td class="text-sm text-vs-dim">${p.remainingUses}</td>
-                    <td>${p.isValid ? '<span class="badge badge-success">Valid</span>' : '<span class="badge badge-danger">Expired</span>'}</td>
-                    <td><button class="btn btn-ghost btn-sm edit-promo-btn" data-id="${p.id}"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-ghost btn-sm text-vs-error delete-promo-btn" data-id="${p.id}"><i class="fas fa-trash"></i></button></td>
-                </tr>`).join('') +
-                `</tbody></table></div>`;
+            const rows = state.data.items.map(p => `<tr>
+                <td class="font-mono font-bold text-vs-accent">${toast.esc(p.code)}</td>
+                <td class="text-sm text-vs-text">${p.discountPercent ? p.discountPercent + '%' : '$' + p.discountAmount}</td>
+                <td class="text-sm text-vs-dim">${utils.formatDateShort(p.validUntil)}</td>
+                <td class="text-sm text-vs-dim">${p.usedCount}/${p.maxUses || '?'}</td>
+                <td class="text-sm text-vs-dim">${p.remainingUses}</td>
+                <td>${p.isValid ? '<span class="badge badge-success">Valid</span>' : '<span class="badge badge-danger">Expired</span>'}</td>
+                <td><button class="btn btn-ghost btn-sm edit-promo-btn" data-id="${p.id}"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-ghost btn-sm text-vs-error delete-promo-btn" data-id="${p.id}"><i class="fas fa-trash"></i></button></td>
+            </tr>`).join('');
+            h += Comp.dataTable(
+                [
+                    { key: 'code', label: 'Code' },
+                    { key: 'discountPercent', label: 'Discount' },
+                    { key: 'validUntil', label: 'Valid Until' },
+                    { key: 'usedCount', label: 'Used' },
+                    { key: '', label: 'Remaining' }, // remaining uses is computed – non-sortable
+                    { key: 'isValid', label: 'Status' },
+                    { key: '', label: '' }
+                ],
+                rows,
+                'No promo codes',
+                {
+                    tableId: 'promos-table',
+                    sortKey,
+                    sortDir,
+                    onSort: (key, dir) => { if (key) { sortKey = key; sortDir = dir; loadData(); } }
+                }
+            );
             h += Comp.pagination(state.data.pageNumber, state.data.totalPages, p => { state.page = p; loadData(); });
         }
         c.innerHTML = h;
         bindEvents();
     }
+
     function bindEvents() {
         document.getElementById('create-promo-btn')?.addEventListener('click', () => {
             modal.open('Create Promo Code', `<div class="space-y-4">
@@ -92,6 +118,7 @@
             }
         }));
     }
+
     return {
         render() { return '<div id="admin-promos-content">' + Comp.pageLoader() + '</div>'; },
         init() { loadData(); }
