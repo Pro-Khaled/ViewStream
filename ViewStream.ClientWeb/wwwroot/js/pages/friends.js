@@ -1,4 +1,4 @@
-﻿pages.friends = (() => {
+pages.friends = (() => {
     let state = { friends: [], pending: [], loading: true };
 
     async function load() {
@@ -58,10 +58,10 @@
             input.addEventListener('input', async () => {
                 const q = input.value.trim().toLowerCase();
                 const resContainer = document.getElementById('friend-search-results');
-                if (!q) { resContainer.innerHTML = ''; return; }
+                if (!q || q.length < 2) { resContainer.innerHTML = ''; return; }
                 try {
-                    const { items } = await api.get('/admin/users', { search: q, pageSize: 10 });
-                    resContainer.innerHTML = items.length ? items.map(u => `<div class="flex items-center justify-between p-3 rounded-lg bg-vs-card">
+                    const users = await api.get('/users/search', { q, limit: 10 });
+                    resContainer.innerHTML = users.length ? users.map(u => `<div class="flex items-center justify-between p-3 rounded-lg bg-vs-card">
                         <div><p class="text-sm text-vs-text">${toast.esc(u.fullName || u.email)}</p><p class="text-xs text-vs-muted">${toast.esc(u.email)}</p></div>
                         <button class="px-3 py-1 bg-vs-accent/15 text-vs-accent text-xs font-medium rounded-lg hover:bg-vs-accent/25" onclick="pages.friends.sendRequest(${u.id})">Send Request</button>
                     </div>`).join('') : '<p class="text-sm text-vs-muted">No users found</p>';

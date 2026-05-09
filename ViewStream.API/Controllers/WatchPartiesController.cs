@@ -1,10 +1,11 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.WatchParty.CreateWatchParty;
 using ViewStream.Application.Commands.WatchParty.DeleteWatchParty;
 using ViewStream.Application.Commands.WatchParty.UpdateWatchParty;
+using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchParty;
 
@@ -26,6 +27,26 @@ public class WatchPartiesController : ControllerBase
         long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
     #region Queries
+
+    /// <summary>
+    /// Retrieves a paginated list of active watch parties.
+    /// </summary>
+    /// <param name="page">Page number (1-indexed).</param>
+    /// <param name="pageSize">Items per page.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paged list of active watch parties.</returns>
+    /// <response code="200">Returns the paged list.</response>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PagedResult<WatchPartyListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<WatchPartyListItemDto>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(new GetActiveWatchPartiesPagedQuery(page, pageSize), cancellationToken);
+        return Ok(result);
+    }
 
     /// <summary>
     /// Retrieves a watch party by its unique ID.

@@ -1,10 +1,12 @@
-﻿(function () {
+(function () {
     // -------- Page mapping (pageKey -> pages.xxx) --------
     const pageMap = {
         home: pages.home,
         login: pages.login,
         register: pages.register,
         confirmEmail: pages.confirmEmail,
+        forgotPassword: pages.forgotPassword,
+        resetPassword: pages.resetPassword,
         profile: pages.profile,
         shows: pages.shows,
         showDetail: pages.showDetail,
@@ -16,6 +18,7 @@
         notifications: pages.notifications,
         watchParties: pages.watchParties,
         sharedLists: pages.sharedLists,
+        downloads: pages.downloads,
         genres: pages.genres,
         persons: pages.persons,
         personDetail: pages.personDetail,
@@ -48,6 +51,7 @@
                 { icon: 'fa-film', label: 'Shows', route: '/shows', roles: [] },
                 { icon: 'fa-bookmark', label: 'My Library', route: '/library', roles: [] },
                 { icon: 'fa-history', label: 'Watch History', route: '/history', roles: [] },
+                { icon: 'fa-download', label: 'Downloads', route: '/downloads', roles: [] },
                 { icon: 'fa-users', label: 'Friends', route: '/friends', roles: [] },
             ]
         },
@@ -60,9 +64,9 @@
                 { icon: 'fa-shield-alt', label: 'Moderation', route: '/admin/moderation', roles: ['SuperAdmin', 'Moderator'] },
                 { icon: 'fa-clipboard-list', label: 'Logs', route: '/admin/audit', roles: ['SuperAdmin', 'Auditor', 'Support', 'Analytics'] },
                 { icon: 'fa-chart-bar', label: 'Analytics', route: '/admin/playback/events', roles: ['SuperAdmin', 'Analytics'] },
-                { icon: 'fa-cog', label: 'Misc Admin', route: '/admin/data-deletion', roles: ['SuperAdmin', 'DataProtectionOfficer', 'Finance', 'Support'] },
+                { icon: 'fa-file-invoice-dollar', label: 'Invoices & Misc', route: '/admin/data-deletion', roles: ['SuperAdmin', 'DataProtectionOfficer', 'Finance', 'Support'] },
                 { icon: 'fa-tag', label: 'Promo Codes', route: '/admin/promos', roles: ['SuperAdmin', 'Marketing'] },
-                { icon: 'fa-key', label: 'Roles', route: '/admin/roles', roles: ['SuperAdmin'] },
+                { icon: 'fa-key', label: 'Roles & Permissions', route: '/admin/roles', roles: ['SuperAdmin'] },
                 { icon: 'fa-bell', label: 'Send Notification', route: '/admin/notifications', roles: ['SuperAdmin', 'Support'] },
             ]
         }
@@ -144,7 +148,7 @@
         const root = document.getElementById('app');
         if (!root) return;
 
-        const publicPages = ['login', 'register', 'confirmEmail'];
+        const publicPages = ['login', 'register', 'confirmEmail', 'forgotPassword', 'resetPassword'];
         const isAuthLayout = !publicPages.includes(pageKey) && store.isAuthenticated();
         const isAdmin = pageKey.startsWith('admin');
 
@@ -197,6 +201,10 @@
             // Call init after render
             if (typeof page.init === 'function') {
                 page.init(params);
+            }
+            // Call onAfterRender if defined (used for post-render DOM wiring)
+            if (typeof page.onAfterRender === 'function') {
+                page.onAfterRender(params);
             }
         }
     };

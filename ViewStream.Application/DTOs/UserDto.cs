@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -46,5 +46,14 @@ namespace ViewStream.Application.DTOs
     {
         public string Reason { get; set; } = string.Empty;
         public DateTime? BlockedUntil { get; set; }
+    }
+
+    /// <summary>Safe slim DTO for the public user-search endpoint used by friend discovery.</summary>
+    public class UserPublicSearchResultDto
+    {
+        public long Id { get; set; }
+        public string? FullName { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string? AvatarUrl { get; set; }
     }
 }

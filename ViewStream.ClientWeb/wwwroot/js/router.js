@@ -1,4 +1,4 @@
-﻿const router = (() => {
+const router = (() => {
     const routes = [];
 
     function register(pattern, pageKey) {
@@ -38,7 +38,7 @@
         const { pageKey, params } = match;
 
         // Auth gating
-        const publicPages = ['login', 'register', 'confirmEmail'];
+        const publicPages = ['login', 'register', 'confirmEmail', 'forgotPassword', 'resetPassword'];
         if (!publicPages.includes(pageKey) && !store.isAuthenticated()) { navigate('/login'); return; }
         if (pageKey === 'login' && store.isAuthenticated()) { navigate('/'); return; }
 
@@ -100,6 +100,9 @@
     register('/notifications', 'notifications');
     register('/watch-parties', 'watchParties');
     register('/lists', 'sharedLists');
+    register('/downloads', 'downloads');
+    register('/forgot-password', 'forgotPassword');
+    register('/reset-password', 'resetPassword');
 
     // Admin
     register('/admin', 'adminDashboard');

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +21,7 @@ namespace ViewStream.Application.DTOs
     public class CreateNotificationDto
     {
         public long UserId { get; set; }
+        public string? Email { get; set; }  // Alternative to UserId — backend resolves to user
         public string Title { get; set; } = string.Empty;
         public string? Body { get; set; }
         public string? NotificationType { get; set; }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
+using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.Role.CreateRole
 {
@@ -12,17 +13,20 @@ namespace ViewStream.Application.Commands.Role.CreateRole
     public class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, RoleDto>
     {
         private readonly RoleManager<Role> _roleManager;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAuditContext _auditContext;
         private readonly ILogger<CreateRoleCommandHandler> _logger;
 
         public CreateRoleCommandHandler(
             RoleManager<Role> roleManager,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             IAuditContext auditContext,
             ILogger<CreateRoleCommandHandler> logger)
         {
             _roleManager = roleManager;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _auditContext = auditContext;
             _logger = logger;
@@ -44,7 +48,19 @@ namespace ViewStream.Application.Commands.Role.CreateRole
             if (!result.Succeeded)
                 throw new InvalidOperationException(string.Join(", ", result.Errors.Select(e => e.Description)));
 
-            // Note: Permission assignment via many-to-many would be handled separately or via RoleManager integration
+            // Assign permissions via many-to-many navigation property
+            if (request.Dto.PermissionIds != null && request.Dto.PermissionIds.Any())
+            {
+                var permissions = await _unitOfWork.Permissions.FindAsync(
+                    p => request.Dto.PermissionIds.Contains(p.Id),
+                    asNoTracking: false,
+                    cancellationToken: cancellationToken);
+
+                foreach (var perm in permissions)
+                    role.Permissions.Add(perm);
+
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
 
             _auditContext.SetAudit<Role, object>(
                 tableName: "Roles",

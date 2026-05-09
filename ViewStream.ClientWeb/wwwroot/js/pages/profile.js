@@ -1,4 +1,4 @@
-﻿pages.profile = {
+pages.profile = {
     render() { return '<div id="profile-content">' + Comp.pageLoader() + '</div>'; },
     async init() {
         const c = document.getElementById('profile-content');
@@ -59,12 +59,33 @@
                 </form>
             </div>
 
+            <!-- Downloads link -->
             <div class="bg-vs-surface border border-vs-border rounded-2xl overflow-hidden mb-6">
                 <div class="px-6 py-4 border-b border-vs-border">
-                    <h2 class="font-display font-semibold text-lg text-vs-text">Roles</h2>
+                    <h2 class="font-display font-semibold text-lg text-vs-text">Roles & Quick Links</h2>
+                </div>
+                <div class="p-6 space-y-3">
+                    <div class="flex flex-wrap gap-2 mb-4">${roles || '<span class="text-vs-muted text-sm">No roles assigned</span>'}</div>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="#/downloads" class="btn btn-secondary btn-sm"><i class="fas fa-download mr-1.5"></i> Offline Downloads</a>
+                        <a href="#/library" class="btn btn-secondary btn-sm"><i class="fas fa-bookmark mr-1.5"></i> My Library</a>
+                        <a href="#/history" class="btn btn-secondary btn-sm"><i class="fas fa-history mr-1.5"></i> Watch History</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger zone: data deletion -->
+            <div class="bg-vs-surface border border-vs-error/30 rounded-2xl overflow-hidden mb-6" id="danger-zone">
+                <div class="px-6 py-4 border-b border-vs-error/20">
+                    <h2 class="font-display font-semibold text-lg text-vs-error"><i class="fas fa-shield-alt mr-2"></i>Privacy & Data</h2>
                 </div>
                 <div class="p-6">
-                    <div class="flex flex-wrap gap-2">${roles || '<span class="text-vs-muted text-sm">No roles assigned</span>'}</div>
+                    <p class="text-sm text-vs-dim mb-4">You can request deletion of all your personal data. Once submitted, our team will process your request within 30 days per GDPR/CCPA requirements.</p>
+                    <div id="deletion-status" class="hidden mb-4 p-4 rounded-xl border bg-vs-card text-sm"></div>
+                    <div class="flex gap-3 flex-wrap">
+                        <button id="request-deletion-btn" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt mr-1.5"></i> Request Data Deletion</button>
+                        <button id="cancel-deletion-btn" class="btn btn-secondary btn-sm hidden"><i class="fas fa-undo mr-1.5"></i> Cancel Request</button>
+                    </div>
                 </div>
             </div>`;
             c.innerHTML = h;
@@ -97,6 +118,59 @@
                     document.getElementById('password-form').reset();
                 } catch (err) { toast.error(err.message); }
             });
+
+            // Data deletion
+            let activeDeletionId = null;
+            const statusEl = document.getElementById('deletion-status');
+            const reqBtn = document.getElementById('request-deletion-btn');
+            const cancelBtn = document.getElementById('cancel-deletion-btn');
+
+            function showDeletionPending(req) {
+                activeDeletionId = req.id;
+                statusEl.className = 'mb-4 p-4 rounded-xl border bg-vs-error/5 border-vs-error/30 text-sm text-vs-dim';
+                statusEl.innerHTML = `<i class="fas fa-clock text-vs-error mr-2"></i>Deletion request submitted on <strong>${utils.formatDate(req.requestedAt)}</strong>. Status: <span class="text-vs-error font-semibold uppercase">${req.status}</span>`;
+                statusEl.classList.remove('hidden');
+                reqBtn.classList.add('hidden');
+                cancelBtn.classList.remove('hidden');
+            }
+
+            reqBtn?.addEventListener('click', () => {
+                modal.open('Confirm Data Deletion Request',
+                    `<div class="space-y-3">
+                        <p class="text-sm text-vs-dim">Are you sure you want to request deletion of all your personal data? This includes your account, watch history, library, and all associated content.</p>
+                        <p class="text-sm text-vs-error font-medium"><i class="fas fa-exclamation-triangle mr-1"></i>This action is irreversible once processed.</p>
+                    </div>`,
+                    `<button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+                     <button class="btn btn-danger" id="confirm-deletion-btn">Submit Request</button>`);
+                document.getElementById('confirm-deletion-btn')?.addEventListener('click', async () => {
+                    try {
+                        const req = await api.post('/users/me/data-deletion-request', {});
+                        showDeletionPending(req);
+                        modal.close();
+                        toast.info('Deletion request submitted. We will process it within 30 days.');
+                    } catch (err) { toast.error(err.message); }
+                });
+            });
+
+            cancelBtn?.addEventListener('click', () => {
+                if (!activeDeletionId) return;
+                modal.open('Cancel Deletion Request',
+                    '<p class="text-sm text-vs-dim">Cancel your data deletion request? Your account will remain active.</p>',
+                    `<button class="btn btn-secondary" onclick="modal.close()">Close</button>
+                     <button class="btn btn-primary" id="confirm-cancel-del">Yes, Cancel Request</button>`);
+                document.getElementById('confirm-cancel-del')?.addEventListener('click', async () => {
+                    try {
+                        await api.del(`/users/me/data-deletion-request/${activeDeletionId}`);
+                        activeDeletionId = null;
+                        statusEl.classList.add('hidden');
+                        reqBtn.classList.remove('hidden');
+                        cancelBtn.classList.add('hidden');
+                        modal.close();
+                        toast.success('Deletion request cancelled.');
+                    } catch (err) { toast.error(err.message); }
+                });
+            });
+
         } catch (err) {
             c.innerHTML = Comp.emptyState('fa-exclamation-circle', 'Failed to load profile: ' + err.message);
         }

@@ -1,12 +1,20 @@
-﻿pages.adminMisc = (() => {
+pages.adminMisc = (() => {
     let activeTab = 'invoices'; // 'invoices', 'notifications', 'deletion'
     let invoiceState = { id: '', invoice: null, loading: false };
+    let invoiceListState = { page: 1, data: null, loading: false };
     let deletionState = { page: 1, data: null, loading: true };
     let deletionSortKey = 'requestedAt';
     let deletionSortDir = 'desc';
 
-    async function loadInvoices() {
-        // Not implemented as a list, just a lookup by ID
+    async function loadInvoiceList() {
+        invoiceListState.loading = true; render();
+        try {
+            invoiceListState.data = await api.get('/admin/invoices', {
+                page: invoiceListState.page,
+                pageSize: CONFIG.PAGE_SIZE
+            });
+        } catch { toast.error('Failed to load invoices'); }
+        invoiceListState.loading = false; render();
     }
     async function loadDeletions() {
         deletionState.loading = true; render();
@@ -39,14 +47,31 @@
     }
 
     function renderInvoices() {
-        return `<div class="max-w-lg">
-            <h2 class="font-display font-semibold text-xl text-vs-text mb-4">Lookup Invoice</h2>
-            <div class="flex gap-3 mb-4">
-                <input type="number" id="invoice-id-input" class="input-field" placeholder="Invoice ID" style="flex:1">
-                <button class="btn btn-primary" id="lookup-invoice-btn">View</button>
-            </div>
-            <div id="invoice-result"></div>
-        </div>`;
+        let h = `<div class="mb-4 flex gap-3">
+            <input type="number" id="invoice-id-input" class="input-field" placeholder="Lookup by Invoice ID" style="max-width:200px">
+            <button class="btn btn-secondary btn-sm" id="lookup-invoice-btn">View</button>
+        </div>
+        <div id="invoice-result" class="mb-6"></div>`;
+
+        if (invoiceListState.loading) return h + Comp.pageLoader();
+        if (!invoiceListState.data) return h + Comp.emptyState('fa-file-invoice-dollar', 'Click Invoices tab to load list');
+
+        const rows = invoiceListState.data.items?.map(inv => `<tr>
+            <td class="text-vs-muted text-sm">${inv.id}</td>
+            <td class="font-medium text-vs-text">${toast.esc(inv.userEmail || '—')}</td>
+            <td>$${(inv.amount || 0).toFixed(2)}</td>
+            <td>${utils.statusBadge(inv.status)}</td>
+            <td class="text-vs-muted text-sm">${utils.formatDateShort(inv.invoiceDate)}</td>
+            <td><button class="btn btn-ghost btn-sm lookup-inv-row-btn" data-id="${inv.id}"><i class="fas fa-eye"></i></button></td>
+        </tr>`).join('') || '';
+
+        h += Comp.dataTable(
+            [{ key: 'id', label: 'ID' }, { key: 'userEmail', label: 'User' }, { key: 'amount', label: 'Amount' },
+             { key: 'status', label: 'Status' }, { key: 'invoiceDate', label: 'Date' }, { key: '', label: '' }],
+            rows, 'No invoices found', { tableId: 'misc-invoice-table' });
+        h += Comp.pagination(invoiceListState.data.pageNumber, invoiceListState.data.totalPages,
+            p => { invoiceListState.page = p; loadInvoiceList(); });
+        return h;
     }
 
     function renderNotificationForm() {
@@ -105,6 +130,7 @@
             b.addEventListener('click', () => {
                 activeTab = b.dataset.tab;
                 if (activeTab === 'deletion' && !deletionState.data) loadDeletions();
+                if (activeTab === 'invoices' && !invoiceListState.data) loadInvoiceList();
                 render();
             });
         });
@@ -176,6 +202,6 @@
 
     return {
         render() { return '<div id="admin-misc-content">' + Comp.pageLoader() + '</div>'; },
-        init() { loadDeletions(); }
+        init() { loadInvoiceList(); loadDeletions(); }
     };
 })();

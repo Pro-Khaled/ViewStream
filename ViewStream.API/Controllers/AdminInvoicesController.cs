@@ -1,6 +1,7 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Invoice;
 
@@ -36,5 +37,38 @@ public class AdminInvoicesController : ControllerBase
         var invoice = await _mediator.Send(new GetInvoiceByIdQuery(id), cancellationToken);
         if (invoice == null) return NotFound();
         return Ok(invoice);
+    }
+
+    /// <summary>
+    /// Retrieves a paginated list of invoices with optional filters.
+    /// </summary>
+    /// <param name="page">Page number (1-indexed).</param>
+    /// <param name="pageSize">Items per page.</param>
+    /// <param name="userId">Filter by user ID.</param>
+    /// <param name="status">Filter by status (e.g. paid, pending).</param>
+    /// <param name="from">Filter invoices from this date (inclusive).</param>
+    /// <param name="to">Filter invoices up to this date (inclusive).</param>
+    /// <param name="orderBy">Sort field: invoiceDate (default), amount, status.</param>
+    /// <param name="isDescending">Whether to sort descending (default: true).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Paged list of invoices.</returns>
+    /// <response code="200">Returns the paged invoice list.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<InvoiceListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<InvoiceListItemDto>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] long? userId = null,
+        [FromQuery] string? status = null,
+        [FromQuery] DateOnly? from = null,
+        [FromQuery] DateOnly? to = null,
+        [FromQuery] string orderBy = "invoiceDate",
+        [FromQuery] bool isDescending = true,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(
+            new GetInvoicesPagedQuery(page, pageSize, userId, status, from, to, orderBy, isDescending),
+            cancellationToken);
+        return Ok(result);
     }
 }

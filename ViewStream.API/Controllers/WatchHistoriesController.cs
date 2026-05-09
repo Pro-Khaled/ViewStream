@@ -1,8 +1,9 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.WatchHistory.UpsertWatchHistory;
+using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchHistory;
 
@@ -25,6 +26,28 @@ public class WatchHistoriesController : ControllerBase
         long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
     #region Queries
+
+    /// <summary>
+    /// Retrieves a paginated watch history for the current profile, sorted by most recently watched.
+    /// </summary>
+    /// <param name="page">Page number (1-indexed).</param>
+    /// <param name="pageSize">Items per page.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paged list of watch history items.</returns>
+    /// <response code="200">Returns the paged watch history.</response>
+    /// <response code="401">User is not authenticated.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<WatchHistoryListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<PagedResult<WatchHistoryListItemDto>>> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var profileId = GetCurrentProfileId();
+        var result = await _mediator.Send(new GetWatchHistoryPagedQuery(profileId, page, pageSize), cancellationToken);
+        return Ok(result);
+    }
 
     /// <summary>
     /// Retrieves the "Continue Watching" list for the current profile.

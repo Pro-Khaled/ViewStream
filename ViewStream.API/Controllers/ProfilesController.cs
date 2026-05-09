@@ -1,7 +1,8 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using ViewStream.Application.Commands.PersonalizedRow.RegenerateRecommendations;
 using ViewStream.Application.Commands.Profile.CreateProfile;
 using ViewStream.Application.Commands.Profile.DeleteProfile;
 using ViewStream.Application.Commands.Profile.SwitchActiveProfile;
@@ -167,6 +168,29 @@ public class ProfilesController : ControllerBase
         var response = await _mediator.Send(new SwitchActiveProfileCommand(userId, id), cancellationToken);
         if (response == null) return NotFound();
         return Ok(response);
+    }
+
+    #endregion
+
+    #region Recommendations
+
+    /// <summary>
+    /// Regenerates the personalized recommendation rows for the current active profile.
+    /// Uses a popularity-based approach (top IMDB-rated and Rotten Tomatoes-rated shows).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Recommendations regenerated.</response>
+    /// <response code="401">User is not authenticated.</response>
+    [HttpPost("me/recommendations/regenerate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> RegenerateRecommendations(CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var profileId = long.Parse(User.FindFirstValue("ProfileId") ?? "0");
+        await _mediator.Send(new RegenerateRecommendationsCommand(profileId, userId), cancellationToken);
+        return NoContent();
     }
 
     #endregion

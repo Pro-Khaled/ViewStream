@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,6 +25,7 @@ namespace ViewStream.Application.DTOs
         public long Id { get; set; }
         public long EpisodeId { get; set; }
         public string EpisodeTitle { get; set; } = string.Empty;
+        public string? DeviceName { get; set; }
         public string? DownloadQuality { get; set; }
         public DateTime? DownloadedAt { get; set; }
         public DateTime? ExpiresAt { get; set; }

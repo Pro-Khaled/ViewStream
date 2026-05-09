@@ -1,4 +1,4 @@
-﻿pages.adminNotify = {
+pages.adminNotify = {
     render() {
         return `<div class="max-w-lg bg-vs-surface border border-vs-border rounded-xl p-6">
             <h1 class="font-display font-bold text-2xl text-vs-text mb-6">Send Notification</h1>
@@ -20,10 +20,11 @@
             const body = document.getElementById('an-body').value;
             const type = document.getElementById('an-type').value;
             try {
-                await api.post('/admin/notifications', { userId: email, title, body, notificationType: type });
-                toast.success('Notification sent');
+                // Pass both email and userId:0 — backend resolves userId from email
+                await api.post('/admin/notifications', { email, userId: 0, title, body, notificationType: type });
+                toast.success('Notification sent to ' + email);
                 e.target.reset();
             } catch (err) { toast.error(err.message); }
         });
     }
-};
+};

@@ -1,4 +1,4 @@
-﻿pages.episode = (() => {
+pages.episode = (() => {
     let state = { episode: null, comments: [], loading: true };
 
     async function load(id) {
@@ -128,14 +128,24 @@
         render() { return '<div id="episode-content">' + Comp.pageLoader() + '</div>'; },
         init(params) {
             load(params.id);
+            let replyToCommentId = null;
             // Post comment
             document.getElementById('post-comment-btn')?.addEventListener('click', async () => {
                 const text = document.getElementById('new-comment').value.trim();
                 if (!text) { toast.warning('Please write a comment'); return; }
                 try {
-                    await api.post(`/episodes/${state.episode.id}/comments`, { commentText: text });
-                    toast.success('Comment posted');
-                    load(state.episode.id); // refresh
+                    await api.post(`/episodes/${state.episode.id}/comments`, {
+                        commentText: text,
+                        ...(replyToCommentId ? { parentCommentId: replyToCommentId } : {})
+                    });
+                    toast.success(replyToCommentId ? 'Reply posted' : 'Comment posted');
+                    // Reset reply state
+                    replyToCommentId = null;
+                    document.getElementById('new-comment').placeholder = 'Add a comment...';
+                    const replyBadge = document.getElementById('reply-badge');
+                    if (replyBadge) replyBadge.remove();
+                    document.getElementById('new-comment').value = '';
+                    load(state.episode.id);
                 } catch (err) { toast.error(err.message); }
             });
             // Like / reply / report
@@ -149,10 +159,24 @@
                         load(state.episode.id);
                     }).catch(err => toast.error(err.message));
                 } else if (btn.classList.contains('reply-btn')) {
-                    document.getElementById('new-comment').focus();
-                    document.getElementById('new-comment').placeholder = `Replying to comment #${commentId}...`;
+                    replyToCommentId = parseInt(commentId);
+                    const commentArea = document.getElementById('new-comment');
+                    commentArea.placeholder = 'Write your reply...';
+                    commentArea.focus();
+                    // Show a small indicator badge
+                    const existingBadge = document.getElementById('reply-badge');
+                    if (existingBadge) existingBadge.remove();
+                    const badge = document.createElement('div');
+                    badge.id = 'reply-badge';
+                    badge.className = 'flex items-center gap-2 mb-2 text-xs text-vs-accent';
+                    badge.innerHTML = `<i class="fas fa-reply"></i> Replying to comment <button class="ml-1 text-vs-muted hover:text-vs-error" id="cancel-reply-btn"><i class="fas fa-times-circle"></i></button>`;
+                    commentArea.parentElement.insertBefore(badge, commentArea);
+                    document.getElementById('cancel-reply-btn')?.addEventListener('click', () => {
+                        replyToCommentId = null;
+                        commentArea.placeholder = 'Add a comment...';
+                        badge.remove();
+                    });
                 } else if (btn.classList.contains('report-btn')) {
-                    // simple modal for reason
                     modal.open('Report Comment', `<textarea id="report-reason" class="input-field" placeholder="Reason..."></textarea>`,
                         `<button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
                          <button class="btn btn-danger" onclick="pages.episode.submitReport(${commentId})">Submit</button>`);

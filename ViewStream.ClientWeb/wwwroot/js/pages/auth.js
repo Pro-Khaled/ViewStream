@@ -1,4 +1,4 @@
-﻿// ========== Login ==========
+// ========== Login ==========
 pages.login = {
     render() {
         return `<div class="min-h-screen flex items-center justify-center p-4 hero-gradient">
@@ -23,7 +23,10 @@ pages.login = {
                     </div>
                     <div id="login-error" class="hidden p-3 rounded-lg bg-vs-error/10 border border-vs-error/20 text-sm text-vs-error"></div>
                     <button type="submit" class="w-full py-3 bg-vs-accent hover:bg-vs-accentHover text-vs-bg font-bold rounded-xl transition-colors text-sm">Sign In</button>
-                    <p class="text-center text-sm text-vs-muted">Don't have an account? <a href="#/register" class="text-vs-accent hover:underline font-medium">Sign up</a></p>
+                    <div class="flex items-center justify-between text-sm text-vs-muted">
+                        <p>Don't have an account? <a href="#/register" class="text-vs-accent hover:underline font-medium">Sign up</a></p>
+                        <a href="#/forgot-password" class="text-vs-dim hover:text-vs-accent transition-colors">Forgot password?</a>
+                    </div>
                 </form>
             </div>
         </div>`;

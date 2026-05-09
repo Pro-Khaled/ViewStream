@@ -1,4 +1,4 @@
-﻿pages.home = (() => {
+pages.home = (() => {
     let state = { data: null, loading: true };
 
     async function load() {
@@ -48,6 +48,9 @@
                             <a href="#/shows/${hero.id}" class="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl backdrop-blur-sm transition-colors">
                                 <i class="fas fa-info-circle text-sm"></i> Details
                             </a>
+                            ${store.isAuthenticated() ? `<button id="regen-recs-btn" title="Refresh recommendations" class="inline-flex items-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl backdrop-blur-sm transition-colors">
+                                <i class="fas fa-sync-alt text-sm"></i>
+                            </button>` : ''}
                         </div>
                     </div>
                 </section>`;
@@ -86,6 +89,22 @@
 
     return {
         render() { return '<div id="home-content">' + Comp.pageLoader() + '</div>'; },
-        init() { load(); }
+        init() {
+            load();
+        },
+        onAfterRender() {
+            // Wire regen button after each render cycle
+            document.getElementById('regen-recs-btn')?.addEventListener('click', async (e) => {
+                const btn = e.currentTarget;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-sync-alt fa-spin text-sm"></i>';
+                try {
+                    await api.post('/profiles/me/recommendations/regenerate', {});
+                    toast.success('Recommendations refreshed!');
+                    load();
+                } catch (err) { toast.error('Failed to refresh: ' + err.message); }
+                finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync-alt text-sm"></i>'; }
+            });
+        }
     };
 })();

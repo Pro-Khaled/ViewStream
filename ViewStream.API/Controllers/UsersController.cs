@@ -1,7 +1,9 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using ViewStream.Application.Commands.DataDeletionRequest.CreateDataDeletionRequest;
+using ViewStream.Application.Commands.DataDeletionRequest.DeleteDataDeletionRequest;
 using ViewStream.Application.Commands.User.ChangePassword;
 using ViewStream.Application.Commands.User.UpdateProfile;
 using ViewStream.Application.DTOs;
@@ -101,6 +103,81 @@ public class UsersController : ControllerBase
             return BadRequest(ModelState);
         }
         return NoContent();
+    }
+
+    #endregion
+
+    #region Data Deletion Requests
+
+    /// <summary>
+    /// Submits a data deletion request for the current user.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created data deletion request.</returns>
+    /// <response code="200">Request created or returned if already pending.</response>
+    /// <response code="401">User is not authenticated.</response>
+    [HttpPost("me/data-deletion-request")]
+    [ProducesResponseType(typeof(DataDeletionRequestDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<DataDeletionRequestDto>> RequestDataDeletion(
+        CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var result = await _mediator.Send(new CreateDataDeletionRequestCommand(userId), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Cancels a pending data deletion request.
+    /// </summary>
+    /// <param name="id">The ID of the data deletion request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Request cancelled successfully.</response>
+    /// <response code="400">Request cannot be cancelled (not pending or wrong state).</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="404">Request not found.</response>
+    [HttpDelete("me/data-deletion-request/{id:long}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CancelDataDeletion(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var result = await _mediator.Send(new DeleteDataDeletionRequestCommand(id, userId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    #endregion
+
+    #region User Search
+
+    /// <summary>
+    /// Searches active users by name or email. Safe public endpoint for friend discovery.
+    /// </summary>
+    /// <param name="q">Search query (min 2 chars).</param>
+    /// <param name="limit">Maximum results to return (default 20).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of matching users with public fields only.</returns>
+    /// <response code="200">Returns matching users.</response>
+    /// <response code="401">User is not authenticated.</response>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(List<UserPublicSearchResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<List<UserPublicSearchResultDto>>> SearchUsers(
+        [FromQuery] string q,
+        [FromQuery] int limit = 20,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+            return Ok(new List<UserPublicSearchResultDto>());
+
+        var results = await _mediator.Send(new SearchUsersQuery(q, limit), cancellationToken);
+        return Ok(results);
     }
 
     #endregion

@@ -1,13 +1,15 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.DTOs.Account;
 using ViewStream.Application.Features.Account.Commands.ConfirmEmail;
+using ViewStream.Application.Features.Account.Commands.ForgotPassword;
 using ViewStream.Application.Features.Account.Commands.Login;
 using ViewStream.Application.Features.Account.Commands.Logout;
 using ViewStream.Application.Features.Account.Commands.RefreshToken;
 using ViewStream.Application.Features.Account.Commands.Register;
+using ViewStream.Application.Features.Account.Commands.ResetPassword;
 using ViewStream.Application.Queries.User;
 
 namespace ViewStream.Api.Controllers;
@@ -90,6 +92,63 @@ public class AccountController : ControllerBase
             return BadRequest(new { Message = result.ErrorMessage ?? "Email confirmation failed." });
 
         return Ok(new { Message = "Email confirmed successfully. You can now log in." });
+    }
+
+    #endregion
+
+    #region Password Reset
+
+    /// <summary>
+    /// Sends a password reset email if the given email address belongs to an active account.
+    /// Always returns 200 to avoid email enumeration.
+    /// </summary>
+    /// <param name="model">The email address to send the reset link to.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Always 200 OK.</returns>
+    /// <response code="200">Request processed (email sent if account exists).</response>
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordDto model,
+        CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        await _mediator.Send(new ForgotPasswordCommand(model.Email), cancellationToken);
+        return Ok(new { Message = "If an account with that email exists, a password reset link has been sent." });
+    }
+
+    /// <summary>
+    /// Resets a user's password using the token from the reset email.
+    /// Revokes all existing refresh tokens on success.
+    /// </summary>
+    /// <param name="model">UserId, token, new password and confirmation.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>200 on success, 400 on failure.</returns>
+    /// <response code="200">Password reset successfully.</response>
+    /// <response code="400">Invalid token, mismatched passwords or policy violation.</response>
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordDto model,
+        CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _mediator.Send(new ResetPasswordCommand(model), cancellationToken);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error);
+            return BadRequest(ModelState);
+        }
+
+        return Ok(new { Message = "Password has been reset successfully. Please log in with your new password." });
     }
 
     #endregion

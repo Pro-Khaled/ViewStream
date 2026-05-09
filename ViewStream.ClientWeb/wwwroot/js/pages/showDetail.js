@@ -147,10 +147,45 @@
             // Add to library
             document.getElementById('add-to-library-btn')?.addEventListener('click', async () => {
                 if (!store.isAuthenticated()) { router.navigate('/login'); return; }
-                try {
-                    await api.post('/profiles/me/library', { showId: state.showId, status: 'plan_to_watch' });
-                    toast.success('Added to library');
-                } catch (err) { toast.error(err.message); }
+                let seasonsHtml = '<option value="">Whole Show</option>';
+                state.seasons.forEach(s => {
+                    seasonsHtml += `<option value="${s.id}">Season ${s.seasonNumber} – ${toast.esc(s.title || '')}</option>`;
+                });
+                modal.open('Add to My Library',
+                    `<div class="space-y-4">
+            <div>
+                <label class="form-label">Target</label>
+                <select id="lib-target" class="input-field">${seasonsHtml}</select>
+            </div>
+            <div>
+                <label class="form-label">Status</label>
+                <select id="lib-status" class="input-field">
+                    <option value="plan_to_watch">Plan to Watch</option>
+                    <option value="watching">Watching</option>
+                    <option value="completed">Completed</option>
+                    <option value="on_hold">On Hold</option>
+                    <option value="dropped">Dropped</option>
+                </select>
+            </div>
+        </div>`,
+                    `<button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+         <button class="btn btn-primary" id="save-lib-btn">Add</button>`);
+
+                document.getElementById('save-lib-btn')?.addEventListener('click', async () => {
+                    const seasonId = document.getElementById('lib-target').value;
+                    const status = document.getElementById('lib-status').value;
+                    try {
+                        const payload = { status };
+                        if (seasonId) {
+                            payload.seasonId = parseInt(seasonId);
+                        } else {
+                            payload.showId = state.showId;
+                        }
+                        await api.post('/profiles/me/library', payload);
+                        toast.success('Added to library');
+                        modal.close();
+                    } catch (err) { toast.error(err.message); }
+                });
             });
         },
         toggleSeason

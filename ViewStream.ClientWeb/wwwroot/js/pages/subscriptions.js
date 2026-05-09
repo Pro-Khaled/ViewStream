@@ -1,4 +1,4 @@
-﻿pages.subscriptions = (() => {
+pages.subscriptions = (() => {
     let state = {
         sub: null,
         methods: [],
@@ -151,15 +151,60 @@
                 if (btn.classList.contains('plan-select-btn')) {
                     const planType = btn.dataset.plan;
                     if (state.sub) {
-                        api.put(`/subscriptions/${state.sub.id}`, { planType }).then(() => {
-                            toast.success('Plan changed to ' + planType);
-                            load();
-                        }).catch(err => toast.error(err.message));
+                        // Upgrade/downgrade existing subscription
+                        modal.open('Change Plan',
+                            `<p class="text-sm text-vs-dim">Switch to <strong class="text-vs-text">${toast.esc(planType)}</strong> plan? Your billing will be pro-rated immediately.</p>`,
+                            `<button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+                             <button class="btn btn-primary" id="confirm-plan-btn">Confirm Change</button>`);
+                        document.getElementById('confirm-plan-btn')?.addEventListener('click', () => {
+                            api.put(`/subscriptions/${state.sub.id}`, { planType }).then(() => {
+                                toast.success('Plan changed to ' + planType);
+                                modal.close();
+                                load();
+                            }).catch(err => toast.error(err.message));
+                        });
                     } else {
-                        api.post('/subscriptions', { planType }).then(() => {
-                            toast.success('Subscribed to ' + planType);
-                            load();
-                        }).catch(err => toast.error(err.message));
+                        // New subscription — pick payment method first
+                        if (!state.methods || state.methods.length === 0) {
+                            toast.warning('Please add a payment method before subscribing');
+                            document.getElementById('add-payment-btn')?.click();
+                            return;
+                        }
+                        const defaultMethod = state.methods.find(m => m.isDefault) || state.methods[0];
+                        const methodOptions = state.methods.map(m =>
+                            `<option value="${m.id}" ${m.isDefault ? 'selected' : ''}>${toast.esc(m.provider)} ****${toast.esc(m.lastFour)} ${m.isDefault ? '(Default)' : ''}</option>`).join('');
+
+                        modal.open(`Subscribe to ${planType}`,
+                            `<div class="space-y-4">
+                                <div class="p-4 rounded-xl bg-vs-accent/5 border border-vs-accent/20">
+                                    <p class="text-sm font-semibold text-vs-text">${toast.esc(planType)} Plan</p>
+                                    <p class="text-xs text-vs-muted mt-0.5">Your card will be charged monthly. Cancel anytime.</p>
+                                </div>
+                                <div>
+                                    <label class="form-label">Payment Method</label>
+                                    <select id="sub-payment-method" class="input-field">${methodOptions}</select>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="sub-auto-renew" class="accent-vs-accent" checked>
+                                    <label for="sub-auto-renew" class="text-sm text-vs-dim cursor-pointer">Enable auto-renewal</label>
+                                </div>
+                            </div>`,
+                            `<button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+                             <button class="btn btn-primary" id="confirm-sub-btn"><i class="fas fa-credit-card mr-1.5"></i> Subscribe Now</button>`);
+
+                        document.getElementById('confirm-sub-btn')?.addEventListener('click', async () => {
+                            const paymentMethodId = parseInt(document.getElementById('sub-payment-method').value);
+                            const autoRenew = document.getElementById('sub-auto-renew').checked;
+                            const btn2 = document.getElementById('confirm-sub-btn');
+                            btn2.disabled = true;
+                            try {
+                                await api.post('/subscriptions', { planType, paymentMethodId, autoRenew });
+                                toast.success(`Subscribed to ${planType}! Welcome aboard 🎉`);
+                                modal.close();
+                                load();
+                            } catch (err) { toast.error(err.message); }
+                            finally { btn2.disabled = false; }
+                        });
                     }
                 }
 
@@ -194,14 +239,80 @@
 
                 // Add payment method
                 if (btn.id === 'add-payment-btn') {
-                    // For simplicity, show a prompt; a real form would be better.
-                    const provider = prompt('Enter card provider (Visa, Mastercard, etc.)');
-                    if (!provider) return;
-                    const lastFour = prompt('Last four digits');
-                    if (!lastFour) return;
-                    api.post('/paymentmethods', { provider, lastFour, providerToken: 'dummy', expiryMonth: 12, expiryYear: new Date().getFullYear() + 2 })
-                        .then(() => { toast.success('Payment method added'); load(); })
-                        .catch(err => toast.error(err.message));
+                    modal.open('Add Payment Method',
+                        `<div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="col-span-2">
+                                    <label class="form-label">Card Provider <span class="text-vs-error">*</span></label>
+                                    <select id="pm-provider" class="input-field">
+                                        <option value="">Select provider</option>
+                                        <option value="Visa">Visa</option>
+                                        <option value="Mastercard">Mastercard</option>
+                                        <option value="Amex">American Express</option>
+                                        <option value="Discover">Discover</option>
+                                        <option value="PayPal">PayPal</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="form-label">Card Holder Name <span class="text-vs-error">*</span></label>
+                                    <input type="text" id="pm-holder" class="input-field" placeholder="Name as on card">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="form-label">Last 4 Digits <span class="text-vs-error">*</span></label>
+                                    <input type="text" id="pm-last-four" class="input-field" placeholder="e.g. 4242" maxlength="4" pattern="[0-9]{4}">
+                                </div>
+                                <div>
+                                    <label class="form-label">Expiry Month</label>
+                                    <select id="pm-month" class="input-field">
+                                        ${Array.from({length:12},(_,i)=> `<option value="${i+1}">${String(i+1).padStart(2,'0')}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">Expiry Year</label>
+                                    <select id="pm-year" class="input-field">
+                                        ${Array.from({length:10},(_,i)=> `<option value="${new Date().getFullYear()+i}">${new Date().getFullYear()+i}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-span-2 flex items-center gap-2">
+                                    <input type="checkbox" id="pm-default" class="accent-vs-accent" ${state.methods.length === 0 ? 'checked disabled' : ''}>
+                                    <label for="pm-default" class="text-sm text-vs-dim cursor-pointer">Set as default payment method</label>
+                                </div>
+                            </div>
+                            <p class="text-xs text-vs-muted"><i class="fas fa-lock mr-1"></i>Payment details are tokenised and never stored on our servers.</p>
+                        </div>`,
+                        `<button class="btn btn-secondary" onclick="modal.close()">Cancel</button>
+                         <button class="btn btn-primary" id="save-pm-btn"><i class="fas fa-credit-card mr-1.5"></i> Add Card</button>`);
+
+                    document.getElementById('save-pm-btn')?.addEventListener('click', async () => {
+                        const provider = document.getElementById('pm-provider').value;
+                        const holder = document.getElementById('pm-holder').value.trim();
+                        const lastFour = document.getElementById('pm-last-four').value.trim();
+                        const month = parseInt(document.getElementById('pm-month').value);
+                        const year = parseInt(document.getElementById('pm-year').value);
+                        const isDefault = document.getElementById('pm-default').checked;
+
+                        if (!provider) { toast.warning('Please select a card provider'); return; }
+                        if (!holder) { toast.warning('Card holder name is required'); return; }
+                        if (!/^\d{4}$/.test(lastFour)) { toast.warning('Last 4 digits must be exactly 4 numbers'); return; }
+
+                        const btn2 = document.getElementById('save-pm-btn');
+                        btn2.disabled = true;
+                        try {
+                            await api.post('/paymentmethods', {
+                                provider,
+                                cardHolderName: holder,
+                                lastFour,
+                                providerToken: `tok_${provider.toLowerCase()}_${lastFour}`, // simulated token
+                                expiryMonth: month,
+                                expiryYear: year,
+                                isDefault
+                            });
+                            toast.success('Payment method added');
+                            modal.close();
+                            load();
+                        } catch (err) { toast.error(err.message); }
+                        finally { btn2.disabled = false; }
+                    });
                 }
             });
         }
