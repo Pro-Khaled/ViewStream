@@ -32,4 +32,12 @@ namespace ViewStream.Application.DTOs
         public string? ConfirmationCode { get; set; }
     }
 
+    public class AdminDataDeletionRequestListItemDto
+    {
+        public long Id { get; set; }
+        public string UserEmail { get; set; }
+        public string? Status { get; set; }
+        public DateTime? RequestedAt { get; set; }
+    }
 }
+

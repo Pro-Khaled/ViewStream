@@ -36,4 +36,13 @@ namespace ViewStream.Application.DTOs
         public string? Endpoint { get; set; }
     }
 
+    public class AdminErrorLogListItemDto
+    {
+        public long Id { get; set; }
+        public string? ErrorCode { get; set; }
+        public string? ErrorMessage { get; set; }
+        public string? Endpoint { get; set; }
+        public DateTime? OccurredAt { get; set; }
+    }
 }
+

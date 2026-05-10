@@ -40,4 +40,15 @@ namespace ViewStream.Application.DTOs
         public bool? IsCc { get; set; }
     }
 
+    public class AdminSubtitleListItemDto
+    {
+        public long Id { get; set; }
+        public string LanguageCode { get; set; }
+        public string SubtitleUrl { get; set; }
+        public bool? IsCc { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string EpisodeTitle { get; set; }
+    }
 }
+

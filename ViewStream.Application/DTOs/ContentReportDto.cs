@@ -47,4 +47,15 @@ namespace ViewStream.Application.DTOs
     }
 
 
+    public class AdminContentReportListItemDto
+    {
+        public long Id { get; set; }
+        public string ProfileName { get; set; }
+        public string TargetType { get; set; }
+        public string TargetTitle { get; set; }
+        public string Reason { get; set; }
+        public string? Status { get; set; }
+        public DateTime? ReportedAt { get; set; }
+    }
 }
+

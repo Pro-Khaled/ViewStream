@@ -43,4 +43,15 @@ namespace ViewStream.Application.DTOs
         public bool? IsDefault { get; set; }
     }
 
+    public class AdminAudioTrackListItemDto
+    {
+        public long Id { get; set; }
+        public string LanguageCode { get; set; }
+        public string? TrackType { get; set; }
+        public bool? IsDefault { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string EpisodeTitle { get; set; }
+    }
 }
+

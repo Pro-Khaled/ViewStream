@@ -17,6 +17,50 @@ public class AdminUserInteractionsController : ControllerBase
 
     public AdminUserInteractionsController(IMediator mediator) => _mediator = mediator;
 
+    #region Queries
+    /// <summary>
+    /// Retrieves a paginated list of user interactions for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="profileId">Optional filter by profileid.</param>
+    /// <param name="showId">Optional filter by showid.</param>
+    /// <param name="interactionType">Optional filter by interactiontype.</param>
+    /// <param name="fromDate">Optional filter by fromdate.</param>
+    /// <param name="toDate">Optional filter by todate.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of userinteractions.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized â€“ authentication required.</response>
+    /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    [HttpGet("api/admin/interactions")]
+    [Authorize(Roles = "SuperAdmin,Analytics")]
+    [ProducesResponseType(typeof(PagedResult<AdminUserInteractionListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<AdminUserInteractionListItemDto>>> GetAdminPaged(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 20,
+    [FromQuery] string? searchTerm = null,
+    [FromQuery] string? sortBy = null,
+    [FromQuery] bool sortDescending = false,
+    [FromQuery] bool includeDeleted = false,
+    [FromQuery] long? profileId = null,
+    [FromQuery] long? showId = null,
+    [FromQuery] string? interactionType = null,
+    [FromQuery] DateTime? fromDate = null,
+    [FromQuery] DateTime? toDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminUserInteractionsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, profileId, showId, interactionType, fromDate, toDate);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    #endregion
+
 
 }
 
@@ -121,3 +165,5 @@ public class AdminShowInteractionsController : ControllerBase
         return Ok(result);
     }
 }
+
+

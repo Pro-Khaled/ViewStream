@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -36,6 +36,13 @@ namespace ViewStream.Application.Mappings
 
             CreateMap<CreateCreditDto, Credit>();
             CreateMap<UpdateCreditDto, Credit>();
+        
+        CreateMap<Credit, AdminCreditListItemDto>()
+            .ForMember(d => d.PersonName, opt => opt.MapFrom(src => src.Person.Name))
+            .ForMember(d => d.PersonPhotoUrl, opt => opt.MapFrom(src => src.Person.PhotoUrl))
+            .ForMember(d => d.TargetType, opt => opt.Ignore())
+            .ForMember(d => d.TargetTitle, opt => opt.Ignore());
         }
     }
 }
+

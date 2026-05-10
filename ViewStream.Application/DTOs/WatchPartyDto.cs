@@ -45,4 +45,16 @@ namespace ViewStream.Application.DTOs
     }
 
 
+    public class AdminWatchPartyListItemDto
+    {
+        public long Id { get; set; }
+        public string HostProfileName { get; set; }
+        public string EpisodeTitle { get; set; }
+        public string ShowTitle { get; set; }
+        public string PartyCode { get; set; }
+        public bool? IsActive { get; set; }
+        public int ParticipantCount { get; set; }
+        public DateTime? StartedAt { get; set; }
+    }
 }
+

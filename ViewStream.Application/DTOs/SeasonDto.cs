@@ -46,4 +46,17 @@ namespace ViewStream.Application.DTOs
         public DateOnly? ReleaseDate { get; set; }
     }
 
+    public class AdminSeasonListItemDto
+    {
+        public long Id { get; set; }
+        public short SeasonNumber { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public DateOnly? ReleaseDate { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string ShowTitle { get; set; }
+        public int EpisodeCount { get; set; }
+    }
 }
+

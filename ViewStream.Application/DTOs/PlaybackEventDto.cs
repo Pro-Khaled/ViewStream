@@ -35,4 +35,15 @@ namespace ViewStream.Application.DTOs
         public string? UserAgent { get; set; }
     }
 
+    public class AdminPlaybackEventListItemDto
+    {
+        public long Id { get; set; }
+        public long ProfileId { get; set; }
+        public long EpisodeId { get; set; }
+        public string EventType { get; set; }
+        public int? PositionSeconds { get; set; }
+        public string? Quality { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
 }
+

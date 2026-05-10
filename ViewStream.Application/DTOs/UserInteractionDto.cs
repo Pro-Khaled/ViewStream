@@ -49,4 +49,13 @@ namespace ViewStream.Application.DTOs
         }
     }
 
+    public class AdminUserInteractionListItemDto
+    {
+        public long Id { get; set; }
+        public string ProfileName { get; set; }
+        public string ShowTitle { get; set; }
+        public string InteractionType { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
 }
+

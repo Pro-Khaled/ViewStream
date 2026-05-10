@@ -120,6 +120,39 @@ public class PromoCodesController : ControllerBase
         return Ok(promo);
     }
 
+    
+        /// <summary>
+        /// Retrieves a paginated list of promo codes for the admin dashboard.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="includeExpired">Optional filter by includeexpired.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of promocodes.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/promocodes")]
+        [Authorize(Roles = "SuperAdmin,Marketing")]
+        [ProducesResponseType(typeof(PagedResult<AdminPromoCodeListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminPromoCodeListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] bool? includeExpired = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminPromoCodesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, includeExpired);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
     #endregion
 
     #region Commands

@@ -33,4 +33,14 @@ namespace ViewStream.Application.DTOs
         public long? ClickedShowId { get; set; }
     }
 
+    public class AdminSearchLogListItemDto
+    {
+        public long Id { get; set; }
+        public string? ProfileName { get; set; }
+        public string Query { get; set; }
+        public int? ResultsCount { get; set; }
+        public string? ClickedShowTitle { get; set; }
+        public DateTime? SearchAt { get; set; }
+    }
 }
+

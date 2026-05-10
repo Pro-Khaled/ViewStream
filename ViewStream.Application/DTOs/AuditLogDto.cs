@@ -44,4 +44,14 @@ namespace ViewStream.Application.DTOs
         public string? Notes { get; set; }
     }
 
+    public class AdminAuditLogListItemDto
+    {
+        public long Id { get; set; }
+        public string TableName { get; set; }
+        public long RecordId { get; set; }
+        public string Action { get; set; }
+        public string? ChangedByUserName { get; set; }
+        public DateTime? ChangedAt { get; set; }
+    }
 }
+

@@ -66,4 +66,15 @@ namespace ViewStream.Application.DTOs
         public decimal DiscountAmount { get; set; }
     }
 
+    public class AdminPromoCodeListItemDto
+    {
+        public int Id { get; set; }
+        public string Code { get; set; }
+        public short? DiscountPercent { get; set; }
+        public decimal? DiscountAmount { get; set; }
+        public DateOnly? ValidUntil { get; set; }
+        public bool IsValid { get; set; }
+        public int UsedCount { get; set; }
+    }
 }
+

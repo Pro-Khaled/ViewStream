@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -20,6 +20,13 @@ namespace ViewStream.Application.Mappings
                 .ForMember(dest => dest.EpisodeTitle, opt => opt.MapFrom(src => src.Episode.Title))
                 .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Episode.Season.Show.Title))
                 .ForMember(dest => dest.ParticipantCount, opt => opt.MapFrom(src => src.WatchPartyParticipants.Count(p => p.LeftAt == null)));
+        
+            CreateMap<WatchParty, AdminWatchPartyListItemDto>()
+                .ForMember(d => d.HostProfileName, opt => opt.MapFrom(src => src.HostProfile.Name))
+                .ForMember(d => d.EpisodeTitle, opt => opt.MapFrom(src => src.Episode.Title))
+                .ForMember(d => d.ShowTitle, opt => opt.MapFrom(src => src.Episode.Season.Show.Title))
+                .ForMember(d => d.ParticipantCount, opt => opt.Ignore());
         }
     }
 }
+

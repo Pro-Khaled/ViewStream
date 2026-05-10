@@ -45,5 +45,40 @@ public class AdminPlaybackEventsController : ControllerBase
         return Ok(result);
     }
 
+    
+        /// <summary>
+        /// Retrieves a paginated list of playback events for the admin dashboard.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="episodeId">Optional filter by episodeid.</param>
+        /// <param name="profileId">Optional filter by profileid.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of playbackevents.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/playback/events")]
+        [Authorize(Roles = "SuperAdmin,Analytics")]
+        [ProducesResponseType(typeof(PagedResult<AdminPlaybackEventListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminPlaybackEventListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? episodeId = null,
+        [FromQuery] long? profileId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminPlaybackEventsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, episodeId, profileId);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
     #endregion
 }

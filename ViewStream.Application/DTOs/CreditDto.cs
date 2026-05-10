@@ -53,4 +53,16 @@ namespace ViewStream.Application.DTOs
         public string? CharacterName { get; set; }
     }
 
+    public class AdminCreditListItemDto
+    {
+        public long Id { get; set; }
+        public long PersonId { get; set; }
+        public string PersonName { get; set; }
+        public string? PersonPhotoUrl { get; set; }
+        public string Role { get; set; }
+        public string? CharacterName { get; set; }
+        public string TargetType { get; set; }
+        public string TargetTitle { get; set; }
+    }
 }
+

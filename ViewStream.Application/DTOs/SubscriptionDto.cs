@@ -33,4 +33,17 @@ namespace ViewStream.Application.DTOs
         public bool? AutoRenew { get; set; }
         public long? PaymentMethodId { get; set; }
     }
+    public class AdminSubscriptionListItemDto
+    {
+        public long Id { get; set; }
+        public long UserId { get; set; }
+        public string UserEmail { get; set; }
+        public string PlanType { get; set; }
+        public string? Status { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly? EndDate { get; set; }
+        public bool? AutoRenew { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
 }
+

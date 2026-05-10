@@ -5,6 +5,7 @@ using System.Security.Claims;
 using ViewStream.Application.Commands.Subscription.CreateSubscription;
 using ViewStream.Application.Commands.Subscription.DeleteSubscription;
 using ViewStream.Application.Commands.Subscription.UpdateSubscription;
+using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Subscription;
 
@@ -60,6 +61,43 @@ public class SubscriptionsController : ControllerBase
         return Ok(history);
     }
 
+    
+        /// <summary>
+        /// Retrieves a paginated list of subscriptions for the admin dashboard.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="userId">Optional filter by userid.</param>
+        /// <param name="status">Optional filter by status.</param>
+        /// <param name="planType">Optional filter by plantype.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of subscriptions.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/subscriptions")]
+        [Authorize(Roles = "SuperAdmin,Finance")]
+        [ProducesResponseType(typeof(PagedResult<AdminSubscriptionListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminSubscriptionListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? userId = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? planType = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminSubscriptionsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, userId, status, planType);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
     #endregion
 
     #region Commands

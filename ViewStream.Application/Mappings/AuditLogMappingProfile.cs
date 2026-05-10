@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -8,7 +8,7 @@ namespace ViewStream.Application.Mappings
     public class AuditLogMappingProfile : MappingProfile
     {
           public AuditLogMappingProfile()
-        {
+          {
             CreateMap<AuditLog, AuditLogDto>()
                 .ForMember(dest => dest.ChangedByUserName, opt => opt.MapFrom(src => src.ChangedByUser != null ? src.ChangedByUser.FullName : null));
 
@@ -16,6 +16,10 @@ namespace ViewStream.Application.Mappings
                 .ForMember(dest => dest.ChangedByUserName, opt => opt.MapFrom(src => src.ChangedByUser != null ? src.ChangedByUser.FullName : null));
 
             CreateMap<CreateAuditLogDto, AuditLog>();
-        }
+        
+        CreateMap<AuditLog, AdminAuditLogListItemDto>()
+            .ForMember(d => d.ChangedByUserName, opt => opt.Ignore());
+          }
     }
 }
+

@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -18,6 +18,11 @@ namespace ViewStream.Application.Mappings
 
             CreateMap<CreatePersonDto, Person>();
             CreateMap<UpdatePersonDto, Person>();
+        
+        CreateMap<Person, AdminPersonListItemDto>()
+            .ForMember(d => d.CreditCount, opt => opt.Ignore())
+            .ForMember(d => d.AwardCount, opt => opt.Ignore());
         }
     }
 }
+

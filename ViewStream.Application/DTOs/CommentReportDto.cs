@@ -46,4 +46,15 @@ namespace ViewStream.Application.DTOs
         public string Status { get; set; } = string.Empty; // "reviewed", "dismissed", "action_taken"
     }
 
+    public class AdminCommentReportListItemDto
+    {
+        public long Id { get; set; }
+        public long CommentId { get; set; }
+        public string CommentText { get; set; }
+        public string ReportedByProfileName { get; set; }
+        public string Reason { get; set; }
+        public string? Status { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
 }
+

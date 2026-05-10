@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -15,6 +15,9 @@ namespace ViewStream.Application.Mappings
             CreateMap<Award, AwardListItemDto>();
             CreateMap<CreateAwardDto, Award>();
             CreateMap<UpdateAwardDto, Award>();
+        
+        CreateMap<Award, AdminAwardListItemDto>();
         }
     }
 }
+

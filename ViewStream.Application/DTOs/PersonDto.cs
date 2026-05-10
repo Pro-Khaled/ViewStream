@@ -40,4 +40,14 @@ namespace ViewStream.Application.DTOs
         public string? PhotoUrl { get; set; }
     }
 
+    public class AdminPersonListItemDto
+    {
+        public long Id { get; set; }
+        public string Name { get; set; }
+        public string? Bio { get; set; }
+        public string? PhotoUrl { get; set; }
+        public int CreditCount { get; set; }
+        public int AwardCount { get; set; }
+    }
 }
+

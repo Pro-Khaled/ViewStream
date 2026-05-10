@@ -5,6 +5,7 @@ using System.Security.Claims;
 using ViewStream.Application.Commands.Role.CreateRole;
 using ViewStream.Application.Commands.Role.DeleteRole;
 using ViewStream.Application.Commands.Role.UpdateRole;
+using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Role;
 
@@ -60,6 +61,37 @@ public class RolesController : ControllerBase
         return role == null ? NotFound() : Ok(role);
     }
 
+    
+        /// <summary>
+        /// Retrieves a paginated list of roles for the admin dashboard.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of roles.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/roles")]
+        [Authorize(Roles = "SuperAdmin")]
+        [ProducesResponseType(typeof(PagedResult<AdminRoleListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminRoleListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminRolesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
     #endregion
 
     #region Commands

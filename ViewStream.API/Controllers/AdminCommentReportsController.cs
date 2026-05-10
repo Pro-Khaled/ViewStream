@@ -73,6 +73,39 @@ public class AdminCommentReportsController : ControllerBase
         return Ok(report);
     }
 
+    
+        /// <summary>
+        /// Retrieves a paginated list of comment reports for the admin dashboard.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="status">Optional filter by status.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of commentreports.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/reports/comments")]
+        [Authorize(Roles = "SuperAdmin,Moderator")]
+        [ProducesResponseType(typeof(PagedResult<AdminCommentReportListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminCommentReportListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] string? status = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminCommentReportsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, status);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
     #endregion
 
     #region Commands

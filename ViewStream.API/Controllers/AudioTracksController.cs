@@ -7,6 +7,7 @@ using ViewStream.Application.Commands.AudioTrack.DeleteAudioTrack;
 using ViewStream.Application.Commands.AudioTrack.RestoreAudioTrack;
 using ViewStream.Application.Commands.AudioTrack.UpdateAudioTrack;
 using ViewStream.Application.Commands.AudioTrack.UploadAudioFile;
+using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.AudioTrack;
 
@@ -62,6 +63,43 @@ public class AudioTracksController : ControllerBase
         return Ok(audioTrack);
     }
 
+    
+        /// <summary>
+        /// Retrieves a paginated list of audio tracks for the admin dashboard.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="episodeId">Optional filter by episodeid.</param>
+        /// <param name="languageCode">Optional filter by languagecode.</param>
+        /// <param name="isDefault">Optional filter by isdefault.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of audiotracks.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/audio-tracks")]
+        [Authorize(Roles = "SuperAdmin,ContentManager")]
+        [ProducesResponseType(typeof(PagedResult<AdminAudioTrackListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminAudioTrackListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? episodeId = null,
+        [FromQuery] string? languageCode = null,
+        [FromQuery] bool? isDefault = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminAudioTracksPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, episodeId, languageCode, isDefault);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
     #endregion
 
     #region Commands

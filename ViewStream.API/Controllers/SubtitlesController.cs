@@ -7,6 +7,7 @@ using ViewStream.Application.Commands.Subtitle.DeleteSubtitle;
 using ViewStream.Application.Commands.Subtitle.RestoreSubtitle;
 using ViewStream.Application.Commands.Subtitle.UpdateSubtitle;
 using ViewStream.Application.Commands.Subtitle.UploadSubtitleFile;
+using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Subtitle;
 
@@ -65,6 +66,43 @@ public class SubtitlesController : ControllerBase
         return Ok(subtitle);
     }
 
+    
+        /// <summary>
+        /// Retrieves a paginated list of subtitles for the admin dashboard.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="episodeId">Optional filter by episodeid.</param>
+        /// <param name="languageCode">Optional filter by languagecode.</param>
+        /// <param name="isCc">Optional filter by iscc.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of subtitles.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/subtitles")]
+        [Authorize(Roles = "SuperAdmin,ContentManager")]
+        [ProducesResponseType(typeof(PagedResult<AdminSubtitleListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminSubtitleListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? episodeId = null,
+        [FromQuery] string? languageCode = null,
+        [FromQuery] bool? isCc = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminSubtitlesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, episodeId, languageCode, isCc);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
     #endregion
 
     #region Commands

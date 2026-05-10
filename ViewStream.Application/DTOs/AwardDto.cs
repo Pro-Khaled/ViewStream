@@ -38,4 +38,12 @@ namespace ViewStream.Application.DTOs
         public short? Year { get; set; }
     }
 
+    public class AdminAwardListItemDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string? Category { get; set; }
+        public short? Year { get; set; }
+    }
 }
+

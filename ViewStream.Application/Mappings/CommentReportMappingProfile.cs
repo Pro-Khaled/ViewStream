@@ -1,8 +1,7 @@
-using AutoMapper;
+﻿using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
-//using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Mappings
 {
@@ -19,6 +18,11 @@ namespace ViewStream.Application.Mappings
             CreateMap<CommentReport, CommentReportListItemDto>()
                 .ForMember(dest => dest.CommentText, opt => opt.MapFrom(src => src.Comment.CommentText))
                 .ForMember(dest => dest.ReportedByProfileName, opt => opt.MapFrom(src => src.ReportedByProfile.Name));
+        
+        CreateMap<CommentReport, AdminCommentReportListItemDto>()
+            .ForMember(d => d.CommentText, opt => opt.MapFrom(src => src.Comment.CommentText))
+            .ForMember(d => d.ReportedByProfileName, opt => opt.MapFrom(src => src.ReportedByProfile.Name));
         }
     }
 }
+

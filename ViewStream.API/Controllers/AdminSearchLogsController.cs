@@ -16,7 +16,6 @@ public class AdminSearchLogsController : ControllerBase
     private readonly IMediator _mediator;
 
     public AdminSearchLogsController(IMediator mediator) => _mediator = mediator;
-
     #region Queries
     /// <summary>
     /// Retrieves a paginated list of search logs with optional filters.
@@ -68,5 +67,40 @@ public class AdminSearchLogsController : ControllerBase
         if (log == null) return NotFound();
         return Ok(log);
     }
+    
+        /// <summary>
+        /// Retrieves a paginated list of search logs for the admin dashboard.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="profileId">Optional filter by profileid.</param>
+        /// <param name="query">Optional filter by query.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of searchlogs.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/search/logs")]
+        [Authorize(Roles = "SuperAdmin,Analytics")]
+        [ProducesResponseType(typeof(PagedResult<AdminSearchLogListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminSearchLogListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? profileId = null,
+        [FromQuery] string? query = null,
+            CancellationToken cancellationToken = default)
+        {
+            var SearchLogsPagedQuery = new GetAdminSearchLogsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, profileId, query);
+            var result = await _mediator.Send(SearchLogsPagedQuery, cancellationToken);
+            return Ok(result);
+        }
     #endregion
 }
