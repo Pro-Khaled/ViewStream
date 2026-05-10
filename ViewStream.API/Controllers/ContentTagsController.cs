@@ -37,7 +37,7 @@ public class ContentTagsController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<ContentTagListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<ContentTagListItemDto>>> GetContentTags(
+    public async Task<ActionResult<PagedResult<ContentTagListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
@@ -101,7 +101,40 @@ public class ContentTagsController : ControllerBase
         return Ok(tag);
     }
 
-    #endregion
+    
+        /// <summary>
+        /// Retrieves a paginated list of content tags for the admin dashboard. Supports searching, sorting, and filtering by category.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="category">Optional filter by category.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of contenttags.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/content-tags")]
+        [Authorize(Roles = "SuperAdmin,ContentManager")]
+        [ProducesResponseType(typeof(PagedResult<AdminContentTagListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminContentTagListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] string? category = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminContentTagsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, category);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+#endregion
 
     #region Commands
 
