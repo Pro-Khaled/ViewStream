@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ViewStream.Application.DTOs
+﻿namespace ViewStream.Application.DTOs
 {
     public class ShowDto
     {
@@ -72,4 +66,21 @@ namespace ViewStream.Application.DTOs
         public List<long> GenreIds { get; set; } = new();
         public List<long> TagIds { get; set; } = new();
     }
+    public class AdminShowListItemDto
+    {
+        public long Id { get; set; }
+        public string Title { get; set; }
+        public short? ReleaseYear { get; set; }
+        public string? MaturityRating { get; set; }
+        public string? PosterUrl { get; set; }
+        public decimal? ImdbRating { get; set; }
+        public List<string> Genres { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? AddedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public short? RottenTomatoesScore { get; set; }
+        public int SeasonCount { get; set; }
+        public int EpisodeCount { get; set; }
+    }
 }
+

@@ -19,4 +19,11 @@ namespace ViewStream.Application.Common
         public string? SortBy { get; set; }
         public bool SortDescending { get; set; } = false;
     }
+    public record AdminPagedQuery(
+        int PageNumber = 1,
+        int PageSize = 20,
+        string? SearchTerm = null,
+        string? SortBy = null,
+        bool SortDescending = false,
+        bool IncludeDeleted = false);
 }
