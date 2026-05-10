@@ -17,6 +17,7 @@ public class AdminSearchLogsController : ControllerBase
 
     public AdminSearchLogsController(IMediator mediator) => _mediator = mediator;
 
+    #region Queries
     /// <summary>
     /// Retrieves a paginated list of search logs with optional filters.
     /// </summary>
@@ -67,4 +68,5 @@ public class AdminSearchLogsController : ControllerBase
         if (log == null) return NotFound();
         return Ok(log);
     }
+    #endregion
 }

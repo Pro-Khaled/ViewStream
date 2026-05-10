@@ -24,7 +24,7 @@ public class PromoCodesController : ControllerBase
     private long GetCurrentUserId() =>
         long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
-    #region Queries / Validation
+    #region Queries
 
     /// <summary>
     /// Validates a promo code for applicability and calculates discount.

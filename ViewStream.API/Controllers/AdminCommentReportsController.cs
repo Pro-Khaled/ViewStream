@@ -39,7 +39,7 @@ public class AdminCommentReportsController : ControllerBase
     [ProducesResponseType(typeof(PagedResult<CommentReportListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<PagedResult<CommentReportListItemDto>>> GetReports(
+    public async Task<ActionResult<PagedResult<CommentReportListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? status = null,

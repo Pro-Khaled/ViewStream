@@ -17,6 +17,8 @@ public class AdminErrorLogsController : ControllerBase
 
     public AdminErrorLogsController(IMediator mediator) => _mediator = mediator;
 
+
+    #region Queries
     /// <summary>
     /// Retrieves a paginated list of error logs with optional filters.
     /// </summary>
@@ -65,4 +67,6 @@ public class AdminErrorLogsController : ControllerBase
         if (log == null) return NotFound();
         return Ok(log);
     }
+
+    #endregion
 }

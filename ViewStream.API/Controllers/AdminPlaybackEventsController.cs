@@ -17,6 +17,7 @@ public class AdminPlaybackEventsController : ControllerBase
 
     public AdminPlaybackEventsController(IMediator mediator) => _mediator = mediator;
 
+    #region Queries
     /// <summary>
     /// Retrieves a paginated list of playback events.
     /// </summary>
@@ -43,4 +44,6 @@ public class AdminPlaybackEventsController : ControllerBase
         var result = await _mediator.Send(new GetPlaybackEventsPagedQuery(page, pageSize, episodeId, profileId), cancellationToken);
         return Ok(result);
     }
+
+    #endregion
 }
