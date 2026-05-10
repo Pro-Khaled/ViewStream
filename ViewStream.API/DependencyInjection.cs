@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using System.Reflection;
 using ViewStream.API.Extensions;
 using ViewStream.API.Services.Hubs;
@@ -58,6 +59,9 @@ namespace ViewStream.API
                 });
             });
 
+            // Add Rate Limiting
+            services.AddRateLimiting(configuration);
+
 
             return services;
         }
@@ -83,6 +87,8 @@ namespace ViewStream.API
             // Serve static files if client is in same project
             app.UseDefaultFiles();
             app.UseStaticFiles();
+
+            app.UseRateLimiter();
 
             return app;
         }

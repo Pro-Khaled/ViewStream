@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using ViewStream.Application.DTOs.Account;
 using ViewStream.Application.Features.Account.Commands.ConfirmEmail;
@@ -17,6 +18,8 @@ namespace ViewStream.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[EnableRateLimiting("AuthRateLimit")]
+
 public class AccountController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -33,10 +36,14 @@ public class AccountController : ControllerBase
     /// <returns>Status message.</returns>
     /// <response code="200">Registration succeeded (or confirmation email resent).</response>
     /// <response code="400">Validation failed or email already taken.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+
     [HttpPost("register")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]  
+
     public async Task<IActionResult> Register(
         [FromBody] RegisterDto model,
         CancellationToken cancellationToken)
@@ -106,9 +113,11 @@ public class AccountController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Always 200 OK.</returns>
     /// <response code="200">Request processed (email sent if account exists).</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("forgot-password")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> ForgotPassword(
         [FromBody] ForgotPasswordDto model,
         CancellationToken cancellationToken)
@@ -129,10 +138,12 @@ public class AccountController : ControllerBase
     /// <returns>200 on success, 400 on failure.</returns>
     /// <response code="200">Password reset successfully.</response>
     /// <response code="400">Invalid token, mismatched passwords or policy violation.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("reset-password")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> ResetPassword(
         [FromBody] ResetPasswordDto model,
         CancellationToken cancellationToken)
@@ -164,10 +175,13 @@ public class AccountController : ControllerBase
     /// <response code="200">Login successful.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">Invalid credentials or account disabled.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+
     [HttpPost("login")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]   
     public async Task<ActionResult<AuthResponseDto>> Login(
         [FromBody] LoginDto model,
         CancellationToken cancellationToken)
@@ -195,10 +209,12 @@ public class AccountController : ControllerBase
     /// <response code="200">Tokens refreshed successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">Invalid or expired refresh token.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("refresh")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<AuthResponseDto>> Refresh(
         [FromBody] RefreshTokenDto model,
         CancellationToken cancellationToken)
