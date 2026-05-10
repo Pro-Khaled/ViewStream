@@ -37,7 +37,7 @@ public class GenresController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<GenreListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<GenreListItemDto>>> GetGenres(
+    public async Task<ActionResult<PagedResult<GenreListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
@@ -83,7 +83,38 @@ public class GenresController : ControllerBase
         return Ok(genre);
     }
 
-    #endregion
+    
+        /// <summary>
+        /// Retrieves a paginated list of genres for the admin dashboard. Supports searching and sorting.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of genres.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/genres")]
+        [Authorize(Roles = "SuperAdmin,ContentManager")]
+        [ProducesResponseType(typeof(PagedResult<AdminGenreListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminGenreListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminGenresPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+#endregion
 
     #region Commands
 

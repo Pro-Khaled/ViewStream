@@ -32,4 +32,11 @@ namespace ViewStream.Application.DTOs
         public string Name { get; set; } = string.Empty;
     }
 
+    public class AdminGenreListItemDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int ShowCount { get; set; }
+    }
 }
+
