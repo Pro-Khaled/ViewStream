@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -16,6 +16,10 @@ namespace ViewStream.Application.Mappings
 
             CreateMap<CreateCountryDto, Country>();
             CreateMap<UpdateCountryDto, Country>();
+        
+        CreateMap<Country, AdminCountryListItemDto>()
+            .ForMember(d => d.AvailabilityCount, opt => opt.Ignore());
         }
     }
 }
+

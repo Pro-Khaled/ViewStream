@@ -38,7 +38,7 @@ public class CountriesController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<CountryListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<CountryListItemDto>>> GetCountries(
+    public async Task<ActionResult<PagedResult<CountryListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50,
         [FromQuery] string? search = null,
@@ -85,7 +85,40 @@ public class CountriesController : ControllerBase
         return Ok(country);
     }
 
-    #endregion
+    
+        /// <summary>
+        /// Retrieves a paginated list of countries for the admin dashboard. Supports searching, sorting, and filtering by continent.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="continent">Optional filter by continent.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of countrys.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/countries")]
+        [Authorize(Roles = "SuperAdmin,ContentManager")]
+        [ProducesResponseType(typeof(PagedResult<AdminCountryListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminCountryListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] string? continent = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminCountriesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, continent);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+#endregion
 
     #region Commands
 

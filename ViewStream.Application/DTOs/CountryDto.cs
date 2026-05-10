@@ -34,4 +34,12 @@ namespace ViewStream.Application.DTOs
         public string? Continent { get; set; }
     }
 
+    public class AdminCountryListItemDto
+    {
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public string? Continent { get; set; }
+        public int AvailabilityCount { get; set; }
+    }
 }
+
