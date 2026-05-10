@@ -1,5 +1,6 @@
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Serilog;
 using ViewStream.Api.Hubs;
 using ViewStream.Api.Middleware;
 using ViewStream.API;
@@ -7,6 +8,14 @@ using ViewStream.API.Hubs;
 using ViewStream.Infrastructure.Seeding;
 using ViewStream.Shared.Options;
 var builder = WebApplication.CreateBuilder(args);
+
+//  Configure Serilog host
+builder.Host.UseSerilog((context, services, configuration) =>
+    configuration
+        .ReadFrom.Configuration(context.Configuration)   // reads appsettings.json
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+);
 
 // Add API services
 builder.Services.AddApi(builder.Configuration);
@@ -16,6 +25,9 @@ builder.Services.AddApi(builder.Configuration);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Use Serilog request logging middleware
+app.UseSerilogRequestLogging();
 
 // Seed roles and SupperAdminAccount on startup
 using (var scope = app.Services.CreateScope())
