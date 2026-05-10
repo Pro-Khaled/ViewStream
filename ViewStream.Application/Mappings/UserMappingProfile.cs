@@ -1,7 +1,7 @@
-using AutoMapper;
+﻿using AutoMapper;
+using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
-//using ViewStream.Application.DTOs;
 
 namespace ViewStream.Application.Mappings
 {
@@ -9,24 +9,12 @@ namespace ViewStream.Application.Mappings
     {
           public UserMappingProfile()
           {
-//            // Entity → DTO
-//            CreateMap<User, UserDto>()
-//                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-//                // Add custom mappings for related entities or computed properties here
-//                ;
-//            
-//            // Create DTO → Entity (for Create/Update commands)
-//            CreateMap<CreateUserDto, User>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-//            
-//            CreateMap<UpdateUserDto, User>()
-//                .ForMember(dest => dest.Id, opt => opt.Ignore())
-//                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
-//                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
-//                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
+        
+        CreateMap<User, AdminUserListItemDto>()
+            .ForMember(d => d.ProfileCount, opt => opt.Ignore())
+            .ForMember(d => d.Roles, opt => opt.Ignore());
         }
     }
 }
+

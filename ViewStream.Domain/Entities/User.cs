@@ -122,8 +122,8 @@ public partial class User : IdentityUser<long>
     [InverseProperty("User")]
     public virtual ICollection<UserPromoUsage> UserPromoUsages { get; set; } = new List<UserPromoUsage>();
 
-    //[InverseProperty("User")]
-    //public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    [InverseProperty("User")]
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
     //[InverseProperty("User")]
     //public virtual ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();

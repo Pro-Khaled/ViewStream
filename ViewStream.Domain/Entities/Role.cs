@@ -33,8 +33,8 @@ public partial class Role : IdentityRole<long>
     //[InverseProperty("Role")]
     //public virtual ICollection<RoleClaim> RoleClaims { get; set; } = new List<RoleClaim>();
 
-    //[InverseProperty("Role")]
-    //public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    [InverseProperty("Role")]
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
     [ForeignKey("RoleId")]
     [InverseProperty("Roles")]

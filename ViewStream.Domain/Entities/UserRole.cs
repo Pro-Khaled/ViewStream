@@ -18,11 +18,11 @@ public partial class UserRole : IdentityUserRole<long>
     //[Key]
     //public long RoleId { get; set; }
 
-    //[ForeignKey("RoleId")]
-    //[InverseProperty("UserRoles")]
-    //public virtual Role Role { get; set; } = null!;
+    [ForeignKey("RoleId")]
+    [InverseProperty("UserRoles")]
+    public virtual Role Role { get; set; } = null!;
 
-    //[ForeignKey("UserId")]
-    //[InverseProperty("UserRoles")]
-    //public virtual User User { get; set; } = null!;
+    [ForeignKey("UserId")]
+    [InverseProperty("UserRoles")]
+    public virtual User User { get; set; } = null!;
 }

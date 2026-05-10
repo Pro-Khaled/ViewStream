@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,4 +56,24 @@ namespace ViewStream.Application.DTOs
         public string Email { get; set; } = string.Empty;
         public string? AvatarUrl { get; set; }
     }
+    public class AdminUserListItemDto
+    {
+        public long Id { get; set; }
+        public string Email { get; set; }
+        public string? FullName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? CountryCode { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsBlocked { get; set; }
+        public string? BlockedReason { get; set; }
+        public DateTime? BlockedUntil { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public int ProfileCount { get; set; }
+
+        public List<string> Roles { get; set; } = new();
+
+    }
 }
+

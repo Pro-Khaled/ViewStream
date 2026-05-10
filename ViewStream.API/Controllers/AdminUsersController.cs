@@ -50,7 +50,42 @@ public class AdminUsersController : ControllerBase
         return Ok(user);
     }
 
-    #endregion
+    
+        /// <summary>
+        /// Retrieves a paginated list of users for the admin dashboard. Supports searching, sorting, and filtering by active/blocked status.
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-indexed).</param>
+        /// <param name="pageSize">Number of items per page.</param>
+        /// <param name="searchTerm">Optional search term.</param>
+        /// <param name="sortBy">Optional field to sort by.</param>
+        /// <param name="sortDescending">Whether to sort in descending order.</param>
+        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+        /// <param name="isActive">Optional filter by isactive.</param>
+        /// <param name="isBlocked">Optional filter by isblocked.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>A paginated list of users.</returns>
+        /// <response code="200">Returns the paginated list.</response>
+        /// <response code="401">Unauthorized â€“ authentication required.</response>
+        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+        [HttpGet("api/admin/users")]
+        [Authorize(Roles = "SuperAdmin,UserManager")]
+        [ProducesResponseType(typeof(PagedResult<AdminUserListItemDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<AdminUserListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] bool? isBlocked = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAdminUsersPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, isActive, isBlocked);
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
+#endregion
 
     #region Commands
 
