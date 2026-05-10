@@ -41,7 +41,7 @@ public class ShowsController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<ShowListItemDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<ShowListItemDto>>> GetShows(
+    public async Task<ActionResult<PagedResult<ShowListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
@@ -94,7 +94,7 @@ public class ShowsController : ControllerBase
         [HttpGet("api/admin/shows")]
         [Authorize(Roles = "SuperAdmin,ContentManager")]
         [ProducesResponseType(typeof(PagedResult<AdminShowListItemDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagedResult<AdminShowListItemDto>>> GetAdminShows(
+        public async Task<ActionResult<PagedResult<AdminShowListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? searchTerm = null,
