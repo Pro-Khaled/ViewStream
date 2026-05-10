@@ -8,7 +8,7 @@ using ViewStream.Application.Queries.SearchLog;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/search/logs")]
+[Route("api/v1/admin/search/logs")]
 [Authorize(Roles = "SuperAdmin,Analytics")]
 [Produces("application/json")]
 public class AdminSearchLogsController : ControllerBase

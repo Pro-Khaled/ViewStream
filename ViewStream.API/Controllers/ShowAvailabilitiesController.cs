@@ -11,7 +11,7 @@ using ViewStream.Application.Queries.ShowAvailability;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/shows/{showId:long}/availabilities")]
+[Route("api/v1/shows/{showId:long}/availabilities")]
 [Produces("application/json")]
 public class ShowAvailabilitiesController : ControllerBase
 {

@@ -9,7 +9,7 @@ using ViewStream.Application.Queries.Invoice;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 [Produces("application/json")]
 public class InvoicesController : ControllerBase

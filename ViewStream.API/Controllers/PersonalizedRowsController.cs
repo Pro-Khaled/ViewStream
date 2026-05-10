@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.PersonalizedRow;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/profiles/me/recommendations")]
+[Route("api/v1/profiles/me/recommendations")]
 [Authorize]
 [Produces("application/json")]
 public class PersonalizedRowsController : ControllerBase

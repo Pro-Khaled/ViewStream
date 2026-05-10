@@ -13,7 +13,7 @@ using ViewStream.Application.Queries.Friendship;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/friends")]
+[Route("api/v1/friends")]
 [Authorize]
 [Produces("application/json")]
 public class FriendshipsController : ControllerBase

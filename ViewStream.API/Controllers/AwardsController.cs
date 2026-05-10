@@ -12,7 +12,7 @@ using ViewStream.Application.Queries.Award;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class AwardsController : ControllerBase
 {

@@ -13,7 +13,7 @@ using ViewStream.Application.Queries.Season;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class SeasonsController : ControllerBase
 {
@@ -199,7 +199,7 @@ public class SeasonsController : ControllerBase
 /// Returns all seasons belonging to a specific show.
 /// </summary>
 [ApiController]
-[Route("api/shows/{showId:long}/seasons")]
+[Route("api/v1/shows/{showId:long}/seasons")]
 [Produces("application/json")]
 public class ShowSeasonsController : ControllerBase
 {

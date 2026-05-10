@@ -8,7 +8,7 @@ using ViewStream.Application.Queries.AuditLog;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/audit/logs")]
+[Route("api/v1/admin/audit/logs")]
 [Authorize(Roles = "SuperAdmin,Auditor")]
 [Produces("application/json")]
 public class AdminAuditLogsController : ControllerBase

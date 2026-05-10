@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.WatchHistory;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/profiles/me/history")]
+[Route("api/v1/profiles/me/history")]
 [Authorize]
 [Produces("application/json")]
 public class WatchHistoriesController : ControllerBase

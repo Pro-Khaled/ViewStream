@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.Reflection;
@@ -62,6 +63,14 @@ namespace ViewStream.API
             // Add Rate Limiting
             services.AddRateLimiting(configuration);
 
+            // Add API Versioning
+            services.AddApiVersioning(config =>
+            {
+                config.DefaultApiVersion = new ApiVersion(1, 0);
+                config.AssumeDefaultVersionWhenUnspecified = true;
+                config.ReportApiVersions = true;
+                config.ApiVersionReader = new UrlSegmentApiVersionReader();
+            });
 
             return services;
         }

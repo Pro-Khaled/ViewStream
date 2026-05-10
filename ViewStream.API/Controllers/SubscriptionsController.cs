@@ -12,7 +12,7 @@ using ViewStream.Application.Queries.Subscription;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 [Produces("application/json")]
 public class SubscriptionsController : ControllerBase

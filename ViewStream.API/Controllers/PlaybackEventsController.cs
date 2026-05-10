@@ -8,7 +8,7 @@ using ViewStream.Application.DTOs;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/playback/events")]
+[Route("api/v1/playback/events")]
 [Authorize]
 [Produces("application/json")]
 public class PlaybackEventsController : ControllerBase

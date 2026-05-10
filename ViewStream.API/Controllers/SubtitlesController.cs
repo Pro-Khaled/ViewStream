@@ -14,7 +14,7 @@ using ViewStream.Application.Queries.Subtitle;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/episodes/{episodeId:long}/subtitles")]
+[Route("api/v1/episodes/{episodeId:long}/subtitles")]
 [Produces("application/json")]
 public class SubtitlesController : ControllerBase
 {

@@ -12,7 +12,7 @@ using ViewStream.Application.Queries.Role;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/roles")]
+[Route("api/v1/admin/roles")]
 [Authorize(Roles = "SuperAdmin")]
 [Produces("application/json")]
 public class RolesController : ControllerBase

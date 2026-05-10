@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.DataDeletionRequest;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/data-deletion-requests")]
+[Route("api/v1/admin/data-deletion-requests")]
 [Authorize(Roles = "SuperAdmin,DataProtectionOfficer")]
 [Produces("application/json")]
 public class AdminDataDeletionRequestsController : ControllerBase

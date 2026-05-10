@@ -14,7 +14,7 @@ using ViewStream.Application.Queries.AudioTrack;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/episodes/{episodeId:long}/audio-tracks")]
+[Route("api/v1/episodes/{episodeId:long}/audio-tracks")]
 [Produces("application/json")]
 public class AudioTracksController : ControllerBase
 {

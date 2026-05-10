@@ -8,7 +8,7 @@ using ViewStream.Application.Queries.PlaybackEvent;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/playback/events")]
+[Route("api/v1/admin/playback/events")]
 [Authorize(Roles = "SuperAdmin,Analytics")]
 [Produces("application/json")]
 public class AdminPlaybackEventsController : ControllerBase

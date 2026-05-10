@@ -12,7 +12,7 @@ using ViewStream.Application.Queries.EpisodeComment;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/episodes/{episodeId:long}/comments")]
+[Route("api/v1/episodes/{episodeId:long}/comments")]
 [Produces("application/json")]
 public class EpisodeCommentsController : ControllerBase
 {

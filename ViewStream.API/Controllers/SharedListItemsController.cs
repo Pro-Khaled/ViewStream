@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.SharedListItem;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/lists/{listId:long}/items")]
+[Route("api/v1/lists/{listId:long}/items")]
 [Authorize]
 [Produces("application/json")]
 public class SharedListItemsController : ControllerBase

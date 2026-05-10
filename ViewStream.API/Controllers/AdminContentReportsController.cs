@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.ContentReport;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/reports/content")]
+[Route("api/v1/admin/reports/content")]
 [Authorize(Roles = "SuperAdmin,Moderator")]
 [Produces("application/json")]
 public class AdminContentReportsController : ControllerBase

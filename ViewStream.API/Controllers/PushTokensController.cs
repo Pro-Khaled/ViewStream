@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.PushToken;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/users/me/push-tokens")]
+[Route("api/v1/users/me/push-tokens")]
 [Authorize]
 [Produces("application/json")]
 public class PushTokensController : ControllerBase

@@ -14,7 +14,7 @@ using ViewStream.Application.Queries.Show;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class ShowsController : ControllerBase
 {

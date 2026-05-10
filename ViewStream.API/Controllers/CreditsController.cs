@@ -12,7 +12,7 @@ using ViewStream.Application.Queries.Credit;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class CreditsController : ControllerBase
 {
@@ -209,7 +209,7 @@ public class CreditsController : ControllerBase
 // GET /api/Shows/{showId}/Credits
 // ──────────────────────────────────────────────
 [ApiController]
-[Route("api/shows/{showId:long}/credits")]
+[Route("api/v1/shows/{showId:long}/credits")]
 [Produces("application/json")]
 public class ShowCreditsController : ControllerBase
 {
@@ -238,7 +238,7 @@ public class ShowCreditsController : ControllerBase
 // GET /api/Seasons/{seasonId}/Credits
 // ──────────────────────────────────────────────
 [ApiController]
-[Route("api/seasons/{seasonId:long}/credits")]
+[Route("api/v1/seasons/{seasonId:long}/credits")]
 [Produces("application/json")]
 public class SeasonCreditsController : ControllerBase
 {
@@ -267,7 +267,7 @@ public class SeasonCreditsController : ControllerBase
 // GET /api/Episodes/{episodeId}/Credits
 // ──────────────────────────────────────────────
 [ApiController]
-[Route("api/episodes/{episodeId:long}/credits")]
+[Route("api/v1/episodes/{episodeId:long}/credits")]
 [Produces("application/json")]
 public class EpisodeCreditsController : ControllerBase
 {
@@ -296,7 +296,7 @@ public class EpisodeCreditsController : ControllerBase
 // GET /api/Persons/{personId}/Credits
 // ──────────────────────────────────────────────
 [ApiController]
-[Route("api/persons/{personId:long}/credits")]
+[Route("api/v1/persons/{personId:long}/credits")]
 [Produces("application/json")]
 public class PersonCreditsController : ControllerBase
 {

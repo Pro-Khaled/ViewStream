@@ -14,7 +14,7 @@ using ViewStream.Application.Queries.Episode;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class EpisodesController : ControllerBase
 {
@@ -234,7 +234,7 @@ public class EpisodesController : ControllerBase
 /// Returns all episodes belonging to a specific season.
 /// </summary>
 [ApiController]
-[Route("api/seasons/{seasonId:long}/episodes")]
+[Route("api/v1/seasons/{seasonId:long}/episodes")]
 [Produces("application/json")]
 public class SeasonEpisodesController : ControllerBase
 {

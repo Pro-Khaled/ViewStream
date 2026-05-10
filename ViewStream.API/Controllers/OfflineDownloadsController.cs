@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.OfflineDownload;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/profiles/me/downloads")]
+[Route("api/v1/profiles/me/downloads")]
 [Authorize]
 [Produces("application/json")]
 public class OfflineDownloadsController : ControllerBase

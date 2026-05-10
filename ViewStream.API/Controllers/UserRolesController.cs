@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.UserRole;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/users/{userId:long}/roles")]
+[Route("api/v1/admin/users/{userId:long}/roles")]
 [Authorize(Roles = "SuperAdmin")]
 [Produces("application/json")]
 public class UserRolesController : ControllerBase

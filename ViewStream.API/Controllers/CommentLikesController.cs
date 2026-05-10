@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.CommentLike;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/comments/{commentId:long}/likes")]
+[Route("api/v1/comments/{commentId:long}/likes")]
 [Produces("application/json")]
 public class CommentLikesController : ControllerBase
 {

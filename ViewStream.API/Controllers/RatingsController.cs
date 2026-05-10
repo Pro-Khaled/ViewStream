@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.Rating;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class RatingsController : ControllerBase
 {
@@ -86,7 +86,7 @@ public class RatingsController : ControllerBase
 /// DELETE /api/Shows/{showId}/Ratings/me        → remove current profile's rating
 /// </summary>
 [ApiController]
-[Route("api/shows/{showId:long}/ratings")]
+[Route("api/v1/shows/{showId:long}/ratings")]
 [Produces("application/json")]
 public class ShowRatingsController : ControllerBase
 {

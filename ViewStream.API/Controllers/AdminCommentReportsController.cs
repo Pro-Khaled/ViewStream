@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.CommentReport;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/reports/comments")]
+[Route("api/v1/admin/reports/comments")]
 [Authorize(Roles = "SuperAdmin,Moderator")]
 [Produces("application/json")]
 public class AdminCommentReportsController : ControllerBase

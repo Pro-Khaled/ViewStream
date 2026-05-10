@@ -8,7 +8,7 @@ using ViewStream.Application.DTOs;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/notifications")]
+[Route("api/v1/admin/notifications")]
 [Authorize(Roles = "SuperAdmin,Support")]
 [Produces("application/json")]
 public class AdminNotificationsController : ControllerBase

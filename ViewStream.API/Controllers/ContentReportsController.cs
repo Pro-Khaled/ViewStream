@@ -8,7 +8,7 @@ using ViewStream.Application.DTOs;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/reports/content")]
+[Route("api/v1/reports/content")]
 [Authorize]
 [Produces("application/json")]
 public class ContentReportsController : ControllerBase

@@ -11,7 +11,7 @@ using ViewStream.Application.Queries.Device;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/users/me/devices")]
+[Route("api/v1/users/me/devices")]
 [Authorize]
 [Produces("application/json")]
 public class DevicesController : ControllerBase

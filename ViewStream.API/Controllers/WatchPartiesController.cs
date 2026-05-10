@@ -12,7 +12,7 @@ using ViewStream.Application.Queries.WatchParty;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/watch-parties")]
+[Route("api/v1/watch-parties")]
 [Produces("application/json")]
 public class WatchPartiesController : ControllerBase
 {

@@ -11,7 +11,7 @@ using ViewStream.Application.Queries.Permission;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/permissions")]
+[Route("api/v1/admin/permissions")]
 [Authorize(Roles = "SuperAdmin")]
 [Produces("application/json")]
 public class PermissionsController : ControllerBase

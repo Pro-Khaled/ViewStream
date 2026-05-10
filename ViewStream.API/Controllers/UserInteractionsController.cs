@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.UserInteraction;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/profiles/me/interactions")]
+[Route("api/v1/profiles/me/interactions")]
 [Authorize]
 [Produces("application/json")]
 public class UserInteractionsController : ControllerBase

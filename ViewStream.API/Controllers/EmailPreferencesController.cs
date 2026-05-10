@@ -9,7 +9,7 @@ using ViewStream.Application.Queries.EmailPreference;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/users/me/email-preferences")]
+[Route("api/v1/users/me/email-preferences")]
 [Authorize]
 [Produces("application/json")]
 public class EmailPreferencesController : ControllerBase

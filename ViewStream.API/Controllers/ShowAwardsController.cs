@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.ShowAward;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/shows/{showId:long}/awards")]
+[Route("api/v1/shows/{showId:long}/awards")]
 [Produces("application/json")]
 public class ShowAwardsController : ControllerBase
 {

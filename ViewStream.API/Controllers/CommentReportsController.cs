@@ -8,7 +8,7 @@ using ViewStream.Application.DTOs;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/comments/{commentId:long}/reports")]
+[Route("api/v1/comments/{commentId:long}/reports")]
 [Authorize]
 [Produces("application/json")]
 public class CommentReportsController : ControllerBase

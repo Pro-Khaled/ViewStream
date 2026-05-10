@@ -9,7 +9,7 @@ using ViewStream.Application.Queries.UserPromoUsage;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/users/me/promo-usages")]
+[Route("api/v1/users/me/promo-usages")]
 [Authorize]
 [Produces("application/json")]
 public class UserPromoUsagesController : ControllerBase

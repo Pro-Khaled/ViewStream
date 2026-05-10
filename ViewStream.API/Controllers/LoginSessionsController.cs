@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.LoginSession;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/users/me/sessions")]
+[Route("api/v1/users/me/sessions")]
 [Authorize]
 [Produces("application/json")]
 public class LoginSessionsController : ControllerBase

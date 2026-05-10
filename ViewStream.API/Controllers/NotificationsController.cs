@@ -11,7 +11,7 @@ using ViewStream.Application.Queries.Notification;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/users/me/notifications")]
+[Route("api/v1/users/me/notifications")]
 [Authorize]
 [Produces("application/json")]
 public class NotificationsController : ControllerBase

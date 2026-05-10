@@ -9,7 +9,7 @@ using ViewStream.Application.Queries.ItemVector;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/shows/{showId:long}/vector")]
+[Route("api/v1/shows/{showId:long}/vector")]
 [Authorize(Roles = "ContentManager,SuperAdmin")]
 [Produces("application/json")]
 public class ItemVectorsController : ControllerBase

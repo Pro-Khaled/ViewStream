@@ -8,7 +8,7 @@ using ViewStream.Application.Queries.UserInteraction;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/interactions")]
+[Route("api/v1/admin/interactions")]
 [Authorize(Roles = "SuperAdmin,Analytics")]
 [Produces("application/json")]
 public class AdminUserInteractionsController : ControllerBase
@@ -76,7 +76,7 @@ public class AdminUserInteractionsController : ControllerBase
 // GET /api/admin/profiles/{profileId}/interactions/summary
 // ──────────────────────────────────────────────────────────────────
 [ApiController]
-[Route("api/admin/profiles/{profileId:long}/interactions")]
+[Route("api/v1/admin/profiles/{profileId:long}/interactions")]
 [Authorize(Roles = "SuperAdmin,Analytics")]
 [Produces("application/json")]
 public class AdminProfileInteractionsController : ControllerBase
@@ -134,7 +134,7 @@ public class AdminProfileInteractionsController : ControllerBase
 // GET /api/admin/shows/{showId}/interactions
 // ──────────────────────────────────────────────────────────────────
 [ApiController]
-[Route("api/admin/shows/{showId:long}/interactions")]
+[Route("api/v1/admin/shows/{showId:long}/interactions")]
 [Authorize(Roles = "SuperAdmin,Analytics")]
 [Produces("application/json")]
 public class AdminShowInteractionsController : ControllerBase

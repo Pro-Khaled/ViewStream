@@ -12,7 +12,7 @@ using ViewStream.Application.Queries.UserLibrary;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/profiles/me/library")]
+[Route("api/v1/profiles/me/library")]
 [Authorize]
 [Produces("application/json")]
 public class UserLibrariesController : ControllerBase

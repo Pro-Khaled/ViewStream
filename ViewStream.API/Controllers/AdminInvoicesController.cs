@@ -8,7 +8,7 @@ using ViewStream.Application.Queries.Invoice;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/invoices")]
+[Route("api/v1/admin/invoices")]
 [Authorize(Roles = "SuperAdmin,Finance")]
 [Produces("application/json")]
 public class AdminInvoicesController : ControllerBase

@@ -12,7 +12,7 @@ using ViewStream.Application.Queries.SharedList;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/profiles/me/lists")]
+[Route("api/v1/profiles/me/lists")]
 [Authorize]
 [Produces("application/json")]
 public class SharedListsController : ControllerBase

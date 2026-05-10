@@ -10,7 +10,7 @@ using ViewStream.Application.Queries.WatchPartyParticipant;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/watch-parties/{partyId:long}/participants")]
+[Route("api/v1/watch-parties/{partyId:long}/participants")]
 [Authorize]
 [Produces("application/json")]
 public class WatchPartyParticipantsController : ControllerBase

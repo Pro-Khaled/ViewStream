@@ -8,7 +8,7 @@ using ViewStream.Application.Queries.ErrorLog;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/admin/errors/logs")]
+[Route("api/v1/admin/errors/logs")]
 [Authorize(Roles = "SuperAdmin,Support")]
 [Produces("application/json")]
 public class AdminErrorLogsController : ControllerBase

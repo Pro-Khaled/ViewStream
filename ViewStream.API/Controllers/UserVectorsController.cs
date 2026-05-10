@@ -9,7 +9,7 @@ using ViewStream.Application.Queries.UserVector;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
-[Route("api/profiles/me/vector")]
+[Route("api/v1/profiles/me/vector")]
 [Authorize]
 [Produces("application/json")]
 public class UserVectorsController : ControllerBase
