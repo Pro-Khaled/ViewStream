@@ -8,10 +8,12 @@ using ViewStream.Application.Commands.Genre.UpdateGenre;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Genre;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class GenresController : ControllerBase
@@ -34,9 +36,12 @@ public class GenresController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A paginated list of genres.</returns>
     /// <response code="200">Returns the paginated list of genres.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<GenreListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<GenreListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -53,9 +58,12 @@ public class GenresController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of all genres.</returns>
     /// <response code="200">Returns the list of all genres.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("all")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<GenreListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<GenreListItemDto>>> GetAllGenres(CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(new GetAllGenresQuery(), cancellationToken);
@@ -70,10 +78,13 @@ public class GenresController : ControllerBase
     /// <returns>The requested genre.</returns>
     /// <response code="200">Returns the genre.</response>
     /// <response code="404">Genre not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:int}")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(GenreDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<GenreDto>> GetGenre(
         int id,
         CancellationToken cancellationToken)
@@ -98,9 +109,12 @@ public class GenresController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
         [HttpGet("api/admin/genres")]
+    [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin,ContentManager")]
         [ProducesResponseType(typeof(PagedResult<AdminGenreListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminGenreListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -128,12 +142,15 @@ public class GenresController : ControllerBase
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "SuperAdmin")]
     [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateGenre(
         [FromBody] CreateGenreDto dto,
         CancellationToken cancellationToken)
@@ -155,13 +172,16 @@ public class GenresController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Genre not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:int}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateGenre(
         int id,
         [FromBody] UpdateGenreDto dto,
@@ -183,12 +203,15 @@ public class GenresController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Genre not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:int}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteGenre(
         int id,
         CancellationToken cancellationToken)

@@ -8,10 +8,12 @@ using ViewStream.Application.Commands.Person.UpdatePerson;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Person;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class PersonsController : ControllerBase
@@ -31,9 +33,12 @@ public class PersonsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of all persons.</returns>
     /// <response code="200">Returns the list of persons.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("all")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<PersonListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<PersonListItemDto>>> GetAll(CancellationToken cancellationToken)
         => Ok(await _mediator.Send(new GetAllPersonsQuery(), cancellationToken));
 
@@ -46,9 +51,12 @@ public class PersonsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A paginated list of persons.</returns>
     /// <response code="200">Returns the paginated list.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<PersonListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<PersonListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -64,10 +72,13 @@ public class PersonsController : ControllerBase
     /// <returns>The requested person.</returns>
     /// <response code="200">Returns the person.</response>
     /// <response code="404">Person not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:long}")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PersonDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PersonDto>> GetById(long id, CancellationToken cancellationToken)
     {
         var person = await _mediator.Send(new GetPersonByIdQuery(id), cancellationToken);
@@ -90,9 +101,12 @@ public class PersonsController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
         [HttpGet("api/admin/persons")]
+    [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin,ContentManager")]
         [ProducesResponseType(typeof(PagedResult<AdminPersonListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminPersonListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -120,12 +134,15 @@ public class PersonsController : ControllerBase
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(typeof(PersonDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PersonDto>> Create(
         [FromBody] CreatePersonDto dto,
         CancellationToken cancellationToken)
@@ -147,13 +164,16 @@ public class PersonsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Person not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(typeof(PersonDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PersonDto>> Update(
         long id,
         [FromBody] UpdatePersonDto dto,
@@ -175,12 +195,15 @@ public class PersonsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Person not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();

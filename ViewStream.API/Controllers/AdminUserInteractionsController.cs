@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.UserInteraction;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/interactions")]
 [Authorize(Roles = "SuperAdmin,Analytics")]
 [Produces("application/json")]
@@ -37,9 +39,12 @@ public class AdminUserInteractionsController : ControllerBase
     /// <response code="200">Returns the paginated list.</response>
     /// <response code="401">Unauthorized â€“ authentication required.</response>
     /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("api/admin/interactions")]
+    [EnableRateLimiting("AdminRateLimit")]
     [Authorize(Roles = "SuperAdmin,Analytics")]
     [ProducesResponseType(typeof(PagedResult<AdminUserInteractionListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<AdminUserInteractionListItemDto>>> GetAdminPaged(
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 20,
@@ -76,6 +81,7 @@ public class AdminUserInteractionsController : ControllerBase
 // GET /api/admin/profiles/{profileId}/interactions/summary
 // ──────────────────────────────────────────────────────────────────
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/profiles/{profileId:long}/interactions")]
 [Authorize(Roles = "SuperAdmin,Analytics")]
 [Produces("application/json")]
@@ -134,6 +140,7 @@ public class AdminProfileInteractionsController : ControllerBase
 // GET /api/admin/shows/{showId}/interactions
 // ──────────────────────────────────────────────────────────────────
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/shows/{showId:long}/interactions")]
 [Authorize(Roles = "SuperAdmin,Analytics")]
 [Produces("application/json")]

@@ -10,10 +10,12 @@ using ViewStream.Application.Commands.Episode.UploadEpisodeThumbnail;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Episode;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class EpisodesController : ControllerBase
@@ -35,10 +37,13 @@ public class EpisodesController : ControllerBase
     /// <returns>The requested episode.</returns>
     /// <response code="200">Returns the episode.</response>
     /// <response code="404">Episode not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:long}")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(EpisodeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<EpisodeDto>> GetEpisode(
         long id,
         CancellationToken cancellationToken)
@@ -65,9 +70,12 @@ public class EpisodesController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
         [HttpGet("api/admin/episodes")]
+    [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin,ContentManager")]
         [ProducesResponseType(typeof(PagedResult<AdminEpisodeListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminEpisodeListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -97,12 +105,15 @@ public class EpisodesController : ControllerBase
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(typeof(long), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateEpisode(
         [FromForm] CreateEpisodeDto dto,
         CancellationToken cancellationToken)
@@ -124,13 +135,16 @@ public class EpisodesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Episode not found or already deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateEpisode(
         long id,
         [FromBody] UpdateEpisodeDto dto,
@@ -152,12 +166,15 @@ public class EpisodesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Episode not found or already deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteEpisode(
         long id,
         CancellationToken cancellationToken)
@@ -178,12 +195,15 @@ public class EpisodesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not a SuperAdmin.</response>
     /// <response code="404">Episode not found or not deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/restore")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RestoreEpisode(
         long id,
         CancellationToken cancellationToken)
@@ -206,13 +226,16 @@ public class EpisodesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Episode not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/upload-thumbnail")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UploadThumbnail(
         long id,
         IFormFile thumbnailFile,
@@ -234,6 +257,7 @@ public class EpisodesController : ControllerBase
 /// Returns all episodes belonging to a specific season.
 /// </summary>
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/seasons/{seasonId:long}/episodes")]
 [Produces("application/json")]
 public class SeasonEpisodesController : ControllerBase
@@ -249,9 +273,12 @@ public class SeasonEpisodesController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of episodes for the season.</returns>
     /// <response code="200">Returns the list of episodes.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<EpisodeListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<EpisodeListItemDto>>> GetEpisodesBySeason(
         long seasonId,
         CancellationToken cancellationToken)

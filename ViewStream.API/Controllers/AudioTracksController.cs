@@ -10,10 +10,12 @@ using ViewStream.Application.Commands.AudioTrack.UploadAudioFile;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.AudioTrack;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/episodes/{episodeId:long}/audio-tracks")]
 [Produces("application/json")]
 public class AudioTracksController : ControllerBase
@@ -31,9 +33,12 @@ public class AudioTracksController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of audio tracks belonging to the episode.</returns>
     /// <response code="200">Returns the list of audio tracks.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<AudioTrackListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<AudioTrackListItemDto>>> GetAudioTracksByEpisode(
         long episodeId,
         CancellationToken cancellationToken)
@@ -50,10 +55,13 @@ public class AudioTracksController : ControllerBase
     /// <returns>The requested audio track.</returns>
     /// <response code="200">Returns the audio track.</response>
     /// <response code="404">If the audio track is not found or has been deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:long}")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(AudioTrackDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<AudioTrackDto>> GetAudioTrack(
         long id,
         CancellationToken cancellationToken)
@@ -81,9 +89,12 @@ public class AudioTracksController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
         [HttpGet("api/admin/audio-tracks")]
+    [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin,ContentManager")]
         [ProducesResponseType(typeof(PagedResult<AdminAudioTrackListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminAudioTrackListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -115,12 +126,15 @@ public class AudioTracksController : ControllerBase
     /// <response code="400">Episode ID mismatch or invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(typeof(long), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateAudioTrack(
         long episodeId,
         [FromBody] CreateAudioTrackDto dto,
@@ -146,13 +160,16 @@ public class AudioTracksController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Audio track not found or already deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateAudioTrack(
         long id,
         [FromBody] UpdateAudioTrackDto dto,
@@ -174,12 +191,15 @@ public class AudioTracksController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Audio track not found or already deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteAudioTrack(
         long id,
         CancellationToken cancellationToken)
@@ -200,12 +220,15 @@ public class AudioTracksController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not a SuperAdmin.</response>
     /// <response code="404">Audio track not found or not deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/restore")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RestoreAudioTrack(
         long id,
         CancellationToken cancellationToken)
@@ -228,13 +251,16 @@ public class AudioTracksController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Audio track not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/upload-file")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UploadAudioFile(
         long id,
         IFormFile file,

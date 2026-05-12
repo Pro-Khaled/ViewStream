@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.PersonalizedRow.DeletePersonalizedRow;
 using ViewStream.Application.Commands.PersonalizedRow.UpsertPersonalizedRow;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.PersonalizedRow;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/profiles/me/recommendations")]
 [Authorize]
 [Produces("application/json")]
@@ -56,10 +58,13 @@ public class PersonalizedRowsController : ControllerBase
     /// <response code="200">Row upserted successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [ProducesResponseType(typeof(PersonalizedRowDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PersonalizedRowDto>> UpsertRow(
         [FromBody] CreateUpdatePersonalizedRowDto dto,
         CancellationToken cancellationToken)
@@ -79,10 +84,13 @@ public class PersonalizedRowsController : ControllerBase
     /// <response code="204">Row deleted successfully.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">Row not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{rowName}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteRow(
         string rowName,
         CancellationToken cancellationToken)

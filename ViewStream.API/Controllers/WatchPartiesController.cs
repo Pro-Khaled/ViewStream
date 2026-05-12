@@ -8,10 +8,12 @@ using ViewStream.Application.Commands.WatchParty.UpdateWatchParty;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchParty;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/watch-parties")]
 [Produces("application/json")]
 public class WatchPartiesController : ControllerBase
@@ -36,9 +38,12 @@ public class WatchPartiesController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A paged list of active watch parties.</returns>
     /// <response code="200">Returns the paged list.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<WatchPartyListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<WatchPartyListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -56,10 +61,13 @@ public class WatchPartiesController : ControllerBase
     /// <returns>The watch party if found.</returns>
     /// <response code="200">Returns the watch party.</response>
     /// <response code="404">Party not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:long}")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(WatchPartyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<WatchPartyDto>> GetById(
         long id,
         CancellationToken cancellationToken)
@@ -77,10 +85,13 @@ public class WatchPartiesController : ControllerBase
     /// <returns>The active watch party if found.</returns>
     /// <response code="200">Returns the watch party.</response>
     /// <response code="404">Active party not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("code/{code}")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(WatchPartyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<WatchPartyDto>> GetByCode(
         string code,
         CancellationToken cancellationToken)
@@ -108,9 +119,12 @@ public class WatchPartiesController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
         [HttpGet("api/admin/watch-parties")]
+    [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin,Moderator")]
         [ProducesResponseType(typeof(PagedResult<AdminWatchPartyListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminWatchPartyListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -140,11 +154,14 @@ public class WatchPartiesController : ControllerBase
     /// <response code="201">Party created successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(WatchPartyDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<WatchPartyDto>> Create(
         [FromBody] CreateWatchPartyDto dto,
         CancellationToken cancellationToken)
@@ -168,13 +185,16 @@ public class WatchPartiesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not the host.</response>
     /// <response code="404">Party not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(WatchPartyDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<WatchPartyDto>> Update(
         long id,
         [FromBody] UpdateWatchPartyDto dto,
@@ -198,12 +218,15 @@ public class WatchPartiesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not the host.</response>
     /// <response code="404">Party not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/end")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> End(
         long id,
         CancellationToken cancellationToken)

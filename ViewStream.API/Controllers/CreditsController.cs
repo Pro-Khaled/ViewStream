@@ -8,10 +8,12 @@ using ViewStream.Application.Commands.Credit.UpdateCredit;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Credit;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class CreditsController : ControllerBase
@@ -34,9 +36,12 @@ public class CreditsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A paginated list of credits.</returns>
     /// <response code="200">Returns the paginated list of credits.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<CreditListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<CreditListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -85,9 +90,12 @@ public class CreditsController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
         [HttpGet("api/admin/credits")]
+    [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin,ContentManager")]
         [ProducesResponseType(typeof(PagedResult<AdminCreditListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminCreditListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -116,12 +124,15 @@ public class CreditsController : ControllerBase
     /// <response code="400">Invalid input (e.g., multiple or no targets specified).</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(typeof(CreditDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<CreditDto>> Create(
         [FromBody] CreateCreditDto dto,
         CancellationToken cancellationToken)
@@ -150,13 +161,16 @@ public class CreditsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Credit not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(typeof(CreditDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<CreditDto>> Update(
         long id,
         [FromBody] UpdateCreditDto dto,
@@ -178,12 +192,15 @@ public class CreditsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Credit not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [Authorize(Roles = "ContentManager,SuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(
         long id,
         CancellationToken cancellationToken)
@@ -209,6 +226,7 @@ public class CreditsController : ControllerBase
 // GET /api/Shows/{showId}/Credits
 // ──────────────────────────────────────────────
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/shows/{showId:long}/credits")]
 [Produces("application/json")]
 public class ShowCreditsController : ControllerBase
@@ -223,9 +241,12 @@ public class ShowCreditsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of credits for the show.</returns>
     /// <response code="200">Returns the list of credits.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<CreditListItemDto>>> GetByShow(
         long showId, CancellationToken cancellationToken)
     {
@@ -238,6 +259,7 @@ public class ShowCreditsController : ControllerBase
 // GET /api/Seasons/{seasonId}/Credits
 // ──────────────────────────────────────────────
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/seasons/{seasonId:long}/credits")]
 [Produces("application/json")]
 public class SeasonCreditsController : ControllerBase
@@ -252,9 +274,12 @@ public class SeasonCreditsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of credits for the season.</returns>
     /// <response code="200">Returns the list of credits.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<CreditListItemDto>>> GetBySeason(
         long seasonId, CancellationToken cancellationToken)
     {
@@ -267,6 +292,7 @@ public class SeasonCreditsController : ControllerBase
 // GET /api/Episodes/{episodeId}/Credits
 // ──────────────────────────────────────────────
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/episodes/{episodeId:long}/credits")]
 [Produces("application/json")]
 public class EpisodeCreditsController : ControllerBase
@@ -281,9 +307,12 @@ public class EpisodeCreditsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of credits for the episode.</returns>
     /// <response code="200">Returns the list of credits.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<CreditListItemDto>>> GetByEpisode(
         long episodeId, CancellationToken cancellationToken)
     {
@@ -296,6 +325,7 @@ public class EpisodeCreditsController : ControllerBase
 // GET /api/Persons/{personId}/Credits
 // ──────────────────────────────────────────────
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/persons/{personId:long}/credits")]
 [Produces("application/json")]
 public class PersonCreditsController : ControllerBase
@@ -310,9 +340,12 @@ public class PersonCreditsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of credits for the person.</returns>
     /// <response code="200">Returns the list of credits.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<CreditListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<CreditListItemDto>>> GetByPerson(
         long personId, CancellationToken cancellationToken)
     {

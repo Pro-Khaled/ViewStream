@@ -5,10 +5,12 @@ using System.Security.Claims;
 using ViewStream.Application.Commands.EmailPreference.UpdateEmailPreference;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.EmailPreference;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/users/me/email-preferences")]
 [Authorize]
 [Produces("application/json")]
@@ -55,10 +57,13 @@ public class EmailPreferencesController : ControllerBase
     /// <response code="200">Preferences updated successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(EmailPreferenceDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<EmailPreferenceDto>> UpdatePreferences(
         [FromBody] UpdateEmailPreferenceDto dto,
         CancellationToken cancellationToken)

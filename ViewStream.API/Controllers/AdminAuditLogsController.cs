@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.AuditLog;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/audit/logs")]
 [Authorize(Roles = "SuperAdmin,Auditor")]
 [Produces("application/json")]
@@ -21,8 +23,11 @@ public class AdminAuditLogsController : ControllerBase
     /// <summary>
     /// Gets paginated audit logs with extensive filters.
     /// </summary>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(PagedResult<AuditLogListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<AuditLogListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -39,9 +44,12 @@ public class AdminAuditLogsController : ControllerBase
     /// <summary>
     /// Gets a specific audit log by ID (includes full old/new values).
     /// </summary>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:long}")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(AuditLogDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<AuditLogDto>> GetById(long id, CancellationToken cancellationToken)
     {
         var log = await _mediator.Send(new GetAuditLogByIdQuery(id), cancellationToken);
@@ -68,9 +76,12 @@ public class AdminAuditLogsController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
         [HttpGet("api/admin/audit/logs")]
+        [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin,Auditor")]
         [ProducesResponseType(typeof(PagedResult<AdminAuditLogListItemDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminAuditLogListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,

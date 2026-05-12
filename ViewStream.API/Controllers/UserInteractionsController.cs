@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.UserInteraction.CreateUserInteraction;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.UserInteraction;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/profiles/me/interactions")]
 [Authorize]
 [Produces("application/json")]
@@ -105,10 +107,13 @@ public class UserInteractionsController : ControllerBase
     /// <response code="201">Interaction logged successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("AnalyticsRateLimit")]
     [ProducesResponseType(typeof(UserInteractionDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> LogInteraction(
         [FromBody] CreateUserInteractionDto dto,
         CancellationToken cancellationToken)

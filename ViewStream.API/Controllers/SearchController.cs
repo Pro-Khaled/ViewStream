@@ -12,6 +12,7 @@ namespace ViewStream.Api.Controllers;
 /// Handles search-related actions including logging user queries.
 /// </summary>
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/search")]
 [Produces("application/json")]
 public class SearchController : ControllerBase

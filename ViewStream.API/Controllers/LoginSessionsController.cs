@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.LoginSession.RevokeAllUserSessions;
 using ViewStream.Application.Commands.LoginSession.RevokeLoginSession;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.LoginSession;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/users/me/sessions")]
 [Authorize]
 [Produces("application/json")]
@@ -54,11 +56,14 @@ public class LoginSessionsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Session does not belong to the current user.</response>
     /// <response code="404">Session not found or already revoked.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/revoke")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Revoke(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -74,9 +79,12 @@ public class LoginSessionsController : ControllerBase
     /// <returns>No content on success.</returns>
     /// <response code="204">All sessions revoked successfully.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("revoke-all")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RevokeAll(CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();

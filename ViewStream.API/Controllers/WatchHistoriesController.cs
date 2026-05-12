@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.WatchHistory.UpsertWatchHistory;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchHistory;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/profiles/me/history")]
 [Authorize]
 [Produces("application/json")]
@@ -82,10 +84,13 @@ public class WatchHistoriesController : ControllerBase
     /// <response code="200">Progress recorded successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(WatchHistoryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<WatchHistoryDto>> Upsert(
         [FromBody] CreateUpdateWatchHistoryDto dto,
         CancellationToken cancellationToken)

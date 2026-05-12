@@ -16,9 +16,9 @@ using ViewStream.Application.Queries.User;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("AuthRateLimit")]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
-[EnableRateLimiting("AuthRateLimit")]
 
 public class AccountController : ControllerBase
 {

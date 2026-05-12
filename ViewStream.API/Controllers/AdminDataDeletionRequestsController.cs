@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.DataDeletionRequest.UpdateDataDeletionRequ
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.DataDeletionRequest;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/data-deletion-requests")]
 [Authorize(Roles = "SuperAdmin,DataProtectionOfficer")]
 [Produces("application/json")]
@@ -35,10 +37,13 @@ public class AdminDataDeletionRequestsController : ControllerBase
     /// <response code="200">Returns the paginated list.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(PagedResult<DataDeletionRequestListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<DataDeletionRequestListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -59,11 +64,14 @@ public class AdminDataDeletionRequestsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Request not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:long}")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(DataDeletionRequestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<DataDeletionRequestDto>> GetById(long id, CancellationToken cancellationToken)
     {
         var req = await _mediator.Send(new GetDataDeletionRequestByIdQuery(id), cancellationToken);
@@ -87,9 +95,12 @@ public class AdminDataDeletionRequestsController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
         [HttpGet("api/admin/data-deletion-requests")]
+    [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin,DataProtectionOfficer")]
         [ProducesResponseType(typeof(PagedResult<AdminDataDeletionRequestListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminDataDeletionRequestListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
@@ -120,12 +131,15 @@ public class AdminDataDeletionRequestsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">Request not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(DataDeletionRequestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<DataDeletionRequestDto>> UpdateStatus(
         long id,
         [FromBody] UpdateDataDeletionRequestDto dto,

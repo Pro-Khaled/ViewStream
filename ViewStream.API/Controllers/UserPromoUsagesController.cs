@@ -5,10 +5,12 @@ using System.Security.Claims;
 using ViewStream.Application.Commands.UserPromoUsage.RedeemPromoCode;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.UserPromoUsage;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/users/me/promo-usages")]
 [Authorize]
 [Produces("application/json")]
@@ -52,10 +54,13 @@ public class UserPromoUsagesController : ControllerBase
     /// <response code="200">Promo code redeemed successfully.</response>
     /// <response code="400">Invalid promo code, already used, or plan mismatch.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("redeem")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [ProducesResponseType(typeof(UserPromoUsageDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<UserPromoUsageDto>> Redeem(
         [FromBody] RedeemPromoCodeRequest request,
         CancellationToken cancellationToken)

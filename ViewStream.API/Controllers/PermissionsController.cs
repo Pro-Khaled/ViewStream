@@ -7,10 +7,12 @@ using ViewStream.Application.Commands.Permission.DeletePermission;
 using ViewStream.Application.Commands.Permission.UpdatePermission;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Permission;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/permissions")]
 [Authorize(Roles = "SuperAdmin")]
 [Produces("application/json")]
@@ -33,10 +35,13 @@ public class PermissionsController : ControllerBase
     /// <response code="200">Returns the list of permissions.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not a SuperAdmin.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(List<PermissionListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<PermissionListItemDto>>> GetAll(CancellationToken cancellationToken)
         => Ok(await _mediator.Send(new GetAllPermissionsQuery(), cancellationToken));
 
@@ -48,10 +53,13 @@ public class PermissionsController : ControllerBase
     /// <response code="200">Returns the grouped permissions.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not a SuperAdmin.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("grouped")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(Dictionary<string, List<PermissionListItemDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<Dictionary<string, List<PermissionListItemDto>>>> GetGrouped(CancellationToken cancellationToken)
         => Ok(await _mediator.Send(new GetPermissionsByGroupQuery(), cancellationToken));
 
@@ -65,11 +73,14 @@ public class PermissionsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not a SuperAdmin.</response>
     /// <response code="404">Permission not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:int}")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(PermissionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PermissionDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var perm = await _mediator.Send(new GetPermissionByIdQuery(id), cancellationToken);
@@ -90,11 +101,14 @@ public class PermissionsController : ControllerBase
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not a SuperAdmin.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(PermissionDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PermissionDto>> Create([FromBody] CreatePermissionDto dto, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -114,12 +128,15 @@ public class PermissionsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not a SuperAdmin.</response>
     /// <response code="404">Permission not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:int}")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(PermissionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PermissionDto>> Update(int id, [FromBody] UpdatePermissionDto dto, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -137,11 +154,14 @@ public class PermissionsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not a SuperAdmin.</response>
     /// <response code="404">Permission not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:int}")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();

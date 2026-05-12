@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.WatchPartyParticipant.JoinWatchParty;
 using ViewStream.Application.Commands.WatchPartyParticipant.LeaveWatchParty;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchPartyParticipant;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/watch-parties/{partyId:long}/participants")]
 [Authorize]
 [Produces("application/json")]
@@ -34,9 +36,12 @@ public class WatchPartyParticipantsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of participants with join/leave times.</returns>
     /// <response code="200">Returns the list of participants.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<WatchPartyParticipantDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<WatchPartyParticipantDto>>> GetParticipants(
         long partyId,
         CancellationToken cancellationToken)
@@ -58,10 +63,13 @@ public class WatchPartyParticipantsController : ControllerBase
     /// <response code="200">Joined successfully (or already joined).</response>
     /// <response code="400">Party not found or inactive.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("join")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(WatchPartyParticipantDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<WatchPartyParticipantDto>> Join(
         long partyId,
         CancellationToken cancellationToken)
@@ -81,10 +89,13 @@ public class WatchPartyParticipantsController : ControllerBase
     /// <response code="204">Left successfully.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">Participant record not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("leave")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Leave(
         long partyId,
         CancellationToken cancellationToken)

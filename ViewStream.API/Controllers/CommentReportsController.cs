@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.CommentReport.CreateCommentReport;
 using ViewStream.Application.DTOs;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/comments/{commentId:long}/reports")]
 [Authorize]
 [Produces("application/json")]
@@ -36,11 +38,14 @@ public class CommentReportsController : ControllerBase
     /// <response code="400">Comment ID mismatch or invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="409">User has already reported this comment.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ReportRateLimit")]
     [ProducesResponseType(typeof(CommentReportDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> ReportComment(
         long commentId,
         [FromBody] CreateCommentReportDto dto,

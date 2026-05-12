@@ -1,13 +1,15 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Invoice;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/invoices")]
 [Authorize(Roles = "SuperAdmin,Finance")]
 [Produces("application/json")]
@@ -27,11 +29,14 @@ public class AdminInvoicesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have finance permissions.</response>
     /// <response code="404">Invoice not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{id:long}")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(InvoiceDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<InvoiceDto>> GetById(long id, CancellationToken cancellationToken)
     {
         var invoice = await _mediator.Send(new GetInvoiceByIdQuery(id), cancellationToken);
@@ -53,8 +58,11 @@ public class AdminInvoicesController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Paged list of invoices.</returns>
     /// <response code="200">Returns the paged invoice list.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(PagedResult<InvoiceListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<InvoiceListItemDto>>> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,

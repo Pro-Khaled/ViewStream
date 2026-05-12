@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.Rating.CreateRating;
 using ViewStream.Application.Commands.Rating.DeleteRating;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Rating;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
 public class RatingsController : ControllerBase
@@ -33,10 +35,13 @@ public class RatingsController : ControllerBase
     /// <returns>A list of ratings.</returns>
     /// <response code="200">Returns the list of ratings.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("me")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(List<RatingListItemDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<RatingListItemDto>>> GetMyRatings(CancellationToken cancellationToken)
     {
         var profileId = GetCurrentProfileId();
@@ -57,11 +62,14 @@ public class RatingsController : ControllerBase
     /// <response code="200">Rating saved successfully.</response>
     /// <response code="400">Rating must be between 1 and 5.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<RatingDto>> RateShow(
         [FromBody] CreateUpdateRatingDto dto,
         CancellationToken cancellationToken)
@@ -86,6 +94,7 @@ public class RatingsController : ControllerBase
 /// DELETE /api/Shows/{showId}/Ratings/me        → remove current profile's rating
 /// </summary>
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/shows/{showId:long}/ratings")]
 [Produces("application/json")]
 public class ShowRatingsController : ControllerBase
@@ -107,9 +116,12 @@ public class ShowRatingsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of ratings.</returns>
     /// <response code="200">Returns the list of ratings.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<RatingListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<RatingListItemDto>>> GetRatingsByShow(
         long showId, CancellationToken cancellationToken)
     {
@@ -123,10 +135,13 @@ public class ShowRatingsController : ControllerBase
     /// <returns>Average rating and total count.</returns>
     /// <response code="200">Returns the rating summary.</response>
     /// <response code="404">Show not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("summary")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(ShowRatingSummaryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<ShowRatingSummaryDto>> GetShowRatingSummary(
         long showId, CancellationToken cancellationToken)
     {
@@ -142,11 +157,14 @@ public class ShowRatingsController : ControllerBase
     /// <response code="200">Returns the rating.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">No rating found for this show.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("me")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<RatingDto>> GetMyRating(
         long showId, CancellationToken cancellationToken)
     {
@@ -167,11 +185,14 @@ public class ShowRatingsController : ControllerBase
     /// <response code="204">Rating deleted successfully.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">Rating not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("me")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteMyRating(
         long showId, CancellationToken cancellationToken)
     {

@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.SharedListItem.AddShowToSharedList;
 using ViewStream.Application.Commands.SharedListItem.RemoveShowFromSharedList;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.SharedListItem;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/lists/{listId:long}/items")]
 [Authorize]
 [Produces("application/json")]
@@ -61,12 +63,15 @@ public class SharedListItemsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission to modify this list.</response>
     /// <response code="409">Show already exists in the list.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(SharedListItemDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> AddShow(
         long listId,
         [FromBody] AddShowToSharedListDto dto,
@@ -89,11 +94,14 @@ public class SharedListItemsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission to modify this list.</response>
     /// <response code="404">Item not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{showId:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RemoveShow(
         long listId,
         long showId,

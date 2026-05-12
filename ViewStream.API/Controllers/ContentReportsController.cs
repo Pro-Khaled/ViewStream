@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.ContentReport.CreateContentReport;
 using ViewStream.Application.DTOs;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/reports/content")]
 [Authorize]
 [Produces("application/json")]
@@ -35,11 +37,14 @@ public class ContentReportsController : ControllerBase
     /// <response code="400">Invalid input (neither ShowId nor EpisodeId provided).</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="409">User has already reported this content.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ReportRateLimit")]
     [ProducesResponseType(typeof(ContentReportDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> ReportContent(
         [FromBody] CreateContentReportDto dto,
         CancellationToken cancellationToken)

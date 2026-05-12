@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.PlaybackEvent.CreatePlaybackEvent;
 using ViewStream.Application.DTOs;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/playback/events")]
 [Authorize]
 [Produces("application/json")]
@@ -34,10 +36,13 @@ public class PlaybackEventsController : ControllerBase
     /// <response code="201">Playback event logged successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("AnalyticsRateLimit")]
     [ProducesResponseType(typeof(PlaybackEventDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PlaybackEventDto>> LogEvent(
         [FromBody] CreatePlaybackEventDto dto,
         CancellationToken cancellationToken)

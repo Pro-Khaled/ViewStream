@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -9,10 +9,12 @@ using ViewStream.Application.Commands.Profile.SwitchActiveProfile;
 using ViewStream.Application.Commands.Profile.UpdateProfile;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Profile;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Authorize]
 [Produces("application/json")]
@@ -80,10 +82,13 @@ public class ProfilesController : ControllerBase
     /// <response code="201">Profile created successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(ProfileDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateProfile(
         [FromBody] CreateProfileDto dto,
         CancellationToken cancellationToken)
@@ -105,12 +110,15 @@ public class ProfilesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Profile does not belong to the current user.</response>
     /// <response code="404">Profile not found or already deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(ProfileDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateProfile(
         long id,
         [FromBody] UpdateProfileDto dto,
@@ -132,11 +140,14 @@ public class ProfilesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Profile does not belong to the current user.</response>
     /// <response code="404">Profile not found or already deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteProfile(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -155,11 +166,14 @@ public class ProfilesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Profile does not belong to the current user.</response>
     /// <response code="404">Profile not found or deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/switch")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(SwitchProfileResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<SwitchProfileResponseDto>> SwitchProfile(
         long id,
         CancellationToken cancellationToken)
@@ -182,9 +196,12 @@ public class ProfilesController : ControllerBase
     /// <returns>No content on success.</returns>
     /// <response code="204">Recommendations regenerated.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("me/recommendations/regenerate")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RegenerateRecommendations(CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();

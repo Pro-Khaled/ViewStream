@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -9,6 +10,7 @@ using ViewStream.Application.Queries.Invoice;
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Authorize]
 [Produces("application/json")]

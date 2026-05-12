@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.OfflineDownload.CreateOfflineDownload;
 using ViewStream.Application.Commands.OfflineDownload.DeleteOfflineDownload;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.OfflineDownload;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/profiles/me/downloads")]
 [Authorize]
 [Produces("application/json")]
@@ -56,10 +58,13 @@ public class OfflineDownloadsController : ControllerBase
     /// <response code="201">Download record created successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [ProducesResponseType(typeof(OfflineDownloadDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<OfflineDownloadDto>> Create(
         [FromBody] CreateOfflineDownloadDto dto,
         CancellationToken cancellationToken)
@@ -80,11 +85,14 @@ public class OfflineDownloadsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Download does not belong to the current profile.</response>
     /// <response code="404">Download record not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("ContentManagementRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var profileId = GetCurrentProfileId();

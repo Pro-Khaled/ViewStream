@@ -7,10 +7,12 @@ using ViewStream.Application.Commands.Device.DeleteDevice;
 using ViewStream.Application.Commands.Device.UpdateDevice;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Device;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/users/me/devices")]
 [Authorize]
 [Produces("application/json")]
@@ -76,10 +78,13 @@ public class DevicesController : ControllerBase
     /// <response code="201">Device registered successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(DeviceDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<DeviceDto>> Register([FromBody] CreateDeviceDto dto, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -99,12 +104,15 @@ public class DevicesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not own this device.</response>
     /// <response code="404">Device not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(DeviceDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<DeviceDto>> Update(long id, [FromBody] UpdateDeviceDto dto, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -123,11 +131,14 @@ public class DevicesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not own this device.</response>
     /// <response code="404">Device not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();

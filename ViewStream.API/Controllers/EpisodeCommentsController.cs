@@ -8,10 +8,12 @@ using ViewStream.Application.Commands.EpisodeComment.UpdateEpisodeComment;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.EpisodeComment;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/episodes/{episodeId:long}/comments")]
 [Produces("application/json")]
 public class EpisodeCommentsController : ControllerBase
@@ -40,9 +42,12 @@ public class EpisodeCommentsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A paginated list of root comments.</returns>
     /// <response code="200">Returns the paginated list of comments.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<EpisodeCommentListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PagedResult<EpisodeCommentListItemDto>>> GetRootComments(
         long episodeId,
         [FromQuery] int page = 1,
@@ -60,9 +65,12 @@ public class EpisodeCommentsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of reply comments.</returns>
     /// <response code="200">Returns the list of replies.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("replies/{commentId:long}")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<EpisodeCommentListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<EpisodeCommentListItemDto>>> GetReplies(
         long commentId,
         CancellationToken cancellationToken)
@@ -80,10 +88,13 @@ public class EpisodeCommentsController : ControllerBase
     /// <returns>The comment with its reply tree.</returns>
     /// <response code="200">Returns the comment with nested replies.</response>
     /// <response code="404">Comment not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("{commentId:long}")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(EpisodeCommentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<EpisodeCommentDto>> GetComment(
         long commentId,
         [FromQuery] int maxDepth = 3,
@@ -108,11 +119,14 @@ public class EpisodeCommentsController : ControllerBase
     /// <response code="201">Comment created successfully.</response>
     /// <response code="400">Episode ID mismatch or invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(EpisodeCommentDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateComment(
         long episodeId,
         [FromBody] CreateEpisodeCommentDto dto,
@@ -138,12 +152,15 @@ public class EpisodeCommentsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User is not the owner of the comment.</response>
     /// <response code="404">Comment not found or already deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{commentId:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(EpisodeCommentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateComment(
         long commentId,
         [FromBody] UpdateEpisodeCommentDto dto,
@@ -166,12 +183,15 @@ public class EpisodeCommentsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission to delete this comment.</response>
     /// <response code="404">Comment not found or already deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{commentId:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteComment(
         long commentId,
         CancellationToken cancellationToken)

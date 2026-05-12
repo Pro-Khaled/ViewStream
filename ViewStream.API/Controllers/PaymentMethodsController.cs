@@ -8,10 +8,12 @@ using ViewStream.Application.Commands.PaymentMethod.SetDefaultPaymentMethod;
 using ViewStream.Application.Commands.PaymentMethod.UpdatePaymentMethod;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.PaymentMethod;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Authorize]
 [Produces("application/json")]
@@ -77,10 +79,13 @@ public class PaymentMethodsController : ControllerBase
     /// <response code="201">Payment method added successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(PaymentMethodDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PaymentMethodDto>> Add(
         [FromBody] CreatePaymentMethodDto dto,
         CancellationToken cancellationToken)
@@ -102,12 +107,15 @@ public class PaymentMethodsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Payment method does not belong to the current user.</response>
     /// <response code="404">Payment method not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(PaymentMethodDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PaymentMethodDto>> Update(
         long id,
         [FromBody] UpdatePaymentMethodDto dto,
@@ -129,11 +137,14 @@ public class PaymentMethodsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Payment method does not belong to the current user.</response>
     /// <response code="404">Payment method not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -152,11 +163,14 @@ public class PaymentMethodsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Payment method does not belong to the current user.</response>
     /// <response code="404">Payment method not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/set-default")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> SetDefault(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();

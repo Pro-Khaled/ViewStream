@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.PushToken.DeletePushToken;
 using ViewStream.Application.Commands.PushToken.RegisterPushToken;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.PushToken;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/users/me/push-tokens")]
 [Authorize]
 [Produces("application/json")]
@@ -53,10 +55,13 @@ public class PushTokensController : ControllerBase
     /// <response code="201">Token registered successfully.</response>
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(PushTokenDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<PushTokenDto>> Register(
         [FromBody] CreatePushTokenDto dto,
         CancellationToken cancellationToken)
@@ -76,11 +81,14 @@ public class PushTokensController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Token does not belong to the current user.</response>
     /// <response code="404">Token not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();

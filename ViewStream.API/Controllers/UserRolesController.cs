@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.UserRole.AssignRoleToUser;
 using ViewStream.Application.Commands.UserRole.RemoveRoleFromUser;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.UserRole;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/users/{userId:long}/roles")]
 [Authorize(Roles = "SuperAdmin")]
 [Produces("application/json")]
@@ -32,10 +34,13 @@ public class UserRolesController : ControllerBase
     /// <response code="200">Returns the list of assigned roles.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(List<UserRoleDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<UserRoleDto>>> GetUserRoles(
         long userId,
         CancellationToken cancellationToken)
@@ -56,11 +61,14 @@ public class UserRolesController : ControllerBase
     /// <response code="400">Invalid input or duplicate assignment.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(UserRoleDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<UserRoleDto>> AssignRole(
         long userId,
         [FromBody] AssignRoleToUserDto dto,
@@ -82,11 +90,14 @@ public class UserRolesController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
     /// <response code="404">User or role not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{roleId:long}")]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RemoveRole(
         long userId,
         long roleId,

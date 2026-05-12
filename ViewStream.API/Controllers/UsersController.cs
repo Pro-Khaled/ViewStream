@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -8,10 +8,12 @@ using ViewStream.Application.Commands.User.ChangePassword;
 using ViewStream.Application.Commands.User.UpdateProfile;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.User;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/[controller]")]
 [Produces("application/json")]
 [Authorize]
@@ -60,11 +62,14 @@ public class UsersController : ControllerBase
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">User not found or deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("me")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateProfile(
         [FromBody] UpdateUserDto dto,
         CancellationToken cancellationToken)
@@ -85,11 +90,14 @@ public class UsersController : ControllerBase
     /// <response code="400">Invalid input or password policy violation.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">User not found or deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("change-password")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> ChangePassword(
         [FromBody] ChangePasswordDto dto,
         CancellationToken cancellationToken)
@@ -116,9 +124,12 @@ public class UsersController : ControllerBase
     /// <returns>The created data deletion request.</returns>
     /// <response code="200">Request created or returned if already pending.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("me/data-deletion-request")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(DataDeletionRequestDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<DataDeletionRequestDto>> RequestDataDeletion(
         CancellationToken cancellationToken)
     {
@@ -137,11 +148,14 @@ public class UsersController : ControllerBase
     /// <response code="400">Request cannot be cancelled (not pending or wrong state).</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">Request not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("me/data-deletion-request/{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CancelDataDeletion(
         long id,
         CancellationToken cancellationToken)

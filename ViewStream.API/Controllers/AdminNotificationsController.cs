@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.Notification.CreateNotification;
 using ViewStream.Application.DTOs;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/admin/notifications")]
 [Authorize(Roles = "SuperAdmin,Support")]
 [Produces("application/json")]
@@ -30,11 +32,14 @@ public class AdminNotificationsController : ControllerBase
     /// <response code="400">Invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("AdminRateLimit")]
     [ProducesResponseType(typeof(NotificationDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<NotificationDto>> SendNotification(
         [FromBody] CreateNotificationDto dto,
         CancellationToken cancellationToken)

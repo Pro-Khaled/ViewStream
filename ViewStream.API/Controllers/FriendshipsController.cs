@@ -9,10 +9,12 @@ using ViewStream.Application.Commands.Friendship.Unfriend;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Friendship;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/friends")]
 [Authorize]
 [Produces("application/json")]
@@ -114,10 +116,13 @@ public class FriendshipsController : ControllerBase
     /// <response code="200">Friend request sent successfully.</response>
     /// <response code="400">Invalid request (e.g., self-request, already friends, blocked).</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("request")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(FriendshipDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<FriendshipDto>> SendRequest(
         [FromBody] FriendRequestDto dto,
         CancellationToken cancellationToken)
@@ -137,11 +142,14 @@ public class FriendshipsController : ControllerBase
     /// <response code="400">Invalid status.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">Pending request not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPut("request/{friendId:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(FriendshipDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<FriendshipDto>> RespondToRequest(
         long friendId,
         [FromBody] UpdateFriendshipStatusDto dto,
@@ -162,10 +170,13 @@ public class FriendshipsController : ControllerBase
     /// <response code="200">User blocked successfully.</response>
     /// <response code="400">Cannot block yourself.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("block/{friendId:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(typeof(FriendshipDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<FriendshipDto>> BlockUser(
         long friendId,
         CancellationToken cancellationToken)
@@ -183,10 +194,13 @@ public class FriendshipsController : ControllerBase
     /// <response code="204">Friend removed successfully.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">Friendship not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{friendId:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Unfriend(
         long friendId,
         CancellationToken cancellationToken)

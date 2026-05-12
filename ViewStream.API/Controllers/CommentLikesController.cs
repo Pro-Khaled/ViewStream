@@ -6,10 +6,12 @@ using ViewStream.Application.Commands.CommentLike.CreateCommentLike;
 using ViewStream.Application.Commands.CommentLike.DeleteCommentLike;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.CommentLike;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/comments/{commentId:long}/likes")]
 [Produces("application/json")]
 public class CommentLikesController : ControllerBase
@@ -33,9 +35,12 @@ public class CommentLikesController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Reaction summary including counts per reaction type and the current user's reaction (if authenticated).</returns>
     /// <response code="200">Returns the reaction summary.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("summary")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(CommentReactionSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<CommentReactionSummaryDto>> GetReactionSummary(
         long commentId,
         CancellationToken cancellationToken)
@@ -52,9 +57,12 @@ public class CommentLikesController : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A list of reactions on the comment.</returns>
     /// <response code="200">Returns the list of reactions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(List<CommentLikeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<List<CommentLikeDto>>> GetReactions(
         long commentId,
         CancellationToken cancellationToken)
@@ -72,11 +80,14 @@ public class CommentLikesController : ControllerBase
     /// <response code="200">Returns the reaction.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">User has not reacted to this comment.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpGet("me")]
+    [EnableRateLimiting("PublicReadRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(CommentLikeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<CommentLikeDto>> GetMyReaction(
         long commentId,
         CancellationToken cancellationToken)
@@ -101,11 +112,14 @@ public class CommentLikesController : ControllerBase
     /// <response code="200">Reaction saved successfully.</response>
     /// <response code="400">Comment ID mismatch or invalid input.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(typeof(CommentLikeDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<CommentLikeDto>> React(
         long commentId,
         [FromBody] CreateUpdateCommentLikeDto dto,
@@ -129,11 +143,14 @@ public class CommentLikesController : ControllerBase
     /// <response code="204">Reaction removed successfully.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">No reaction found to remove.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("me")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [Authorize]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RemoveReaction(
         long commentId,
         CancellationToken cancellationToken)

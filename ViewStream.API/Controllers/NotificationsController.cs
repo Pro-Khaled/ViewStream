@@ -7,10 +7,12 @@ using ViewStream.Application.Commands.Notification.MarkAllNotificationsAsRead;
 using ViewStream.Application.Commands.Notification.MarkNotificationAsRead;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Notification;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
+[EnableRateLimiting("DefaultRateLimit")]
 [Route("api/v1/users/me/notifications")]
 [Authorize]
 [Produces("application/json")]
@@ -60,11 +62,14 @@ public class NotificationsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Notification does not belong to the current user.</response>
     /// <response code="404">Notification not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("{id:long}/read")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> MarkAsRead(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -80,9 +85,12 @@ public class NotificationsController : ControllerBase
     /// <returns>No content on success.</returns>
     /// <response code="204">All notifications marked as read successfully.</response>
     /// <response code="401">User is not authenticated.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpPost("read-all")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> MarkAllAsRead(CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
@@ -100,11 +108,14 @@ public class NotificationsController : ControllerBase
     /// <response code="401">User is not authenticated.</response>
     /// <response code="403">Notification does not belong to the current user.</response>
     /// <response code="404">Notification not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
     [HttpDelete("{id:long}")]
+    [EnableRateLimiting("UserWriteRateLimit")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
