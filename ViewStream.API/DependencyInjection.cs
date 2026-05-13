@@ -48,6 +48,11 @@ namespace ViewStream.API
 
             services.AddScoped<IShowHubClient, ShowHubClient>();
 
+            // Add Redis caching (including distributed cache and MediatR behavior)
+            services.AddRedisCaching(configuration);
+
+
+
             // CORS
             services.AddCors(options =>
             {

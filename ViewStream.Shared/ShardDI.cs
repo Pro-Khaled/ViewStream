@@ -24,6 +24,14 @@ namespace ViewStream.Shared
             services.Configure<DatabaseOptions>(
                 configuration.GetSection(DatabaseOptions.SectionName));
 
+            // Register RedisOptions (for connection string, etc.)
+            services.Configure<RedisOptions>(configuration.GetSection(RedisOptions.SectionName));
+            services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<RedisOptions>>().Value);
+
+            // Register CacheOptions (for caching behavior)
+            services.Configure<CacheOptions>(configuration.GetSection(CacheOptions.SectionName));
+            services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<CacheOptions>>().Value);
+
 
             return services;
         }
