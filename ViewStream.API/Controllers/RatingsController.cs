@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -7,6 +7,7 @@ using ViewStream.Application.Commands.Rating.DeleteRating;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Rating;
 using Microsoft.AspNetCore.RateLimiting;
+using ViewStream.Application.Common;
 
 namespace ViewStream.Api.Controllers;
 
@@ -88,10 +89,10 @@ public class RatingsController : ControllerBase
 
 /// <summary>
 /// Nested controller for Ratings under a specific Show.
-/// GET    /api/Shows/{showId}/Ratings          → all ratings for the show
-/// GET    /api/Shows/{showId}/Ratings/summary   → average + total count
-/// GET    /api/Shows/{showId}/Ratings/me        → current profile's rating
-/// DELETE /api/Shows/{showId}/Ratings/me        → remove current profile's rating
+/// GET    /api/Shows/{showId}/Ratings          ? all ratings for the show
+/// GET    /api/Shows/{showId}/Ratings/summary   ? average + total count
+/// GET    /api/Shows/{showId}/Ratings/me        ? current profile's rating
+/// DELETE /api/Shows/{showId}/Ratings/me        ? remove current profile's rating
 /// </summary>
 [ApiController]
 [EnableRateLimiting("DefaultRateLimit")]
@@ -204,4 +205,104 @@ public class ShowRatingsController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/ratings")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminRatingsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminRatingsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Admin request body for creating/upserting a rating.
+    /// </summary>
+    public class CreateAdminRatingDto
+    {
+        public long ProfileId { get; set; }
+        public long ShowId { get; set; }
+        public short Rating { get; set; }
+        public DateTime? RatedAt { get; set; }
+    }
+
+    /// <summary>
+    /// Retrieves a paginated list of r-at-in-gs for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of r-at-in-gs.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminRatingListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminRatingListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminRatingsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Creates or updates an admin rating association (upsert).
+    /// </summary>
+    /// <param name="dto">The rating data including composite key and rated value.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created or updated rating.</returns>
+    /// <response code="201">Rating created successfully.</response>
+    /// <response code="200">Rating updated successfully.</response>
+    /// <response code="400">Invalid input.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(RatingDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<RatingDto>> CreateAdminRating(
+        [FromBody] CreateAdminRatingDto dto,
+        CancellationToken cancellationToken)
+    {
+        if (dto.ShowId <= 0) return BadRequest("ShowId is required.");
+        if (dto.ProfileId <= 0) return BadRequest("ProfileId is required.");
+        if (dto.Rating < 1 || dto.Rating > 5) return BadRequest("Rating must be between 1 and 5.");
+
+        var actorUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+        var createUpdateDto = new CreateUpdateRatingDto
+        {
+            ShowId = dto.ShowId,
+            Rating = dto.Rating
+        };
+
+        var rating = await _mediator.Send(
+            new UpsertRatingCommand(dto.ProfileId, createUpdateDto, actorUserId),
+            cancellationToken);
+
+        // Upsert command does not distinguish created vs updated reliably; return 200 OK (acceptable per requirements).
+        return Ok(rating);
+    }
 }

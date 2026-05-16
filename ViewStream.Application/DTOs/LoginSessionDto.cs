@@ -31,4 +31,14 @@ namespace ViewStream.Application.DTOs
         public bool IsActive { get; set; }
     }
 
+    public class AdminLoginSessionListItemDto
+    {
+        public long Id { get; set; }
+        public long UserId { get; set; }
+        public string? DeviceName { get; set; }
+        public string? DeviceId { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? LastActive { get; set; }
+        public bool? IsActive { get; set; }
+    }
 }

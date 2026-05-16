@@ -44,5 +44,14 @@ namespace ViewStream.Application.DTOs
         public bool? IsPublic { get; set; }
     }
 
+    public class AdminSharedListListItemDto
+    {
+        public long Id { get; set; }
+        public long OwnerProfileId { get; set; }
+        public bool? IsPublic { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public bool? IsDeleted { get; set; }
+        public string? OwnerProfileName { get; set; }
+    }
 
 }

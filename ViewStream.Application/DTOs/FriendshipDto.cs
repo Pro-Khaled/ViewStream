@@ -51,5 +51,12 @@ namespace ViewStream.Application.DTOs
         public int BlockedCount { get; set; }
     }
 
-
+    public class AdminFriendshipListItemDto
+    {
+        public long UserId { get; set; }
+        public long FriendId { get; set; }
+        public string? FriendName { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string? Status { get; set; }
+    }
 }

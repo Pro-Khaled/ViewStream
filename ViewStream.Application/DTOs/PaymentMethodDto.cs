@@ -37,4 +37,13 @@ namespace ViewStream.Application.DTOs
         public bool? IsDefault { get; set; }
     }
 
+    public class AdminPaymentMethodListItemDto
+    {
+        public long Id { get; set; }
+        public long UserId { get; set; }
+        public string? Currency { get; set; }
+        public bool? IsDefault { get; set; }
+        public string? LastFour { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
 }

@@ -43,5 +43,10 @@ namespace ViewStream.Application.DTOs
         public string? LicensingNotes { get; set; }
     }
 
-
+    public class AdminShowAvailabilityListItemDto
+    {
+        public long ShowId { get; set; }
+        public string? CountryCode { get; set; }
+        public DateTime? AddedAt { get; set; }
+    }
 }

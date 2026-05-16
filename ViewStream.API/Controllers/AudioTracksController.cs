@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -71,46 +71,7 @@ public class AudioTracksController : ControllerBase
         return Ok(audioTrack);
     }
 
-    
-        /// <summary>
-        /// Retrieves a paginated list of audio tracks for the admin dashboard.
-        /// </summary>
-        /// <param name="pageNumber">Page number (1-indexed).</param>
-        /// <param name="pageSize">Number of items per page.</param>
-        /// <param name="searchTerm">Optional search term.</param>
-        /// <param name="sortBy">Optional field to sort by.</param>
-        /// <param name="sortDescending">Whether to sort in descending order.</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
-        /// <param name="episodeId">Optional filter by episodeid.</param>
-        /// <param name="languageCode">Optional filter by languagecode.</param>
-        /// <param name="isDefault">Optional filter by isdefault.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A paginated list of audiotracks.</returns>
-        /// <response code="200">Returns the paginated list.</response>
-        /// <response code="401">Unauthorized â€“ authentication required.</response>
-        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-        [HttpGet("api/admin/audio-tracks")]
-    [EnableRateLimiting("AdminRateLimit")]
-        [Authorize(Roles = "SuperAdmin,ContentManager")]
-        [ProducesResponseType(typeof(PagedResult<AdminAudioTrackListItemDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<ActionResult<PagedResult<AdminAudioTrackListItemDto>>> GetAdminPaged(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] string? searchTerm = null,
-        [FromQuery] string? sortBy = null,
-        [FromQuery] bool sortDescending = false,
-        [FromQuery] bool includeDeleted = false,
-        [FromQuery] long? episodeId = null,
-        [FromQuery] string? languageCode = null,
-        [FromQuery] bool? isDefault = null,
-            CancellationToken cancellationToken = default)
-        {
-            var query = new GetAdminAudioTracksPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, episodeId, languageCode, isDefault);
-            var result = await _mediator.Send(query, cancellationToken);
-            return Ok(result);
-        }
+
     #endregion
 
     #region Commands
@@ -211,35 +172,6 @@ public class AudioTracksController : ControllerBase
     }
 
     /// <summary>
-    /// Restores a soft-deleted audio track.
-    /// </summary>
-    /// <param name="id">The ID of the audio track to restore.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>No content on success.</returns>
-    /// <response code="204">Audio track restored successfully.</response>
-    /// <response code="401">User is not authenticated.</response>
-    /// <response code="403">User is not a SuperAdmin.</response>
-    /// <response code="404">Audio track not found or not deleted.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-    [HttpPost("{id:long}/restore")]
-    [EnableRateLimiting("ContentManagementRateLimit")]
-    [Authorize(Roles = "SuperAdmin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<IActionResult> RestoreAudioTrack(
-        long id,
-        CancellationToken cancellationToken)
-    {
-        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var result = await _mediator.Send(new RestoreAudioTrackCommand(id, userId), cancellationToken);
-        if (!result) return NotFound();
-        return NoContent();
-    }
-
-    /// <summary>
     /// Uploads an audio file for a specific audio track.
     /// </summary>
     /// <param name="id">The ID of the audio track.</param>
@@ -276,3 +208,87 @@ public class AudioTracksController : ControllerBase
 
     #endregion
 }
+
+/// <summary>
+/// Administrative controller for managing audio tracks.
+/// </summary>
+[ApiController]
+[Route("api/v1/admin/audiotracks")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager")]
+[Produces("application/json")]
+public class AdminAudioTracksController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminAudioTracksController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of audio tracks for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="episodeId">Optional filter by episode ID.</param>
+    /// <param name="languageCode">Optional filter by language code.</param>
+    /// <param name="isDefault">Optional filter by is default status.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of audio tracks.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminAudioTrackListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminAudioTrackListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? episodeId = null,
+        [FromQuery] string? languageCode = null,
+        [FromQuery] bool? isDefault = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminAudioTracksPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, episodeId, languageCode, isDefault);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted audio track.
+    /// </summary>
+    /// <param name="id">The ID of the audio track to restore.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Audio track restored successfully.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="404">Audio track not found or not deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpPost("{id:long}/restore")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> RestoreAudioTrack(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _mediator.Send(new RestoreAudioTrackCommand(id, userId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+}
+

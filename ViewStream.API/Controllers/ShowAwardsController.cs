@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -7,6 +7,7 @@ using ViewStream.Application.Commands.ShowAward.RemoveShowAward;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.ShowAward;
 using Microsoft.AspNetCore.RateLimiting;
+using ViewStream.Application.Common;
 
 namespace ViewStream.Api.Controllers;
 
@@ -106,4 +107,99 @@ public class ShowAwardsController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/show-awards")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminShowAwardsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminShowAwardsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Admin request body for creating a show-award association.
+    /// </summary>
+    public class CreateAdminShowAwardDto
+    {
+        public long ShowId { get; set; }
+        public int AwardId { get; set; }
+        public bool? Won { get; set; }
+    }
+
+    /// <summary>
+    /// Retrieves a paginated list of s-ho-wa-wa-rd-s for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of s-ho-wa-wa-rd-s.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminShowAwardListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminShowAwardListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminShowAwardsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Creates a show-award association for the admin dashboard.
+    /// </summary>
+    /// <param name="dto">The show-award composite key and award values.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The newly created show-award association.</returns>
+    /// <response code="201">Show award created successfully.</response>
+    /// <response code="400">Invalid input.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="409">Association already exists.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpPost]
+    [Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+    [ProducesResponseType(typeof(ShowAwardDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<ShowAwardDto>> CreateAdminShowAward(
+        [FromBody] CreateAdminShowAwardDto dto,
+        CancellationToken cancellationToken)
+    {
+        if (dto.ShowId <= 0) return BadRequest("ShowId is required.");
+        if (dto.AwardId <= 0) return BadRequest("AwardId is required.");
+
+        var actorUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+        var createDto = new CreateShowAwardDto
+        {
+            AwardId = dto.AwardId,
+            Won = dto.Won
+        };
+
+        var award = await _mediator.Send(new AddShowAwardCommand(dto.ShowId, createDto, actorUserId), cancellationToken);
+        return Ok(award);
+    }
 }

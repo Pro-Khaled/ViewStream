@@ -1,23 +1,31 @@
-﻿using MediatR;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Queries.Show
 {
-    public class GetAdminShowsPagedQueryHandler
-        : IRequestHandler<GetAdminShowsPagedQuery, PagedResult<AdminShowListItemDto>>
+    public class GetAdminShowsPagedQueryHandler : IRequestHandler<GetAdminShowsPagedQuery, PagedResult<AdminShowListItemDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public GetAdminShowsPagedQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper;
 
-        public async Task<PagedResult<AdminShowListItemDto>> Handle(
-            GetAdminShowsPagedQuery request, CancellationToken cancellationToken)
+        public GetAdminShowsPagedQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            var query = _unitOfWork.Shows.GetQueryable();
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-            query = query.Include(e => e.Genres);
+        public async Task<PagedResult<AdminShowListItemDto>> Handle(GetAdminShowsPagedQuery request, CancellationToken cancellationToken)
+        {
+            var query = _unitOfWork.Shows.GetQueryable()
+                .AsNoTracking();
 
             if (!request.IncludeDeleted)
                 query = query.Where(s => s.IsDeleted != true);
@@ -27,35 +35,15 @@ namespace ViewStream.Application.Queries.Show
 
             if (request.GenreId.HasValue)
                 query = query.Where(s => s.Genres.Any(g => g.Id == request.GenreId.Value));
+            
             if (request.ReleaseYear.HasValue)
                 query = query.Where(s => s.ReleaseYear == request.ReleaseYear.Value);
 
-            var projected = query.Select(s => new AdminShowListItemDto
-            {
-                Id = s.Id,
-                Title = s.Title,
-                ReleaseYear = s.ReleaseYear,
-                MaturityRating = s.MaturityRating,
-                PosterUrl = s.PosterUrl,
-                ImdbRating = s.ImdbRating,
-                Genres = s.Genres.Select(g => g.Name).ToList(),
-                IsDeleted = s.IsDeleted ?? false,
-                AddedAt = s.AddedAt,
-                UpdatedAt = s.UpdatedAt,
-                RottenTomatoesScore = s.RottenTomatoesScore,
-                SeasonCount = s.Seasons.Count,
-                EpisodeCount = s.Seasons.Sum(se => se.Episodes.Count),
-            });
+            var projected = query.ProjectTo<AdminShowListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))
             {
-                bool desc = request.SortDescending;
-                projected = request.SortBy.ToLower() switch
-                {
-                    "seasoncount" => desc ? projected.OrderByDescending(x => x.SeasonCount) : projected.OrderBy(x => x.SeasonCount),
-                    "episodecount" => desc ? projected.OrderByDescending(x => x.EpisodeCount) : projected.OrderBy(x => x.EpisodeCount),
-                    _ => projected.OrderByPropertyName(request.SortBy, desc)
-                };
+                projected = projected.OrderByPropertyName(request.SortBy, request.SortDescending);
             }
             else
             {

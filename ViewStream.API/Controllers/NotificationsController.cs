@@ -1,13 +1,16 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.Notification.DeleteNotification;
 using ViewStream.Application.Commands.Notification.MarkAllNotificationsAsRead;
 using ViewStream.Application.Commands.Notification.MarkNotificationAsRead;
+using ViewStream.Application.Commands.Notification.CreateNotification;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Notification;
 using Microsoft.AspNetCore.RateLimiting;
+using ViewStream.Application.Common;
+
 
 namespace ViewStream.Api.Controllers;
 
@@ -125,4 +128,83 @@ public class NotificationsController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/notifications")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator,Support")]
+[Produces("application/json")]
+public class AdminNotificationsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminNotificationsController(IMediator mediator) => _mediator = mediator;
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Retrieves a paginated list of notifications for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="userId">Optional filter by user ID.</param>
+    /// <param name="isRead">Optional filter by read status.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of notifications.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminNotificationListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminNotificationListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? userId = null,
+        [FromQuery] bool? isRead = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminNotificationsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, userId, isRead);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Sends a notification to a specific user.
+    /// </summary>
+    /// <param name="dto">The notification details including target user ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created notification.</returns>
+    /// <response code="201">Notification sent successfully.</response>
+    /// <response code="400">Invalid input.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="403">User does not have permission.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(NotificationDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<NotificationDto>> SendNotification(
+        [FromBody] CreateNotificationDto dto,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        var notification = await _mediator.Send(new CreateNotificationCommand(dto, userId), cancellationToken);
+        return CreatedAtAction(nameof(SendNotification), null, notification);
+    }
 }

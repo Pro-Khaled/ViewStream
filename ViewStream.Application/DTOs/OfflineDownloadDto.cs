@@ -40,5 +40,13 @@ namespace ViewStream.Application.DTOs
         public DateTime? ExpiresAt { get; set; }
     }
 
-    
+    public class AdminOfflineDownloadListItemDto
+    {
+        public long Id { get; set; }
+        public long DeviceId { get; set; }
+        public long DeviceUserId { get; set; }
+        public long EpisodeId { get; set; }
+        public long ProfileId { get; set; }
+        public DateTime? DownloadedAt { get; set; }
+    }
 }

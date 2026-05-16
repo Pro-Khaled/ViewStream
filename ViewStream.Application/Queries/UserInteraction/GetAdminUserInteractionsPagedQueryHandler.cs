@@ -1,55 +1,52 @@
-﻿using MediatR;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Queries.UserInteraction
 {
-    public class GetAdminUserInteractionsPagedQueryHandler
-        : IRequestHandler<GetAdminUserInteractionsPagedQuery, PagedResult<AdminUserInteractionListItemDto>>
+    public class GetAdminUserInteractionsPagedQueryHandler : IRequestHandler<GetAdminUserInteractionsPagedQuery, PagedResult<AdminUserInteractionListItemDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public GetAdminUserInteractionsPagedQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper;
 
-        public async Task<PagedResult<AdminUserInteractionListItemDto>> Handle(
-            GetAdminUserInteractionsPagedQuery request, CancellationToken cancellationToken)
+        public GetAdminUserInteractionsPagedQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            var query = _unitOfWork.UserInteractions.GetQueryable();
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-            query = query.Include(e => e.Profile);             query = query.Include(e => e.Show);
-
-
-            
+        public async Task<PagedResult<AdminUserInteractionListItemDto>> Handle(GetAdminUserInteractionsPagedQuery request, CancellationToken cancellationToken)
+        {
+            var query = _unitOfWork.UserInteractions.GetQueryable()
+                .AsNoTracking();
 
             if (request.ProfileId.HasValue)
                 query = query.Where(s => s.ProfileId == request.ProfileId.Value);
+
             if (request.ShowId.HasValue)
                 query = query.Where(s => s.ShowId == request.ShowId.Value);
+
             if (!string.IsNullOrWhiteSpace(request.InteractionType))
                 query = query.Where(s => s.InteractionType == request.InteractionType);
+
             if (request.FromDate.HasValue)
                 query = query.Where(s => s.CreatedAt >= request.FromDate.Value);
+
             if (request.ToDate.HasValue)
                 query = query.Where(s => s.CreatedAt <= request.ToDate.Value);
 
-            var projected = query.Select(s => new AdminUserInteractionListItemDto
-            {
-                Id = s.Id,
-                ProfileName = s.Profile.Name,
-                ShowTitle = s.Show.Title,
-                InteractionType = s.InteractionType,
-                CreatedAt = s.CreatedAt,
-            });
+            var projected = query.ProjectTo<AdminUserInteractionListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))
             {
-                bool desc = request.SortDescending;
-                projected = request.SortBy.ToLower() switch
-                {
-
-                    _ => projected.OrderByPropertyName(request.SortBy, desc)
-                };
+                projected = projected.OrderByPropertyName(request.SortBy, request.SortDescending);
             }
             else
             {

@@ -1,16 +1,19 @@
-﻿using AutoMapper;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
-using ViewStream.Application.DTOs;
-using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
+using MediatR;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using ViewStream.Application.Exceptions;
 using ViewStream.Domain.Interfaces;
+using ViewStream.Domain.Entities;
+using ViewStream.Application.Helpers;
 
 namespace ViewStream.Application.Commands.UserVector.UpsertUserVector
 {
-    using UserVector = ViewStream.Domain.Entities.UserVector;
-    public class UpsertUserVectorCommandHandler : IRequestHandler<UpsertUserVectorCommand, UserVectorDto>
+    using UserVector = Domain.Entities.UserVector;
+    public class UpsertUserVectorCommandHandler : IRequestHandler<UpsertUserVectorCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -29,16 +32,14 @@ namespace ViewStream.Application.Commands.UserVector.UpsertUserVector
             _logger = logger;
         }
 
-        public async Task<UserVectorDto> Handle(UpsertUserVectorCommand request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(UpsertUserVectorCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Upserting user vector for ProfileId: {ProfileId}", request.ProfileId);
-
             var vector = await _unitOfWork.UserVectors.GetByIdAsync<long>(request.ProfileId, cancellationToken);
-            bool isNew = vector == null;
-            string? oldEmbedding = vector?.EmbeddingJson;
-
-            if (isNew)
+            bool isNew = false;
+            
+            if (vector == null)
             {
+                isNew = true;
                 vector = new UserVector
                 {
                     ProfileId = request.ProfileId,
@@ -51,29 +52,20 @@ namespace ViewStream.Application.Commands.UserVector.UpsertUserVector
             {
                 vector.EmbeddingJson = request.Dto.EmbeddingJson;
                 vector.LastUpdated = DateTime.UtcNow;
-                _unitOfWork.UserVectors.Update(vector);
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _auditContext.SetAudit<UserVector, object>(
                 tableName: "UserVectors",
-                recordId: vector.ProfileId,               // Primary key
-                action: isNew ? "INSERT" : "UPDATE",
-                oldValues: isNew ? null : new { EmbeddingJson = oldEmbedding },
-                newValues: new { EmbeddingJson = vector.EmbeddingJson },
-                changedByUserId: request.ActorUserId
+                recordId: vector.ProfileId,
+                action: isNew ? "CREATE" : "UPDATE",
+                oldValues: isNew ? null : new { vector.EmbeddingJson, vector.LastUpdated },
+                changedByUserId: request.AdminUserId
             );
 
-            _logger.LogInformation("User vector {Action} for ProfileId: {ProfileId}",
-                isNew ? "created" : "updated", request.ProfileId);
-
-            var result = await _unitOfWork.UserVectors.FindAsync(
-                v => v.ProfileId == request.ProfileId,
-                include: q => q.Include(v => v.Profile),
-                cancellationToken: cancellationToken);
-
-            return _mapper.Map<UserVectorDto>(result.First());
+            _logger.LogInformation("User vector upserted for ProfileId: {ProfileId}", request.ProfileId);
+            return true;
         }
     }
 }

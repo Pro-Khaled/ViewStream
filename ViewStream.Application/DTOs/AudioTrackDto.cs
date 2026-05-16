@@ -25,6 +25,10 @@ namespace ViewStream.Application.DTOs
         public string LanguageCode { get; set; } = string.Empty;
         public string? TrackType { get; set; }
         public bool? IsDefault { get; set; }
+
+        // required by AudioTrackMappingProfile
+        public bool? IsDeleted { get; set; }
+        public string? EpisodeTitle { get; set; }
     }
     public class CreateAudioTrackDto
     {
@@ -54,4 +58,3 @@ namespace ViewStream.Application.DTOs
         public string EpisodeTitle { get; set; }
     }
 }
-

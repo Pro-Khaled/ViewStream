@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,6 +11,7 @@ using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Subtitle;
 using Microsoft.AspNetCore.RateLimiting;
+
 
 namespace ViewStream.Api.Controllers;
 
@@ -68,46 +69,6 @@ public class SubtitlesController : ControllerBase
         return Ok(subtitle);
     }
 
-    
-        /// <summary>
-        /// Retrieves a paginated list of subtitles for the admin dashboard.
-        /// </summary>
-        /// <param name="pageNumber">Page number (1-indexed).</param>
-        /// <param name="pageSize">Number of items per page.</param>
-        /// <param name="searchTerm">Optional search term.</param>
-        /// <param name="sortBy">Optional field to sort by.</param>
-        /// <param name="sortDescending">Whether to sort in descending order.</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
-        /// <param name="episodeId">Optional filter by episodeid.</param>
-        /// <param name="languageCode">Optional filter by languagecode.</param>
-        /// <param name="isCc">Optional filter by iscc.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A paginated list of subtitles.</returns>
-        /// <response code="200">Returns the paginated list.</response>
-        /// <response code="401">Unauthorized â€“ authentication required.</response>
-        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-        [HttpGet("api/admin/subtitles")]
-    [EnableRateLimiting("AdminRateLimit")]
-        [Authorize(Roles = "SuperAdmin,ContentManager")]
-        [ProducesResponseType(typeof(PagedResult<AdminSubtitleListItemDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<ActionResult<PagedResult<AdminSubtitleListItemDto>>> GetAdminPaged(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] string? searchTerm = null,
-        [FromQuery] string? sortBy = null,
-        [FromQuery] bool sortDescending = false,
-        [FromQuery] bool includeDeleted = false,
-        [FromQuery] long? episodeId = null,
-        [FromQuery] string? languageCode = null,
-        [FromQuery] bool? isCc = null,
-            CancellationToken cancellationToken = default)
-        {
-            var query = new GetAdminSubtitlesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, episodeId, languageCode, isCc);
-            var result = await _mediator.Send(query, cancellationToken);
-            return Ok(result);
-        }
     #endregion
 
     #region Commands
@@ -208,35 +169,6 @@ public class SubtitlesController : ControllerBase
     }
 
     /// <summary>
-    /// Restores a soft‑deleted subtitle.
-    /// </summary>
-    /// <param name="id">The ID of the subtitle to restore.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>No content on success.</returns>
-    /// <response code="204">Subtitle restored successfully.</response>
-    /// <response code="401">User is not authenticated.</response>
-    /// <response code="403">User is not a SuperAdmin.</response>
-    /// <response code="404">Subtitle not found or not deleted.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-    [HttpPost("{id:long}/restore")]
-    [EnableRateLimiting("ContentManagementRateLimit")]
-    [Authorize(Roles = "SuperAdmin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<IActionResult> RestoreSubtitle(
-        long id,
-        CancellationToken cancellationToken)
-    {
-        var userId = GetCurrentUserId();
-        var result = await _mediator.Send(new RestoreSubtitleCommand(id, userId), cancellationToken);
-        if (!result) return NotFound();
-        return NoContent();
-    }
-
-    /// <summary>
     /// Uploads a subtitle file (e.g., .vtt, .srt) for an existing subtitle record.
     /// </summary>
     /// <param name="id">The ID of the subtitle record.</param>
@@ -272,4 +204,78 @@ public class SubtitlesController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/subtitles")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminSubtitlesController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminSubtitlesController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of subtitles for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of subtitles.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminSubtitleListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminSubtitleListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminSubtitlesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted subtitle.
+    /// </summary>
+    /// <param name="id">The ID of the subtitle to restore.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Subtitle restored successfully.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="403">User is not a SuperAdmin.</response>
+    /// <response code="404">Subtitle not found or not deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpPost("{id:long}/restore")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> RestoreSubtitle(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _mediator.Send(new RestoreSubtitleCommand(id, userId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
 }

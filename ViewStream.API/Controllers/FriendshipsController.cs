@@ -213,3 +213,84 @@ public class FriendshipsController : ControllerBase
 
     #endregion
 }
+
+[ApiController]
+[Route("api/v1/admin/friendships")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminFriendshipsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminFriendshipsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of friendships for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="userId">Optional filter by user ID.</param>
+    /// <param name="friendId">Optional filter by friend ID.</param>
+    /// <param name="status">Optional filter by friendship status.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of friendships.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminFriendshipListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminFriendshipListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? userId = null,
+        [FromQuery] long? friendId = null,
+        [FromQuery] string? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminFriendshipsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, userId, friendId, status);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Deletes a friendship (Admin override).
+    /// </summary>
+    /// <param name="userId">The ID of the first user.</param>
+    /// <param name="friendId">The ID of the second user.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Friendship deleted successfully.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="404">Friendship not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpDelete("{userId:long}/{friendId:long}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> DeleteFriendshipAdmin(
+        long userId,
+        long friendId,
+        CancellationToken cancellationToken)
+    {
+        var adminUserId = long.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)!);
+        var result = await _mediator.Send(new ViewStream.Application.Commands.Friendship.DeleteFriendshipAdmin.DeleteFriendshipAdminCommand(userId, friendId, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+}

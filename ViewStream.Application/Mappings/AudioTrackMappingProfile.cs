@@ -17,7 +17,7 @@ namespace ViewStream.Application.Mappings
             CreateMap<CreateAudioTrackDto, AudioTrack>();
             CreateMap<UpdateAudioTrackDto, AudioTrack>();
         
-        CreateMap<AudioTrack, AdminAudioTrackListItemDto>()
+        CreateMap<AudioTrack, AudioTrackListItemDto>()
             .ForMember(d => d.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted ?? false))
             .ForMember(d => d.EpisodeTitle, opt => opt.MapFrom(src => src.Episode.Title));
         }

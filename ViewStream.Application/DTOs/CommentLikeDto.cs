@@ -29,5 +29,21 @@ namespace ViewStream.Application.DTOs
         public string? ReactionType { get; set; } = "like";
     }
 
+    public class CommentLikeListItemDto
+    {
+        public long CommentId { get; set; }
+        public long ProfileId { get; set; }
+        public string? ProfileName { get; set; }
+        public string? ReactionType { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
 
+    public class AdminCommentLikeListItemDto
+    {
+        public long CommentId { get; set; }
+        public long ProfileId { get; set; }
+        public string? ProfileName { get; set; }
+        public string? ReactionType { get; set; }
+        public DateTime? CreatedAt { get; set; }
+    }
 }

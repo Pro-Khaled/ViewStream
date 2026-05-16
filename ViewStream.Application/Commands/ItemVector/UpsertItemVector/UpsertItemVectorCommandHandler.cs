@@ -1,16 +1,18 @@
-﻿using AutoMapper;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
-using ViewStream.Application.DTOs;
-using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
+using MediatR;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using ViewStream.Application.Exceptions;
 using ViewStream.Domain.Interfaces;
+using ViewStream.Domain.Entities;
+using ViewStream.Application.Helpers;
 
 namespace ViewStream.Application.Commands.ItemVector.UpsertItemVector
 {
-    using ItemVector = Domain.Entities.ItemVector;
-    public class UpsertItemVectorCommandHandler : IRequestHandler<UpsertItemVectorCommand, ItemVectorDto>
+    public class UpsertItemVectorCommandHandler : IRequestHandler<UpsertItemVectorCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -29,18 +31,15 @@ namespace ViewStream.Application.Commands.ItemVector.UpsertItemVector
             _logger = logger;
         }
 
-        public async Task<ItemVectorDto> Handle(UpsertItemVectorCommand request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(UpsertItemVectorCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Upserting item vector for ShowId: {ShowId}", request.ShowId);
-
             var vector = await _unitOfWork.ItemVectors.GetByIdAsync<long>(request.ShowId, cancellationToken);
             bool isNew = false;
-            string? oldEmbedding = vector?.EmbeddingJson;
-
+            
             if (vector == null)
             {
                 isNew = true;
-                vector = new ItemVector
+                vector = new Domain.Entities.ItemVector
                 {
                     ShowId = request.ShowId,
                     EmbeddingJson = request.Dto.EmbeddingJson,
@@ -52,28 +51,20 @@ namespace ViewStream.Application.Commands.ItemVector.UpsertItemVector
             {
                 vector.EmbeddingJson = request.Dto.EmbeddingJson;
                 vector.LastUpdated = DateTime.UtcNow;
-                _unitOfWork.ItemVectors.Update(vector);
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _auditContext.SetAudit<ItemVector, object>(
+            _auditContext.SetAudit<Domain.Entities.ItemVector, object>(
                 tableName: "ItemVectors",
                 recordId: vector.ShowId,
-                action: isNew ? "INSERT" : "UPDATE",
-                oldValues: isNew ? null : new { EmbeddingJson = oldEmbedding },
-                newValues: new { vector.EmbeddingJson },
-                changedByUserId: request.ActorUserId
+                action: isNew ? "CREATE" : "UPDATE",
+                oldValues: isNew ? null : new { vector.EmbeddingJson, vector.LastUpdated },
+                changedByUserId: request.AdminUserId
             );
 
-            _logger.LogInformation("Item vector {Action} for ShowId: {ShowId}", isNew ? "created" : "updated", request.ShowId);
-
-            var result = await _unitOfWork.ItemVectors.FindAsync(
-                v => v.ShowId == request.ShowId,
-                include: q => q.Include(v => v.Show),
-                cancellationToken: cancellationToken);
-
-            return _mapper.Map<ItemVectorDto>(result.First());
+            _logger.LogInformation("Item vector upserted for ShowId: {ShowId}", request.ShowId);
+            return true;
         }
     }
 }

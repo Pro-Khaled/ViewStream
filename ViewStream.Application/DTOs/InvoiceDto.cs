@@ -32,4 +32,14 @@ namespace ViewStream.Application.DTOs
         public string? InvoicePdfUrl { get; set; }
     }
 
+    public class AdminInvoiceListItemDto
+    {
+        public long Id { get; set; }
+        public decimal Amount { get; set; }
+        public string? Currency { get; set; }
+        public string? Status { get; set; }
+        public DateOnly InvoiceDate { get; set; }
+        public string? InvoicePdfUrl { get; set; }
+    }
+
 }

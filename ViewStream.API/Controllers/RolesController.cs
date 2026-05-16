@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -27,23 +27,7 @@ public class RolesController : ControllerBase
 
     #region Queries
 
-    /// <summary>
-    /// Retrieves all roles.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of all roles.</returns>
-    /// <response code="200">Returns the list of roles.</response>
-    /// <response code="401">User is not authenticated.</response>
-    /// <response code="403">User does not have permission.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-    [HttpGet]
-    [EnableRateLimiting("AdminRateLimit")]
-    [ProducesResponseType(typeof(List<RoleListItemDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<List<RoleListItemDto>>> GetAll(CancellationToken cancellationToken)
-        => Ok(await _mediator.Send(new GetAllRolesQuery(), cancellationToken));
+
 
     /// <summary>
     /// Retrieves a role by ID with its assigned permissions.
@@ -84,12 +68,12 @@ public class RolesController : ControllerBase
         /// <response code="200">Returns the paginated list.</response>
         /// <response code="401">Unauthorized â€“ authentication required.</response>
         /// <response code="403">Forbidden â€“ insufficient permissions.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-        [HttpGet("api/admin/roles")]
-    [EnableRateLimiting("AdminRateLimit")]
+        /// <response code="429">Too many requests. Please wait before trying again.</response>
+        [HttpGet]
+        [EnableRateLimiting("AdminRateLimit")]
         [Authorize(Roles = "SuperAdmin")]
         [ProducesResponseType(typeof(PagedResult<AdminRoleListItemDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult<PagedResult<AdminRoleListItemDto>>> GetAdminPaged(
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,

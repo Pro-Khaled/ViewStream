@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -9,6 +9,7 @@ using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.ContentTag;
 using Microsoft.AspNetCore.RateLimiting;
+
 
 namespace ViewStream.Api.Controllers;
 
@@ -115,42 +116,6 @@ public class ContentTagsController : ControllerBase
         return Ok(tag);
     }
 
-    
-        /// <summary>
-        /// Retrieves a paginated list of content tags for the admin dashboard. Supports searching, sorting, and filtering by category.
-        /// </summary>
-        /// <param name="pageNumber">Page number (1-indexed).</param>
-        /// <param name="pageSize">Number of items per page.</param>
-        /// <param name="searchTerm">Optional search term.</param>
-        /// <param name="sortBy">Optional field to sort by.</param>
-        /// <param name="sortDescending">Whether to sort in descending order.</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
-        /// <param name="category">Optional filter by category.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A paginated list of contenttags.</returns>
-        /// <response code="200">Returns the paginated list.</response>
-        /// <response code="401">Unauthorized â€“ authentication required.</response>
-        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-        [HttpGet("api/admin/content-tags")]
-    [EnableRateLimiting("AdminRateLimit")]
-        [Authorize(Roles = "SuperAdmin,ContentManager")]
-        [ProducesResponseType(typeof(PagedResult<AdminContentTagListItemDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<ActionResult<PagedResult<AdminContentTagListItemDto>>> GetAdminPaged(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] string? searchTerm = null,
-        [FromQuery] string? sortBy = null,
-        [FromQuery] bool sortDescending = false,
-        [FromQuery] bool includeDeleted = false,
-        [FromQuery] string? category = null,
-            CancellationToken cancellationToken = default)
-        {
-            var query = new GetAdminContentTagsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, category);
-            var result = await _mediator.Send(query, cancellationToken);
-            return Ok(result);
-        }
     #endregion
 
     #region Commands
@@ -246,4 +211,50 @@ public class ContentTagsController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/contenttags")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminContentTagsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminContentTagsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of content tags for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of content tags.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminContentTagListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminContentTagListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminContentTagsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
 }

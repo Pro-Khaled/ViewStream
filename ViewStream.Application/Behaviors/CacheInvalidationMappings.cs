@@ -119,7 +119,7 @@ using ViewStream.Application.Commands.UserRole.RemoveRoleFromUser;
 using ViewStream.Application.Commands.UserVector.UpsertUserVector;
 using ViewStream.Application.Commands.WatchHistory.UpsertWatchHistory;
 using ViewStream.Application.Commands.WatchParty.CreateWatchParty;
-using ViewStream.Application.Commands.WatchParty.DeleteWatchParty;
+using ViewStream.Application.Commands.WatchParty.EndWatchParty;
 using ViewStream.Application.Commands.WatchParty.UpdateWatchParty;
 using ViewStream.Application.Commands.WatchPartyParticipant.JoinWatchParty;
 using ViewStream.Application.Commands.WatchPartyParticipant.LeaveWatchParty;

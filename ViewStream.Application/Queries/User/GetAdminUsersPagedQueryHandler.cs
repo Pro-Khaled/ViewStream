@@ -1,1 +1,68 @@
-﻿using MediatR; using Microsoft.EntityFrameworkCore; using ViewStream.Application.Common; using ViewStream.Application.DTOs; using ViewStream.Domain.Interfaces;  namespace ViewStream.Application.Queries.User {     public class GetAdminUsersPagedQueryHandler         : IRequestHandler<GetAdminUsersPagedQuery, PagedResult<AdminUserListItemDto>>     {         private readonly IUnitOfWork _unitOfWork;         public GetAdminUsersPagedQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;          public async Task<PagedResult<AdminUserListItemDto>> Handle(             GetAdminUsersPagedQuery request, CancellationToken cancellationToken)         {             var query = _unitOfWork.Users.GetQueryable();              query = query.Include(e => e.Profiles);             query = query.Include(e => e.UserRoles).ThenInclude(ur => ur.Role);              if (!request.IncludeDeleted)                 query = query.Where(s => s.IsDeleted != true);              if (!string.IsNullOrWhiteSpace(request.SearchTerm))                 query = query.Where(s => s.Email.Contains(request.SearchTerm) || s.FullName.Contains(request.SearchTerm));              if (request.IsActive.HasValue)                 query = query.Where(s => s.IsActive == request.IsActive.Value);             if (request.IsBlocked.HasValue)                 query = query.Where(s => s.IsBlocked == request.IsBlocked.Value);              var projected = query.Select(s => new AdminUserListItemDto             {                 Id = s.Id,                 Email = s.Email,                 FullName = s.FullName,                 PhoneNumber = s.PhoneNumber,                 CountryCode = s.CountryCode,                 IsActive = s.IsActive,                 IsBlocked = s.IsBlocked,                 BlockedReason = s.BlockedReason,                 BlockedUntil = s.BlockedUntil,                 IsDeleted = s.IsDeleted,                 CreatedAt = s.CreatedAt,                 UpdatedAt = s.UpdatedAt,                 ProfileCount = s.Profiles.Count,                 Roles = s.UserRoles.Select(ur => ur.Role.Name).ToList()             });              if (!string.IsNullOrWhiteSpace(request.SortBy))             {                 bool desc = request.SortDescending;                 projected = request.SortBy.ToLower() switch                 {                     "profilecount" => desc ? projected.OrderByDescending(x => x.ProfileCount) : projected.OrderBy(x => x.ProfileCount),                     _ => projected.OrderByPropertyName(request.SortBy, desc)                 };             }             else             {                 projected = projected.OrderByDescending(s => s.CreatedAt);             }              var totalCount = await projected.CountAsync(cancellationToken);             var items = await projected                 .Skip((request.PageNumber - 1) * request.PageSize)                 .Take(request.PageSize)                 .ToListAsync(cancellationToken);              return new PagedResult<AdminUserListItemDto>             {                 Items = items,                 TotalCount = totalCount,                 PageNumber = request.PageNumber,                 PageSize = request.PageSize             };         }     } }
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ViewStream.Application.Common;
+using ViewStream.Application.DTOs;
+using ViewStream.Domain.Interfaces;
+
+namespace ViewStream.Application.Queries.User
+{
+    public class GetAdminUsersPagedQueryHandler : IRequestHandler<GetAdminUsersPagedQuery, PagedResult<AdminUserListItemDto>>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public GetAdminUsersPagedQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<PagedResult<AdminUserListItemDto>> Handle(GetAdminUsersPagedQuery request, CancellationToken cancellationToken)
+        {
+            var query = _unitOfWork.Users.GetQueryable()
+                .AsNoTracking();
+
+            if (!request.IncludeDeleted)
+                query = query.Where(s => s.IsDeleted != true);
+
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+                query = query.Where(s => s.Email.Contains(request.SearchTerm) || s.FullName.Contains(request.SearchTerm));
+
+            if (request.IsActive.HasValue)
+                query = query.Where(s => s.IsActive == request.IsActive.Value);
+
+            if (request.IsBlocked.HasValue)
+                query = query.Where(s => s.IsBlocked == request.IsBlocked.Value);
+
+            var projected = query.ProjectTo<AdminUserListItemDto>(_mapper.ConfigurationProvider);
+
+            if (!string.IsNullOrWhiteSpace(request.SortBy))
+            {
+                projected = projected.OrderByPropertyName(request.SortBy, request.SortDescending);
+            }
+            else
+            {
+                projected = projected.OrderByDescending(s => s.CreatedAt);
+            }
+
+            var totalCount = await projected.CountAsync(cancellationToken);
+            var items = await projected
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(cancellationToken);
+
+            return new PagedResult<AdminUserListItemDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
+        }
+    }
+}

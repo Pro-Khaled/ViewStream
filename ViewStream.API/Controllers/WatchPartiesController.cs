@@ -1,14 +1,15 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.WatchParty.CreateWatchParty;
-using ViewStream.Application.Commands.WatchParty.DeleteWatchParty;
 using ViewStream.Application.Commands.WatchParty.UpdateWatchParty;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchParty;
 using Microsoft.AspNetCore.RateLimiting;
+
+using ViewStream.Application.Commands.WatchParty.EndWatchParty;
 
 namespace ViewStream.Api.Controllers;
 
@@ -101,46 +102,6 @@ public class WatchPartiesController : ControllerBase
         return Ok(party);
     }
 
-    
-        /// <summary>
-        /// Retrieves a paginated list of active watch parties for the admin dashboard.
-        /// </summary>
-        /// <param name="pageNumber">Page number (1-indexed).</param>
-        /// <param name="pageSize">Number of items per page.</param>
-        /// <param name="searchTerm">Optional search term.</param>
-        /// <param name="sortBy">Optional field to sort by.</param>
-        /// <param name="sortDescending">Whether to sort in descending order.</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
-        /// <param name="isActive">Optional filter by isactive.</param>
-        /// <param name="episodeId">Optional filter by episodeid.</param>
-        /// <param name="hostProfileId">Optional filter by hostprofileid.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A paginated list of watchpartys.</returns>
-        /// <response code="200">Returns the paginated list.</response>
-        /// <response code="401">Unauthorized â€“ authentication required.</response>
-        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-        [HttpGet("api/admin/watch-parties")]
-    [EnableRateLimiting("AdminRateLimit")]
-        [Authorize(Roles = "SuperAdmin,Moderator")]
-        [ProducesResponseType(typeof(PagedResult<AdminWatchPartyListItemDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<ActionResult<PagedResult<AdminWatchPartyListItemDto>>> GetAdminPaged(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] string? searchTerm = null,
-        [FromQuery] string? sortBy = null,
-        [FromQuery] bool sortDescending = false,
-        [FromQuery] bool includeDeleted = false,
-        [FromQuery] bool? isActive = null,
-        [FromQuery] long? episodeId = null,
-        [FromQuery] long? hostProfileId = null,
-            CancellationToken cancellationToken = default)
-        {
-            var query = new GetAdminWatchPartiesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, isActive, episodeId, hostProfileId);
-            var result = await _mediator.Send(query, cancellationToken);
-            return Ok(result);
-        }
     #endregion
 
     #region Commands
@@ -239,4 +200,67 @@ public class WatchPartiesController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/watchparties")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminWatchPartiesController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminWatchPartiesController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of watch parties for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="hostProfileId">Optional filter by host profile ID.</param>
+    /// <param name="episodeId">Optional filter by episode ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of watch parties.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminWatchPartyListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminWatchPartyListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? hostProfileId = null,
+        [FromQuery] long? episodeId = null,
+        CancellationToken cancellationToken = default)
+        {
+            // GetAdminWatchPartiesPagedQuery ctor:
+            // (pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, isActive, episodeId, hostProfileId)
+            var query = new GetAdminWatchPartiesPagedQuery(
+                pageNumber,
+                pageSize,
+                searchTerm,
+                sortBy,
+                sortDescending,
+                includeDeleted,
+                isActive: null,
+                episodeId: episodeId,
+                hostProfileId: hostProfileId
+            );
+
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
 }

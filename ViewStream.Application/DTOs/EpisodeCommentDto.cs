@@ -49,5 +49,18 @@ namespace ViewStream.Application.DTOs
         public string CommentText { get; set; } = string.Empty;
     }
 
+    public class AdminEpisodeCommentListItemDto
+    {
+        public long Id { get; set; }
+        public long EpisodeId { get; set; }
+        public long? ParentCommentId { get; set; }
+        public long ProfileId { get; set; }
+        public string? ProfileName { get; set; }
+        public string? Content { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public bool? IsDeleted { get; set; }
+        public bool? IsEdited { get; set; }
+        public string? Status { get; set; }
+    }
 
 }

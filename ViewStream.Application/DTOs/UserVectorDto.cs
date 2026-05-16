@@ -19,4 +19,10 @@ namespace ViewStream.Application.DTOs
         public string? EmbeddingJson { get; set; }
     }
 
+    public class AdminUserVectorListItemDto
+    {
+        public long ProfileId { get; set; }
+        public DateTime? LastUpdated { get; set; }
+    }
+
 }

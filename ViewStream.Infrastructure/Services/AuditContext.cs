@@ -1,4 +1,4 @@
-﻿using ViewStream.Application.Interfaces.Services;
+using ViewStream.Application.Interfaces.Services;
 
 public class AuditContext : IAuditContext
 {

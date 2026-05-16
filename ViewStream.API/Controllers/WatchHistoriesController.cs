@@ -1,12 +1,15 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.WatchHistory.UpsertWatchHistory;
+using ViewStream.Application.Commands.WatchHistory.DeleteWatchHistory;
+using ViewStream.Application.Commands.WatchHistory.PurgeOldWatchHistories;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchHistory;
 using Microsoft.AspNetCore.RateLimiting;
+
 
 namespace ViewStream.Api.Controllers;
 
@@ -102,4 +105,103 @@ public class WatchHistoriesController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/watchhistory")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminWatchHistoriesController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminWatchHistoriesController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of watch histories for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="profileId">Optional filter by profile ID.</param>
+    /// <param name="episodeId">Optional filter by episode ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of watch histories.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminWatchHistoryListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminWatchHistoryListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? profileId = null,
+        [FromQuery] long? episodeId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminWatchHistoriesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, profileId, episodeId);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Deletes a specific watch history record.
+    /// </summary>
+    /// <param name="id">The ID of the watch history to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Watch history deleted successfully.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="404">Watch history not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> DeleteWatchHistory(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _mediator.Send(new ViewStream.Application.Commands.WatchHistory.DeleteWatchHistory.DeleteWatchHistoryCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Purges watch histories older than a specified number of days.
+    /// </summary>
+    /// <param name="daysToKeep">Number of days of history to retain.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The number of records purged.</returns>
+    /// <response code="200">Returns the number of purged history items.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpDelete("purge")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<int>> PurgeOldWatchHistories([FromQuery] int daysToKeep = 90, CancellationToken cancellationToken = default)
+    {
+        var adminUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _mediator.Send(new ViewStream.Application.Commands.WatchHistory.PurgeOldWatchHistories.PurgeOldWatchHistoriesCommand(daysToKeep, adminUserId), cancellationToken);
+        return Ok(result);
+    }
 }

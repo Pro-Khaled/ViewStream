@@ -31,4 +31,12 @@ namespace ViewStream.Application.DTOs
         public long ShowId { get; set; }
     }
 
+    public class AdminSharedListItemListItemDto
+    {
+        public long ListId { get; set; }
+        public long ShowId { get; set; }
+        public string? ShowTitle { get; set; }
+        public string? AddedByProfileName { get; set; }
+        public DateTime? AddedAt { get; set; }
+    }
 }

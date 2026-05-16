@@ -36,4 +36,11 @@ namespace ViewStream.Application.DTOs
         public int TotalRatings { get; set; }
     }
 
+    public class AdminRatingListItemDto
+    {
+        public long ProfileId { get; set; }
+        public long ShowId { get; set; }
+        public int? Score { get; set; }
+        public DateTime? RatedAt { get; set; }
+    }
 }

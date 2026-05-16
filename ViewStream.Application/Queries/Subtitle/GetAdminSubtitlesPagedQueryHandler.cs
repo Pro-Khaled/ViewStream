@@ -1,55 +1,49 @@
-﻿using MediatR;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Queries.Subtitle
 {
-    public class GetAdminSubtitlesPagedQueryHandler
-        : IRequestHandler<GetAdminSubtitlesPagedQuery, PagedResult<AdminSubtitleListItemDto>>
+    public class GetAdminSubtitlesPagedQueryHandler : IRequestHandler<GetAdminSubtitlesPagedQuery, PagedResult<AdminSubtitleListItemDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public GetAdminSubtitlesPagedQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper;
 
-        public async Task<PagedResult<AdminSubtitleListItemDto>> Handle(
-            GetAdminSubtitlesPagedQuery request, CancellationToken cancellationToken)
+        public GetAdminSubtitlesPagedQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            var query = _unitOfWork.Subtitles.GetQueryable();
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-            query = query.Include(e => e.Episode);
+        public async Task<PagedResult<AdminSubtitleListItemDto>> Handle(GetAdminSubtitlesPagedQuery request, CancellationToken cancellationToken)
+        {
+            var query = _unitOfWork.Subtitles.GetQueryable()
+                .AsNoTracking();
 
             if (!request.IncludeDeleted)
                 query = query.Where(s => s.IsDeleted != true);
 
-            
-
             if (request.EpisodeId.HasValue)
                 query = query.Where(s => s.EpisodeId == request.EpisodeId.Value);
-if (!string.IsNullOrWhiteSpace(request.LanguageCode))
+
+            if (!string.IsNullOrWhiteSpace(request.LanguageCode))
                 query = query.Where(s => s.LanguageCode == request.LanguageCode);
-if (request.IsCc.HasValue)
+
+            if (request.IsCc.HasValue)
                 query = query.Where(s => s.IsCc == request.IsCc.Value);
 
-            var projected = query.Select(s => new AdminSubtitleListItemDto
-            {
-                Id = s.Id,
-                LanguageCode = s.LanguageCode,
-                SubtitleUrl = s.SubtitleUrl,
-                IsCc = s.IsCc,
-                IsDeleted = s.IsDeleted ?? false,
-                CreatedAt = s.CreatedAt,
-                EpisodeTitle = s.Episode.Title,
-            });
+            var projected = query.ProjectTo<AdminSubtitleListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))
             {
-                bool desc = request.SortDescending;
-                projected = request.SortBy.ToLower() switch
-                {
-
-                    _ => projected.OrderByPropertyName(request.SortBy, desc)
-                };
+                projected = projected.OrderByPropertyName(request.SortBy, request.SortDescending);
             }
             else
             {

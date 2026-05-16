@@ -1,55 +1,46 @@
-﻿using MediatR;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Queries.Subscription
 {
-    public class GetAdminSubscriptionsPagedQueryHandler
-        : IRequestHandler<GetAdminSubscriptionsPagedQuery, PagedResult<AdminSubscriptionListItemDto>>
+    public class GetAdminSubscriptionsPagedQueryHandler : IRequestHandler<GetAdminSubscriptionsPagedQuery, PagedResult<AdminSubscriptionListItemDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public GetAdminSubscriptionsPagedQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper;
 
-        public async Task<PagedResult<AdminSubscriptionListItemDto>> Handle(
-            GetAdminSubscriptionsPagedQuery request, CancellationToken cancellationToken)
+        public GetAdminSubscriptionsPagedQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            var query = _unitOfWork.Subscriptions.GetQueryable();
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-            query = query.Include(e => e.User);
-
-
-            
+        public async Task<PagedResult<AdminSubscriptionListItemDto>> Handle(GetAdminSubscriptionsPagedQuery request, CancellationToken cancellationToken)
+        {
+            var query = _unitOfWork.Subscriptions.GetQueryable()
+                .AsNoTracking();
 
             if (request.UserId.HasValue)
                 query = query.Where(s => s.UserId == request.UserId.Value);
-if (!string.IsNullOrWhiteSpace(request.Status))
+
+            if (!string.IsNullOrWhiteSpace(request.Status))
                 query = query.Where(s => s.Status == request.Status);
-if (!string.IsNullOrWhiteSpace(request.PlanType))
+
+            if (!string.IsNullOrWhiteSpace(request.PlanType))
                 query = query.Where(s => s.PlanType == request.PlanType);
 
-            var projected = query.Select(s => new AdminSubscriptionListItemDto
-            {
-                Id = s.Id,
-                UserId = s.UserId,
-                UserEmail = s.User.Email,
-                PlanType = s.PlanType,
-                Status = s.Status,
-                StartDate = s.StartDate,
-                EndDate = s.EndDate,
-                AutoRenew = s.AutoRenew,
-                CreatedAt = s.CreatedAt,
-            });
+            var projected = query.ProjectTo<AdminSubscriptionListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))
             {
-                bool desc = request.SortDescending;
-                projected = request.SortBy.ToLower() switch
-                {
-
-                    _ => projected.OrderByPropertyName(request.SortBy, desc)
-                };
+                projected = projected.OrderByPropertyName(request.SortBy, request.SortDescending);
             }
             else
             {

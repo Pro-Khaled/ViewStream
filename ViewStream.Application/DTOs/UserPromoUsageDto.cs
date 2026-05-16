@@ -15,4 +15,12 @@ namespace ViewStream.Application.DTOs
         public DateTime? UsedAt { get; set; }
     }
 
+    public class AdminUserPromoUsageListItemDto
+    {
+        public long UserId { get; set; }
+        public long PromoCodeId { get; set; }
+        public string? PromoCode { get; set; }
+        public DateTime? UsedAt { get; set; }
+    }
+
 }

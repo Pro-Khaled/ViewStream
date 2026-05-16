@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -53,44 +53,30 @@ public class EpisodesController : ControllerBase
         return Ok(episode);
     }
 
-    
-        /// <summary>
-        /// Retrieves a paginated list of episodes for the admin dashboard.
-        /// </summary>
-        /// <param name="pageNumber">Page number (1-indexed).</param>
-        /// <param name="pageSize">Number of items per page.</param>
-        /// <param name="searchTerm">Optional search term.</param>
-        /// <param name="sortBy">Optional field to sort by.</param>
-        /// <param name="sortDescending">Whether to sort in descending order.</param>
-        /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
-        /// <param name="showId">Optional filter by showid.</param>
-        /// <param name="seasonId">Optional filter by seasonid.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A paginated list of episodes.</returns>
-        /// <response code="200">Returns the paginated list.</response>
-        /// <response code="401">Unauthorized â€“ authentication required.</response>
-        /// <response code="403">Forbidden â€“ insufficient permissions.</response>
+    /// <summary>
+    /// Retrieves the stream URL for a single episode.
+    /// </summary>
+    /// <param name="id">The ID of the episode.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The stream URL of the requested episode.</returns>
+    /// <response code="200">Returns the stream URL.</response>
+    /// <response code="404">Episode not found.</response>
     /// <response code="429">Too many requests. Please wait before trying again.</response>
-        [HttpGet("api/admin/episodes")]
-    [EnableRateLimiting("AdminRateLimit")]
-        [Authorize(Roles = "SuperAdmin,ContentManager")]
-        [ProducesResponseType(typeof(PagedResult<AdminEpisodeListItemDto>), StatusCodes.Status200OK)]
+    [HttpGet("{id:long}/stream")]
+    [EnableRateLimiting("PublicReadRateLimit")]
+    [Authorize]
+    [ProducesResponseType(typeof(EpisodeStreamUrlDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<ActionResult<PagedResult<AdminEpisodeListItemDto>>> GetAdminPaged(
-        [FromQuery] int pageNumber = 1,
-        [FromQuery] int pageSize = 20,
-        [FromQuery] string? searchTerm = null,
-        [FromQuery] string? sortBy = null,
-        [FromQuery] bool sortDescending = false,
-        [FromQuery] bool includeDeleted = false,
-        [FromQuery] long? showId = null,
-        [FromQuery] long? seasonId = null,
-            CancellationToken cancellationToken = default)
-        {
-            var query = new GetAdminEpisodesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, showId, seasonId);
-            var result = await _mediator.Send(query, cancellationToken);
-            return Ok(result);
-        }
+    public async Task<ActionResult<EpisodeStreamUrlDto>> GetEpisodeStream(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetEpisodeStreamQuery(id), cancellationToken);
+        if (result == null) return NotFound();
+        return Ok(result);
+    }
+        
     #endregion
 
     #region Commands
@@ -186,35 +172,6 @@ public class EpisodesController : ControllerBase
     }
 
     /// <summary>
-    /// Restores a soft-deleted episode.
-    /// </summary>
-    /// <param name="id">The ID of the episode to restore.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>No content on success.</returns>
-    /// <response code="204">Episode restored successfully.</response>
-    /// <response code="401">User is not authenticated.</response>
-    /// <response code="403">User is not a SuperAdmin.</response>
-    /// <response code="404">Episode not found or not deleted.</response>
-    /// <response code="429">Too many requests. Please wait before trying again.</response>
-    [HttpPost("{id:long}/restore")]
-    [EnableRateLimiting("ContentManagementRateLimit")]
-    [Authorize(Roles = "SuperAdmin")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<IActionResult> RestoreEpisode(
-        long id,
-        CancellationToken cancellationToken)
-    {
-        var userId = GetCurrentUserId();
-        var result = await _mediator.Send(new RestoreEpisodeCommand(id, userId), cancellationToken);
-        if (!result) return NotFound();
-        return NoContent();
-    }
-
-    /// <summary>
     /// Uploads a thumbnail image for an episode.
     /// </summary>
     /// <param name="id">The ID of the episode.</param>
@@ -285,5 +242,78 @@ public class SeasonEpisodesController : ControllerBase
     {
         var episodes = await _mediator.Send(new GetEpisodesBySeasonQuery(seasonId), cancellationToken);
         return Ok(episodes);
+    }
+}
+
+[ApiController]
+[Route("api/v1/admin/episodes")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminEpisodesController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminEpisodesController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of episodes for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of episodes.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminEpisodeListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminEpisodeListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _mediator.Send(new GetAdminEpisodesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted episode.
+    /// </summary>
+    /// <param name="id">The ID of the episode to restore.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Episode restored successfully.</response>
+    /// <response code="401">User is not authenticated.</response>
+    /// <response code="403">User is not a SuperAdmin.</response>
+    /// <response code="404">Episode not found or not deleted.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpPost("{id:long}/restore")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> RestoreEpisode(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _mediator.Send(new RestoreEpisodeCommand(id, userId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 }

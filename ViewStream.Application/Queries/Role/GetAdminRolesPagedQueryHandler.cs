@@ -1,47 +1,40 @@
-﻿using MediatR;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Queries.Role
 {
-    public class GetAdminRolesPagedQueryHandler
-        : IRequestHandler<GetAdminRolesPagedQuery, PagedResult<AdminRoleListItemDto>>
+    public class GetAdminRolesPagedQueryHandler : IRequestHandler<GetAdminRolesPagedQuery, PagedResult<AdminRoleListItemDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public GetAdminRolesPagedQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+        private readonly IMapper _mapper;
 
-        public async Task<PagedResult<AdminRoleListItemDto>> Handle(
-            GetAdminRolesPagedQuery request, CancellationToken cancellationToken)
+        public GetAdminRolesPagedQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            var query = _unitOfWork.Roles.GetQueryable();
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
-
-
+        public async Task<PagedResult<AdminRoleListItemDto>> Handle(GetAdminRolesPagedQuery request, CancellationToken cancellationToken)
+        {
+            var query = _unitOfWork.Roles.GetQueryable()
+                .AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(s => s.Name.Contains(request.SearchTerm));
 
-            
-
-            var projected = query.Select(s => new AdminRoleListItemDto
-            {
-                Id = s.Id,
-                Name = s.Name,
-                Description = s.Description,
-                IsSystem = s.IsSystem,
-                CreatedAt = s.CreatedAt,
-            });
+            var projected = query.ProjectTo<AdminRoleListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))
             {
-                bool desc = request.SortDescending;
-                projected = request.SortBy.ToLower() switch
-                {
-
-                    _ => projected.OrderByPropertyName(request.SortBy, desc)
-                };
+                projected = projected.OrderByPropertyName(request.SortBy, request.SortDescending);
             }
             else
             {

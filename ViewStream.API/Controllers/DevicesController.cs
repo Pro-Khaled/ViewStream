@@ -8,6 +8,7 @@ using ViewStream.Application.Commands.Device.UpdateDevice;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Device;
 using Microsoft.AspNetCore.RateLimiting;
+using ViewStream.Application.Common;
 
 namespace ViewStream.Api.Controllers;
 
@@ -148,4 +149,52 @@ public class DevicesController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/devices")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager")]
+[Produces("application/json")]
+public class AdminDevicesController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminDevicesController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of devices for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="userId">Optional filter by user ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of devices.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminDeviceListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminDeviceListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? userId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminDevicesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, userId);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
 }

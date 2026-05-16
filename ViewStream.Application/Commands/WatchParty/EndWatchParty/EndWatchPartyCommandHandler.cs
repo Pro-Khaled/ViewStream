@@ -4,7 +4,7 @@ using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Interfaces;
 
-namespace ViewStream.Application.Commands.WatchParty.DeleteWatchParty
+namespace ViewStream.Application.Commands.WatchParty.EndWatchParty
 {
     using WatchParty = ViewStream.Domain.Entities.WatchParty;
     public class EndWatchPartyCommandHandler : IRequestHandler<EndWatchPartyCommand, bool>

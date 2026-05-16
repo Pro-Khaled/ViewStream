@@ -43,4 +43,15 @@ namespace ViewStream.Application.DTOs
         public int? ProgressSeconds { get; set; }
         public bool? Completed { get; set; }
     }
+
+    public class AdminWatchHistoryListItemDto
+    {
+        public long Id { get; set; }
+        public long ProfileId { get; set; }
+        public long EpisodeId { get; set; }
+        public long? UserId { get; set; }
+        public bool? Completed { get; set; }
+        public int? ProgressSeconds { get; set; }
+        public DateTime? WatchedAt { get; set; }
+    }
 }

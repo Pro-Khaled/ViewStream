@@ -39,5 +39,14 @@ namespace ViewStream.Application.DTOs
         public bool? IsTrusted { get; set; }
     }
 
-
+    public class AdminDeviceListItemDto
+    {
+        public long Id { get; set; }
+        public long UserId { get; set; }
+        public string DeviceId { get; set; } = string.Empty;
+        public string? DeviceName { get; set; }
+        public string? Platform { get; set; }
+        public DateTime? LastActive { get; set; }
+        public bool? IsTrusted { get; set; }
+    }
 }

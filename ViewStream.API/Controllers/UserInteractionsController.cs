@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -7,6 +7,7 @@ using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.UserInteraction;
 using Microsoft.AspNetCore.RateLimiting;
+
 
 namespace ViewStream.Api.Controllers;
 
@@ -125,4 +126,82 @@ public class UserInteractionsController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/userinteractions")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,Analytics")]
+[Produces("application/json")]
+public class AdminUserInteractionsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminUserInteractionsController(IMediator mediator) => _mediator = mediator;
+
+    /// <summary>
+    /// Retrieves a paginated list of user interactions for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="profileId">Optional filter by profile ID.</param>
+    /// <param name="showId">Optional filter by show ID.</param>
+    /// <param name="interactionType">Optional filter by interaction type.</param>
+    /// <param name="fromDate">Optional filter by start date.</param>
+    /// <param name="toDate">Optional filter by end date.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of user interactions.</returns>
+    /// <response code="200">Returns the paginated list.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminUserInteractionListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminUserInteractionListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? profileId = null,
+        [FromQuery] long? showId = null,
+        [FromQuery] string? interactionType = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminUserInteractionsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, profileId, showId, interactionType, fromDate, toDate);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Retrieves a summary of interactions for a specific profile (Admin override).
+    /// </summary>
+    /// <param name="profileId">The ID of the profile.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Interaction summary.</returns>
+    /// <response code="200">Returns the summary.</response>
+    /// <response code="401">Unauthorized.</response>
+    /// <response code="403">Forbidden.</response>
+    /// <response code="404">Profile not found.</response>
+    [HttpGet("profiles/{profileId:long}/summary")]
+    [ProducesResponseType(typeof(UserInteractionSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UserInteractionSummaryDto>> GetProfileSummary(long profileId, CancellationToken cancellationToken)
+    {
+        var summary = await _mediator.Send(new GetProfileInteractionSummaryQuery(profileId), cancellationToken);
+        if (summary == null) return NotFound();
+        return Ok(summary);
+    }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,18 +64,28 @@ namespace ViewStream.Application.DTOs
     }
 
 
+
+    public class EpisodeStreamUrlDto
+    {
+        public string VideoUrl { get; set; } = string.Empty;
+    }
+
     public class AdminEpisodeListItemDto
     {
         public long Id { get; set; }
-        public short EpisodeNumber { get; set; }
-        public string Title { get; set; }
+        public long? SeasonId { get; set; }
+        public long? ShowId { get; set; }
+
+        public int? EpisodeNumber { get; set; }
         public int? RuntimeSeconds { get; set; }
         public string? ThumbnailUrl { get; set; }
         public DateOnly? ReleaseDate { get; set; }
-        public bool IsDeleted { get; set; }
+
+        public string? ShowTitle { get; set; }
+        public int? SeasonNumber { get; set; }
+
+        public string? Title { get; set; }
         public DateTime? CreatedAt { get; set; }
-        public string ShowTitle { get; set; }
-        public short SeasonNumber { get; set; }
+        public bool? IsDeleted { get; set; }
     }
 }
-

@@ -53,4 +53,15 @@ namespace ViewStream.Application.DTOs
         public string Token { get; set; } = string.Empty; // New JWT with updated ProfileId claim
     }
 
+    public class AdminProfileListItemDto
+    {
+        public long Id { get; set; }
+        public long UserId { get; set; }
+        public string? ProfileName { get; set; }
+        public string? LanguagePref { get; set; }
+        public short? MaturityLevel { get; set; }
+        public bool? IsKids { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public bool? IsDeleted { get; set; }
+    }
 }

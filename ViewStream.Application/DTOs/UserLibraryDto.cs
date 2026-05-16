@@ -67,5 +67,14 @@ namespace ViewStream.Application.DTOs
         public Dictionary<string, int> CountByStatus { get; set; } = new();
     }
 
+    public class AdminUserLibraryListItemDto
+    {
+        public long Id { get; set; }
+        public long ProfileId { get; set; }
+        public long UserId { get; set; }
+        public long? ShowId { get; set; }
+        public int? EpisodesWatched { get; set; }
+        public DateTime? AddedAt { get; set; }
+    }
 
 }

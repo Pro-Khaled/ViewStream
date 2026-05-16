@@ -18,5 +18,11 @@ namespace ViewStream.Application.DTOs
         public string RowName { get; set; } = string.Empty;
         public List<long> ShowIds { get; set; } = new();
     }
-    
+
+    public class AdminPersonalizedRowListItemDto
+    {
+        public long ProfileId { get; set; }
+        public string? RowName { get; set; }
+        public DateTime? GeneratedAt { get; set; }
+    }
 }

@@ -22,4 +22,14 @@ namespace ViewStream.Application.DTOs
         public bool? Won { get; set; }
     }
 
+    public class AdminShowAwardListItemDto
+    {
+        public long ShowId { get; set; }
+        public long AwardId { get; set; }
+        public string? AwardName { get; set; }
+        public bool? Won { get; set; }
+
+        // referenced by GetAdminShowAwardsPagedQueryHandler
+        public int? AwardYear { get; set; }
+    }
 }
