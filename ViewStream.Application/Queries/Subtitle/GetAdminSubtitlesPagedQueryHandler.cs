@@ -39,6 +39,14 @@ namespace ViewStream.Application.Queries.Subtitle
             if (request.IsCc.HasValue)
                 query = query.Where(s => s.IsCc == request.IsCc.Value);
 
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(s =>
+                    s.LanguageCode.Contains(term) ||
+                    (s.Episode != null && s.Episode.Title.Contains(term)));
+            }
+
             var projected = query.ProjectTo<AdminSubtitleListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

@@ -42,6 +42,15 @@ namespace ViewStream.Application.Queries.UserInteraction
             if (request.ToDate.HasValue)
                 query = query.Where(s => s.CreatedAt <= request.ToDate.Value);
 
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(s =>
+                    s.InteractionType.Contains(term) ||
+                    (s.Show != null && s.Show.Title.Contains(term)) ||
+                    (s.Profile != null && s.Profile.Name.Contains(term)));
+            }
+
             var projected = query.ProjectTo<AdminUserInteractionListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

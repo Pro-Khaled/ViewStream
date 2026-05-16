@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -22,7 +22,14 @@ namespace ViewStream.Application.Queries.AudioTrack
             if (!request.IncludeDeleted)
                 query = query.Where(s => s.IsDeleted != true);
 
-            
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(x =>
+                    x.LanguageCode.Contains(term) ||
+                    x.TrackType.Contains(term) ||
+                    x.Episode.Title.Contains(term));
+            }
 
             if (request.EpisodeId.HasValue)
                 query = query.Where(s => s.EpisodeId == request.EpisodeId.Value);

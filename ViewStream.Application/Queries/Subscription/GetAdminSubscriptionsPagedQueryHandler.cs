@@ -36,6 +36,15 @@ namespace ViewStream.Application.Queries.Subscription
             if (!string.IsNullOrWhiteSpace(request.PlanType))
                 query = query.Where(s => s.PlanType == request.PlanType);
 
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(s =>
+                    s.PlanType.Contains(term) ||
+                    s.Status.Contains(term) ||
+                    (s.User != null && s.User.Email.Contains(term)));
+            }
+
             var projected = query.ProjectTo<AdminSubscriptionListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

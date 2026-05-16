@@ -36,6 +36,15 @@ namespace ViewStream.Application.Queries.WatchParty
             if (request.HostProfileId.HasValue)
                 query = query.Where(s => s.HostProfileId == request.HostProfileId.Value);
 
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(s =>
+                    s.PartyCode.Contains(term) ||
+                    (s.Episode != null && s.Episode.Title.Contains(term)) ||
+                    (s.HostProfile != null && s.HostProfile.Name.Contains(term)));
+            }
+
             var projected = query.ProjectTo<AdminWatchPartyListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

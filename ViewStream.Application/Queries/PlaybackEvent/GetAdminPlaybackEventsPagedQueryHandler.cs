@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -20,7 +20,14 @@ namespace ViewStream.Application.Queries.PlaybackEvent
             query = query.Include(e => e.Profile);             query = query.Include(e => e.Episode);
 
 
-            
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(x =>
+                    x.EventType.Contains(term) ||
+                    x.Episode.Title.Contains(term) ||
+                    x.Profile.Name.Contains(term));
+            }
 
             if (request.EpisodeId.HasValue)
                 query = query.Where(s => s.EpisodeId == request.EpisodeId.Value);

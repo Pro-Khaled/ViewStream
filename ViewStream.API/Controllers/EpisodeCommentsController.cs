@@ -5,6 +5,7 @@ using System.Security.Claims;
 using ViewStream.Application.Commands.EpisodeComment.CreateEpisodeComment;
 using ViewStream.Application.Commands.EpisodeComment.DeleteEpisodeComment;
 using ViewStream.Application.Commands.EpisodeComment.UpdateEpisodeComment;
+using ViewStream.Application.Commands.EpisodeComment.RestoreEpisodeComment;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.EpisodeComment;
@@ -255,5 +256,38 @@ public class AdminEpisodeCommentsController : ControllerBase
         var query = new GetAdminEpisodeCommentsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, episodeId, profileId);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted episode comment.
+    /// </summary>
+    /// <param name="id">Episode comment id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Comment restored.</response>
+    /// <response code="404">Comment not found or not deleted.</response>
+    /// <response code="401">Unauthorized.</response>
+    /// <response code="403">Forbidden.</response>
+    /// <response code="429">Too many requests.</response>
+    [HttpPost("{id:long}/restore")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> RestoreEpisodeComment(
+        long id,
+        CancellationToken cancellationToken = default)
+    {
+        var actorUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var restored = await _mediator.Send(
+            new RestoreEpisodeCommentCommand(id, actorUserId),
+            cancellationToken);
+
+        if (!restored)
+            return NotFound();
+
+        return NoContent();
     }
 }

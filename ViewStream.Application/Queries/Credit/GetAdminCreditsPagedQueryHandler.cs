@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -20,7 +20,16 @@ namespace ViewStream.Application.Queries.Credit
             query = query.Include(e => e.Person);             query = query.Include(e => e.Show);             query = query.Include(e => e.Season);             query = query.Include(e => e.Episode);
 
 
-            
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(x =>
+                    x.Person.Name.Contains(term) ||
+                    x.Role.Contains(term) ||
+                    (x.Show != null && x.Show.Title.Contains(term)) ||
+                    (x.Season != null && x.Season.Title.Contains(term)) ||
+                    (x.Episode != null && x.Episode.Title.Contains(term)));
+            }
 
             if (!string.IsNullOrWhiteSpace(request.Role))
                 query = query.Where(s => s.Role == request.Role);

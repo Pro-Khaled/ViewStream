@@ -128,26 +128,40 @@ public class AdminInvoicesController : ControllerBase
     /// <response code="401">Unauthorized - authentication required.</response>
     /// <response code="403">Forbidden - insufficient permissions.</response>
     /// <response code="429">Too many requests. Please wait before trying again.</response>
-    //[HttpGet]
-    //[ProducesResponseType(typeof(PagedResult<AdminInvoiceListItemDto>), StatusCodes.Status200OK)]
-    //[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    //[ProducesResponseType(StatusCodes.Status403Forbidden)]
-    //[ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    //public async Task<ActionResult<PagedResult<AdminInvoiceListItemDto>>> GetAdminPaged(
-    //    [FromQuery] int pageNumber = 1,
-    //    [FromQuery] int pageSize = 20,
-    //    [FromQuery] long? userId = null,
-    //    [FromQuery] string? status = null,
-    //    [FromQuery] DateOnly? from = null,
-    //    [FromQuery] DateOnly? to = null,
-    //    [FromQuery] string sortBy = "invoiceDate",
-    //    [FromQuery] bool sortDescending = true,
-    //    CancellationToken cancellationToken = default)
-    //{
-    //    var query = new GetAdminInvoicesPagedQuery(pageNumber, pageSize, userId, status, from, to, sortBy, sortDescending);
-    //    var result = await _mediator.Send(query, cancellationToken);
-    //    return Ok(result);
-    //}
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<AdminInvoiceListItemDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<AdminInvoiceListItemDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] long? userId = null,
+        [FromQuery] string? status = null,
+        [FromQuery] DateOnly? from = null,
+        [FromQuery] DateOnly? to = null,
+        [FromQuery] string sortBy = "invoiceDate",
+        [FromQuery] bool sortDescending = true,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] string? searchTerm = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminInvoicesPagedQuery(
+            pageNumber: pageNumber,
+            pageSize: pageSize,
+            userId: userId,
+            status: status,
+            from: from,
+            to: to,
+            sortBy: sortBy,
+            sortDescending: sortDescending,
+            includeDeleted: includeDeleted,
+            searchTerm: searchTerm
+        );
+
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
 
     /// <summary>
     /// Retrieves a specific invoice by ID (Admin override).

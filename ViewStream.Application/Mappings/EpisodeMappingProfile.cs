@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -12,7 +12,9 @@ namespace ViewStream.Application.Mappings
             CreateMap<Episode, EpisodeDto>()
                 .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Season.Show.Title))
                 .ForMember(dest => dest.SeasonTitle, opt => opt.MapFrom(src => src.Season.Title))
-                .ForMember(dest => dest.SeasonNumber, opt => opt.MapFrom(src => src.Season.SeasonNumber));
+                .ForMember(dest => dest.SeasonNumber, opt => opt.MapFrom(src => src.Season.SeasonNumber))
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted ?? false))
+                .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt));
 
             CreateMap<Episode, EpisodeListItemDto>();
             CreateMap<CreateEpisodeDto, Episode>();

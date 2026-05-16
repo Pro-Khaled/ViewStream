@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -24,8 +24,13 @@ namespace ViewStream.Application.Queries.SearchLog
 
             if (request.ProfileId.HasValue)
                 query = query.Where(s => s.ProfileId == request.ProfileId.Value);
-if (!string.IsNullOrWhiteSpace(request.Query))
-                query = query.Where(s => s.Query.Contains(request.Query));
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm) || !string.IsNullOrWhiteSpace(request.Query))
+            {
+                var term = (request.SearchTerm ?? request.Query ?? "").Trim();
+                query = query.Where(s => s.Query.Contains(term) ||
+                                         (s.Profile != null && s.Profile.Name.Contains(term)) ||
+                                         (s.ClickedShow != null && s.ClickedShow.Title.Contains(term)));
+            }
 
             var projected = query.Select(s => new AdminSearchLogListItemDto
             {

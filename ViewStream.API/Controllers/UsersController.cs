@@ -396,6 +396,33 @@ public class AdminUsersController : ControllerBase
         if (!result) return NotFound();
         return NoContent();
     }
+
+    /// <summary>
+    /// Restores a soft-deleted user account.
+    /// </summary>
+    /// <param name="id">The user ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">User restored successfully.</response>
+    /// <response code="404">User not found or not deleted.</response>
+    [HttpPost("{id:long}/restore")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestoreUser(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+
+        var restored = await _mediator.Send(
+            new ViewStream.Application.Commands.User.RestoreUser.RestoreUserCommand(id, adminUserId),
+            cancellationToken);
+
+        if (!restored)
+            return NotFound();
+
+        return NoContent();
+    }
 }
 
 [ApiController]

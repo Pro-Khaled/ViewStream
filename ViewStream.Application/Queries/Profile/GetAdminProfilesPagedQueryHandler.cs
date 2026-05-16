@@ -31,7 +31,7 @@ namespace ViewStream.Application.Queries.Profile
                 query = query.Where(p => p.IsDeleted != true);
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-                query = query.Where(p => p.Name.Contains(request.SearchTerm) || p.User.Email.Contains(request.SearchTerm));
+                query = query.Where(p => p.Name.Contains(request.SearchTerm) || (p.User != null && p.User.Email.Contains(request.SearchTerm)));
 
             var projected = query.ProjectTo<AdminProfileListItemDto>(_mapper.ConfigurationProvider);
 

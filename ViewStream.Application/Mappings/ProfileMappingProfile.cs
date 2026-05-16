@@ -12,7 +12,9 @@ namespace ViewStream.Application.Mappings
         public ProfileMappingProfile()
         {
             CreateMap<Profile, ProfileDto>()
-                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User.Email));
+                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted ?? false))
+                .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt));
 
             CreateMap<Profile, ProfileListItemDto>();
 

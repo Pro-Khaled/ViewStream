@@ -28,7 +28,7 @@ namespace ViewStream.Application.Queries.Role
                 .AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-                query = query.Where(s => s.Name.Contains(request.SearchTerm));
+                query = query.Where(s => s.Name != null && s.Name.Contains(request.SearchTerm));
 
             var projected = query.ProjectTo<AdminRoleListItemDto>(_mapper.ConfigurationProvider);
 

@@ -31,7 +31,7 @@ namespace ViewStream.Application.Queries.Season
                 query = query.Where(s => s.IsDeleted != true);
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-                query = query.Where(s => s.Title.Contains(request.SearchTerm));
+                query = query.Where(s => s.Title != null && s.Title.Contains(request.SearchTerm));
 
             if (request.ShowId.HasValue)
                 query = query.Where(s => s.ShowId == request.ShowId.Value);

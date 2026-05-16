@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -20,7 +20,14 @@ namespace ViewStream.Application.Queries.CommentReport
             query = query.Include(e => e.Comment);             query = query.Include(e => e.ReportedByProfile);
 
 
-            
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(x =>
+                    x.Comment.CommentText.Contains(term) ||
+                    x.Reason.Contains(term) ||
+                    x.ReportedByProfile.Name.Contains(term));
+            }
 
             if (!string.IsNullOrWhiteSpace(request.Status))
                 query = query.Where(s => s.Status == request.Status);

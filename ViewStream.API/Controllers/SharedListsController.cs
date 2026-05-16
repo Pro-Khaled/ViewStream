@@ -6,6 +6,7 @@ using ViewStream.Application.Commands.SharedList.CreateSharedList;
 using ViewStream.Application.Commands.SharedList.DeleteSharedList;
 using ViewStream.Application.Commands.SharedList.GenerateShareCode;
 using ViewStream.Application.Commands.SharedList.UpdateSharedList;
+using ViewStream.Application.Commands.SharedList.RestoreSharedList;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.SharedList;
 using Microsoft.AspNetCore.RateLimiting;
@@ -242,5 +243,31 @@ public class AdminSharedListsController : ControllerBase
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
-}
 
+    /// <summary>
+    /// Restores a soft-deleted shared list.
+    /// </summary>
+    /// <param name="id">Shared list id.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Shared list restored.</response>
+    /// <response code="404">Shared list not found or not deleted.</response>
+    [HttpPost("{id:long}/restore")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RestoreSharedList(
+        long id,
+        CancellationToken cancellationToken)
+    {
+        var actorUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var restored = await _mediator.Send(
+            new RestoreSharedListCommand(id, actorUserId),
+            cancellationToken);
+
+        if (!restored)
+            return NotFound();
+
+        return NoContent();
+    }
+}

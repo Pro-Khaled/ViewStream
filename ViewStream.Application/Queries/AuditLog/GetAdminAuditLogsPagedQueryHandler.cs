@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -20,7 +20,14 @@ namespace ViewStream.Application.Queries.AuditLog
             query = query.Include(e => e.ChangedByUser);
 
 
-            
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+            {
+                var term = request.SearchTerm.Trim();
+                query = query.Where(x =>
+                    x.TableName.Contains(term) ||
+                    x.Action.Contains(term) ||
+                    (x.ChangedByUser != null && x.ChangedByUser.UserName.Contains(term)));
+            }
 
             if (!string.IsNullOrWhiteSpace(request.TableName))
                 query = query.Where(s => s.TableName == request.TableName);
