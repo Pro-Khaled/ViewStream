@@ -4,10 +4,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ViewStream.Application.Interfaces.Services;
 using ViewStream.Shared.Options;
-using User = ViewStream.Domain.Entities.User;
 
-namespace ViewStream.Application.Features.Account.Commands.ForgotPassword
+namespace ViewStream.Application.Commands.Account.ForgotPassword
 {
+    using User = ViewStream.Domain.Entities.User;
+
     public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand, bool>
     {
         private readonly UserManager<User> _userManager;

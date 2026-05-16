@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using ViewStream.Application.DTOs.Account;
 
-namespace ViewStream.Application.Features.Account.Commands.Register
+namespace ViewStream.Application.Commands.Account.Register
 {
     public record RegisterCommand(RegisterDto Dto) : IRequest<RegisterResult>;
 

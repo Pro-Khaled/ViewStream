@@ -5,10 +5,10 @@ using Microsoft.Extensions.Options;
 using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
 using ViewStream.Shared.Options;
-using User = ViewStream.Domain.Entities.User;
 
-namespace ViewStream.Application.Features.Account.Commands.Register
+namespace ViewStream.Application.Commands.Account.Register
 {
+    using User = ViewStream.Domain.Entities.User;
 
     public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterResult>
     {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
 
-namespace ViewStream.Application.Features.Account.Commands.Logout
+namespace ViewStream.Application.Commands.Account.Logout
 {
     public class LogoutCommandHandler : IRequestHandler<LogoutCommand, bool>
     {

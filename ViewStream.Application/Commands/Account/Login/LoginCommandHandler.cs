@@ -1,17 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ViewStream.Application.DTOs.Account;
 using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
-using ViewStream.Domain.Entities;
-namespace ViewStream.Application.Features.Account.Commands.Login
+namespace ViewStream.Application.Commands.Account.Login
 {
+    using User = ViewStream.Domain.Entities.User;
+
     public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponseDto>
     {
         private readonly UserManager<User> _userManager;

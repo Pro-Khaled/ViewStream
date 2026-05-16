@@ -1,7 +1,7 @@
 using MediatR;
 using ViewStream.Application.DTOs.Account;
 
-namespace ViewStream.Application.Features.Account.Commands.ResetPassword
+namespace ViewStream.Application.Commands.Account.ResetPassword
 {
     public record ResetPasswordCommand(ResetPasswordDto Dto) : IRequest<ResetPasswordResult>;
 

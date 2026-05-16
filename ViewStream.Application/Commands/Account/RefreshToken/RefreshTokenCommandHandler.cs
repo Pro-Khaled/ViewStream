@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using ViewStream.Application.DTOs.Account;
 using ViewStream.Application.Interfaces.Services;
 
-namespace ViewStream.Application.Features.Account.Commands.RefreshToken
+namespace ViewStream.Application.Commands.Account.RefreshToken
 {
     public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, AuthResponseDto?>
     {

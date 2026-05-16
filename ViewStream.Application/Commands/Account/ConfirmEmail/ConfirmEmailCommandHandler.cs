@@ -1,18 +1,12 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
-using ViewStream.Domain.Entities;
 
-namespace ViewStream.Application.Features.Account.Commands.ConfirmEmail
+namespace ViewStream.Application.Commands.Account.ConfirmEmail
 {
-
+    using User = ViewStream.Domain.Entities.User;
     public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResult>
     {
         private readonly UserManager<User> _userManager;

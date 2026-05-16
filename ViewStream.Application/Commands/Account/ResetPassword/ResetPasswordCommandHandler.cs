@@ -2,10 +2,11 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ViewStream.Domain.Interfaces;
-using User = ViewStream.Domain.Entities.User;
 
-namespace ViewStream.Application.Features.Account.Commands.ResetPassword
+namespace ViewStream.Application.Commands.Account.ResetPassword
 {
+    using User = ViewStream.Domain.Entities.User;
+
     public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, ResetPasswordResult>
     {
         private readonly UserManager<User> _userManager;

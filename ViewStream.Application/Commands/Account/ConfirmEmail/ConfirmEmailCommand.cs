@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ViewStream.Application.Features.Account.Commands.ConfirmEmail
+namespace ViewStream.Application.Commands.Account.ConfirmEmail
 {
     public record ConfirmEmailCommand(long UserId, string Token) : IRequest<ConfirmEmailResult>;
 

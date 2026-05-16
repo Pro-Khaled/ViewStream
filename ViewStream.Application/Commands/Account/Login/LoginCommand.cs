@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ViewStream.Application.DTOs.Account;
 
-namespace ViewStream.Application.Features.Account.Commands.RefreshToken
+namespace ViewStream.Application.Commands.Account.Login
 {
-    public record RefreshTokenCommand(string RefreshToken) : IRequest<AuthResponseDto?>;
+    public record LoginCommand(LoginDto Dto) : IRequest<AuthResponseDto>;
 }
