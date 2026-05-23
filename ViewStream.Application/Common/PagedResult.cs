@@ -25,5 +25,11 @@ namespace ViewStream.Application.Common
         string? SearchTerm = null,
         string? SortBy = null,
         bool SortDescending = false,
-        bool IncludeDeleted = false);
+        bool IncludeDeleted = false,
+        DateTime? CreatedFrom = null,
+        DateTime? CreatedTo = null,
+        DateTime? UpdatedFrom = null,
+        DateTime? UpdatedTo = null,
+        DateTime? DeletedFrom = null,
+        DateTime? DeletedTo = null);
 }

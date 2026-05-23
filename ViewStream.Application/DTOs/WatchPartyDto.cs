@@ -122,5 +122,11 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the party started.</summary>
         public DateTime? StartedAt { get; set; }
+        public long HostProfileId { get; set; }
+        public long EpisodeId { get; set; }
+        public DateTime? EndedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
+

@@ -11,6 +11,9 @@ namespace ViewStream.Application.Mappings
         {
             CreateMap<Notification, NotificationDto>();
             CreateMap<CreateNotificationDto, Notification>();
+            CreateMap<Notification, AdminNotificationListItemDto>();
+
         }
     }
 }
+

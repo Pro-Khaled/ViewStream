@@ -36,11 +36,11 @@ namespace ViewStream.Application.Queries.UserInteraction
             if (!string.IsNullOrWhiteSpace(request.InteractionType))
                 query = query.Where(s => s.InteractionType == request.InteractionType);
 
-            if (request.FromDate.HasValue)
-                query = query.Where(s => s.CreatedAt >= request.FromDate.Value);
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
 
-            if (request.ToDate.HasValue)
-                query = query.Where(s => s.CreatedAt <= request.ToDate.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {

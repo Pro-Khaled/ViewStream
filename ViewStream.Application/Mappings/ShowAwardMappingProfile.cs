@@ -14,6 +14,13 @@ namespace ViewStream.Application.Mappings
                 .ForMember(dest => dest.AwardName, opt => opt.MapFrom(src => src.Award.Name))
                 .ForMember(dest => dest.AwardCategory, opt => opt.MapFrom(src => src.Award.Category))
                 .ForMember(dest => dest.AwardYear, opt => opt.MapFrom(src => src.Award.Year));
+            CreateMap<ShowAward, AdminShowAwardListItemDto>()
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
+                .ForMember(dest => dest.AwardName, opt => opt.MapFrom(src => src.Award.Name))
+                .ForMember(dest => dest.AwardYear, opt => opt.MapFrom(src => src.Award.Year))
+                .ForMember(dest => dest.AwardCategory, opt => opt.MapFrom(src => src.Award.Category));
+
         }
     }
 }
+

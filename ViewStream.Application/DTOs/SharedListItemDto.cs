@@ -83,5 +83,8 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the item was added.</summary>
         public DateTime? AddedAt { get; set; }
+        public long AddedByProfileId { get; set; }
+        public string? ListName { get; set; }
     }
 }
+

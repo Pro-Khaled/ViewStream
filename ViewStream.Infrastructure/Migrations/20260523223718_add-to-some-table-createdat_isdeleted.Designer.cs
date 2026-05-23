@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ViewStream.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using ViewStream.Infrastructure.Persistence;
 namespace ViewStream.Infrastructure.Migrations
 {
     [DbContext(typeof(ViewStreamDbContext))]
-    partial class ViewStreamDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260523223718_add-to-some-table-createdat_isdeleted")]
+    partial class addtosometablecreatedat_isdeleted
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

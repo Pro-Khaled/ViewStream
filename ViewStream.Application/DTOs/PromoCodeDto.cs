@@ -176,6 +176,9 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the fixed discount amount.</summary>
         public decimal? DiscountAmount { get; set; }
 
+        /// <summary>Gets or sets the date the code becomes active.</summary>
+        public DateOnly ValidFrom { get; set; }
+
         /// <summary>Gets or sets the date the code expires.</summary>
         public DateOnly? ValidUntil { get; set; }
 
@@ -184,5 +187,17 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the number of times this code has been used.</summary>
         public int UsedCount { get; set; }
+
+        /// <summary>Gets or sets the maximum number of uses allowed.</summary>
+        public int? MaxUses { get; set; }
+
+        /// <summary>Gets or sets the specific subscription plan this applies to.</summary>
+        public string? AppliesToPlan { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the promo code was created.</summary>
+        public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the promo code was last updated.</summary>
+        public DateTime? UpdatedAt { get; set; }
     }
 }

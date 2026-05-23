@@ -112,8 +112,17 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the unique identifier of the report.</summary>
         public long Id { get; set; }
 
+        /// <summary>Gets or sets the ID of the profile that submitted the report.</summary>
+        public long ProfileId { get; set; }
+
         /// <summary>Gets or sets the display name of the profile that submitted the report.</summary>
         public string? ProfileName { get; set; }
+
+        /// <summary>Gets or sets the optional ID of the reported show.</summary>
+        public long? ShowId { get; set; }
+
+        /// <summary>Gets or sets the optional ID of the reported episode.</summary>
+        public long? EpisodeId { get; set; }
 
         /// <summary>Gets or sets the type of target reported ("Show" or "Episode").</summary>
         public string? TargetType { get; set; }
@@ -124,10 +133,16 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the primary reason for the report.</summary>
         public string? Reason { get; set; }
 
+        /// <summary>Gets or sets optional additional description provided with the report.</summary>
+        public string? Description { get; set; }
+
         /// <summary>Gets or sets the current moderation status.</summary>
         public string? Status { get; set; }
 
         /// <summary>Gets or sets the UTC timestamp when the report was submitted.</summary>
         public DateTime? ReportedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the report was resolved/dismissed.</summary>
+        public DateTime? ResolvedAt { get; set; }
     }
 }

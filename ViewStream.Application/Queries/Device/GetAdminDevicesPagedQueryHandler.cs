@@ -33,6 +33,16 @@ namespace ViewStream.Application.Queries.Device
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(d => (d.DeviceName != null && d.DeviceName.Contains(request.SearchTerm)) || d.DeviceId.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(d => d.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(d => d.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(d => d.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(d => d.UpdatedAt <= request.UpdatedTo.Value);
+
             var projected = query.ProjectTo<AdminDeviceListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

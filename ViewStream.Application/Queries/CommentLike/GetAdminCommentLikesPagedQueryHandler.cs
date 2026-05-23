@@ -33,6 +33,11 @@ namespace ViewStream.Application.Queries.CommentLike
             if (request.ProfileId.HasValue)
                 query = query.Where(c => c.ProfileId == request.ProfileId.Value);
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(c => c.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(c => c.CreatedAt <= request.CreatedTo.Value);
+
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(c => c.Profile.Name.Contains(request.SearchTerm));
 

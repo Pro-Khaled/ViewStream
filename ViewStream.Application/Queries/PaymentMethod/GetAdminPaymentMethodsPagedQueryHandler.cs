@@ -33,6 +33,11 @@ namespace ViewStream.Application.Queries.PaymentMethod
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(pm => pm.Provider.Contains(request.SearchTerm) || pm.User.Email.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(pm => pm.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(pm => pm.CreatedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminPaymentMethodListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

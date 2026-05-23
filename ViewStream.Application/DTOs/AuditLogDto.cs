@@ -126,8 +126,20 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the action performed.</summary>
         public string Action { get; set; } = string.Empty;
 
+        /// <summary>Gets or sets the ID of the user who performed the action.</summary>
+        public long? ChangedByUserId { get; set; }
+
         /// <summary>Gets or sets the display name or email of the user who performed the action.</summary>
         public string? ChangedByUserName { get; set; }
+
+        /// <summary>Gets or sets the IP address of the client that requested the change.</summary>
+        public string? IpAddress { get; set; }
+
+        /// <summary>Gets or sets the user agent string of the client that requested the change.</summary>
+        public string? UserAgent { get; set; }
+
+        /// <summary>Gets or sets optional administrative notes regarding the change.</summary>
+        public string? Notes { get; set; }
 
         /// <summary>Gets or sets the UTC timestamp when the change occurred.</summary>
         public DateTime? ChangedAt { get; set; }

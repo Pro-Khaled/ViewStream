@@ -96,5 +96,11 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the year the award was given.</summary>
         public short? Year { get; set; }
+
+        /// <summary>Gets or sets the number of persons associated with this award.</summary>
+        public int PersonAwardCount { get; set; }
+
+        /// <summary>Gets or sets the number of shows associated with this award.</summary>
+        public int ShowAwardCount { get; set; }
     }
 }

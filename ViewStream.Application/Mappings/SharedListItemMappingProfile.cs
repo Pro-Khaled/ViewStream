@@ -16,6 +16,12 @@ namespace ViewStream.Application.Mappings
                 .ForMember(dest => dest.ShowPosterUrl, opt => opt.MapFrom(src => src.Show.PosterUrl))
                 .ForMember(dest => dest.ReleaseYear, opt => opt.MapFrom(src => src.Show.ReleaseYear))
                 .ForMember(dest => dest.AddedByProfileName, opt => opt.MapFrom(src => src.AddedByProfile != null ? src.AddedByProfile.Name : null));
+            CreateMap<SharedListItem, AdminSharedListItemListItemDto>()
+                .ForMember(dest => dest.ListName, opt => opt.MapFrom(src => src.List.Name))
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
+                .ForMember(dest => dest.AddedByProfileName, opt => opt.MapFrom(src => src.AddedByProfile != null ? src.AddedByProfile.Name : null))
+                .ForMember(dest => dest.AddedByProfileId, opt => opt.MapFrom(src => src.AddedByProfile != null ? src.AddedByProfile.Id : 0));
+
 
             CreateMap<SharedListItem, SharedListItemListItemDto>()
                 .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
@@ -23,3 +29,4 @@ namespace ViewStream.Application.Mappings
         }
     }
 }
+

@@ -23,9 +23,11 @@ namespace ViewStream.Application.Mappings
         
             CreateMap<Season, AdminSeasonListItemDto>()
                 .ForMember(d => d.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted ?? false))
+                .ForMember(d => d.ShowId, opt => opt.MapFrom(src => src.ShowId))
                 .ForMember(d => d.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
+                .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(d => d.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
                 .ForMember(d => d.EpisodeCount, opt => opt.Ignore());
         }
     }
 }
-

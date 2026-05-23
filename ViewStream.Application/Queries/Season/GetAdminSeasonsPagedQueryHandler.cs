@@ -30,6 +30,21 @@ namespace ViewStream.Application.Queries.Season
             if (!request.IncludeDeleted)
                 query = query.Where(s => s.IsDeleted != true);
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(s => s.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(s => s.UpdatedAt <= request.UpdatedTo.Value);
+
+            if (request.DeletedFrom.HasValue)
+                query = query.Where(s => s.DeletedAt >= request.DeletedFrom.Value);
+            if (request.DeletedTo.HasValue)
+                query = query.Where(s => s.DeletedAt <= request.DeletedTo.Value);
+
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(s => s.Title != null && s.Title.Contains(request.SearchTerm));
 

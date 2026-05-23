@@ -234,6 +234,9 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
         modelBuilder.Entity<ContentTag>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__ContentT__3214EC074F9C8EA7");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<Country>(entity =>
@@ -274,6 +277,7 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
 
             entity.Property(e => e.IsTrusted).HasDefaultValue(false);
             entity.Property(e => e.LastActive).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
 
             entity.HasOne(d => d.User).WithMany(p => p.Devices)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -360,6 +364,9 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
         modelBuilder.Entity<Genre>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Genres__3214EC07330D4828");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<Invoice>(entity =>
@@ -457,6 +464,9 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
         modelBuilder.Entity<Person>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Persons__3214EC07AA1ED38C");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<PersonAward>(entity =>
@@ -520,6 +530,7 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
             entity.HasKey(e => e.Id).HasName("PK__PromoCod__3214EC073F066A55");
 
             entity.Property(e => e.UsedCount).HasDefaultValue(0);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
         });
 
         modelBuilder.Entity<PushToken>(entity =>

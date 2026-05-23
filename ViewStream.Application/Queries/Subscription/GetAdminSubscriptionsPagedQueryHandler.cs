@@ -45,6 +45,12 @@ namespace ViewStream.Application.Queries.Subscription
                     (s.User != null && s.User.Email.Contains(term)));
             }
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
+
+
             var projected = query.ProjectTo<AdminSubscriptionListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

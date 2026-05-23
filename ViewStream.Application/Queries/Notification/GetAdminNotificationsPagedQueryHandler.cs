@@ -36,6 +36,11 @@ namespace ViewStream.Application.Queries.Notification
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(n => (n.Title != null && n.Title.Contains(request.SearchTerm)) || (n.User != null && n.User.Email.Contains(request.SearchTerm)));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(n => n.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(n => n.CreatedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminNotificationListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

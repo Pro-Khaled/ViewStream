@@ -19,6 +19,8 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the vector was last recalculated.</summary>
         public DateTime? LastUpdated { get; set; }
+
+        public DateTime? CreatedAt { get; set; }
     }
 
     /// <summary>

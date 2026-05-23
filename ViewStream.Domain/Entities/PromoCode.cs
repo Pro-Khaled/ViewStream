@@ -30,6 +30,12 @@ public partial class PromoCode
 
     public string? AppliesToPlan { get; set; }
 
+    /// <summary>UTC timestamp when the promo code was created.</summary>
+    public DateTime? CreatedAt { get; set; }
+
+    /// <summary>UTC timestamp when the promo code was last updated.</summary>
+    public DateTime? UpdatedAt { get; set; }
+
     [InverseProperty("PromoCode")]
     public virtual ICollection<UserPromoUsage> UserPromoUsages { get; set; } = new List<UserPromoUsage>();
 }

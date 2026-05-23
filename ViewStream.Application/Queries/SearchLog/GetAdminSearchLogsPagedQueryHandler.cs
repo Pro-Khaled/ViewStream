@@ -32,6 +32,11 @@ namespace ViewStream.Application.Queries.SearchLog
                                          (s.ClickedShow != null && s.ClickedShow.Title.Contains(term)));
             }
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.SearchAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.SearchAt <= request.CreatedTo.Value);
+
             var projected = query.Select(s => new AdminSearchLogListItemDto
             {
                 Id = s.Id,
@@ -40,6 +45,9 @@ namespace ViewStream.Application.Queries.SearchLog
                 ResultsCount = s.ResultsCount,
                 ClickedShowTitle = s.ClickedShow != null ? s.ClickedShow.Title : null,
                 SearchAt = s.SearchAt,
+                ProfileId = s.ProfileId,
+                ClickedShowId = s.ClickedShowId,
+                CreatedAt = s.SearchAt
             });
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

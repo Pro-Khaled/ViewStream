@@ -102,5 +102,8 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the role was created.</summary>
         public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public int PermissionCount { get; set; }
     }
 }
+

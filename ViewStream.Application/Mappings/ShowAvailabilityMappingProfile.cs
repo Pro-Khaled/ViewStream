@@ -20,6 +20,11 @@ namespace ViewStream.Application.Mappings
 
             CreateMap<CreateShowAvailabilityDto, ShowAvailability>();
             CreateMap<UpdateShowAvailabilityDto, ShowAvailability>();
+            CreateMap<ShowAvailability, AdminShowAvailabilityListItemDto>()
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
+                .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.CountryCodeNavigation.Name));
+
         }
     }
 }
+

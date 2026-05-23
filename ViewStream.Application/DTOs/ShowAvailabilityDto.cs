@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace ViewStream.Application.DTOs
@@ -106,7 +105,22 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the ISO country code.</summary>
         public string? CountryCode { get; set; }
 
-        /// <summary>Gets or sets the UTC timestamp when the record was added.</summary>
-        public DateTime? AddedAt { get; set; }
+        /// <summary>Gets or sets the title of the show.</summary>
+        public string ShowTitle { get; set; } = string.Empty;
+
+        /// <summary>Gets or sets the name of the country.</summary>
+        public string CountryName { get; set; } = string.Empty;
+
+        /// <summary>Gets or sets the date the show becomes available in this country.</summary>
+        public DateOnly? AvailableFrom { get; set; }
+
+        /// <summary>Gets or sets the date the show's licensing expires in this country.</summary>
+        public DateOnly? AvailableUntil { get; set; }
+
+        /// <summary>Gets or sets internal administrative notes regarding the licensing agreement.</summary>
+        public string? LicensingNotes { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when this availability record was last updated.</summary>
+        public DateTime? UpdatedAt { get; set; }
     }
 }

@@ -33,6 +33,21 @@ namespace ViewStream.Application.Queries.Profile
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(p => p.Name.Contains(request.SearchTerm) || (p.User != null && p.User.Email.Contains(request.SearchTerm)));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(p => p.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(p => p.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(p => p.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(p => p.UpdatedAt <= request.UpdatedTo.Value);
+
+            if (request.DeletedFrom.HasValue)
+                query = query.Where(p => p.DeletedAt >= request.DeletedFrom.Value);
+            if (request.DeletedTo.HasValue)
+                query = query.Where(p => p.DeletedAt <= request.DeletedTo.Value);
+
             var projected = query.ProjectTo<AdminProfileListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

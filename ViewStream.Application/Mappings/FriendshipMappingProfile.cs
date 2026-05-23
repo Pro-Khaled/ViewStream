@@ -26,6 +26,11 @@ namespace ViewStream.Application.Mappings
                 .ForMember(dest => dest.FriendAvatar, opt => opt.MapFrom(src =>
                     src.User.Profiles.Where(p => p.IsDeleted != true).Select(p => p.AvatarIcon).FirstOrDefault()))
                 .ForMember(dest => dest.IsIncoming, opt => opt.MapFrom(src => false));
+
+            CreateMap<Friendship, AdminFriendshipListItemDto>()
+                .ForMember(dest => dest.FriendName, opt => opt.MapFrom(src => src.Friend.UserName))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
+                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.User.FullName));
         }
     }
 }

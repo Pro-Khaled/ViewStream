@@ -47,6 +47,21 @@ namespace ViewStream.Application.Queries.Subtitle
                     (s.Episode != null && s.Episode.Title.Contains(term)));
             }
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(s => s.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(s => s.UpdatedAt <= request.UpdatedTo.Value);
+
+            if (request.DeletedFrom.HasValue)
+                query = query.Where(s => s.DeletedAt >= request.DeletedFrom.Value);
+            if (request.DeletedTo.HasValue)
+                query = query.Where(s => s.DeletedAt <= request.DeletedTo.Value);
+
             var projected = query.ProjectTo<AdminSubtitleListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

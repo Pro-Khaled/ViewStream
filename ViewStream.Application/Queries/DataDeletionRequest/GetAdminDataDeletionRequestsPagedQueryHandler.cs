@@ -22,15 +22,23 @@ namespace ViewStream.Application.Queries.DataDeletionRequest
 
             
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.RequestedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.RequestedAt <= request.CreatedTo.Value);
+
             if (!string.IsNullOrWhiteSpace(request.Status))
                 query = query.Where(s => s.Status == request.Status);
 
             var projected = query.Select(s => new AdminDataDeletionRequestListItemDto
             {
                 Id = s.Id,
+                UserId = s.UserId,
                 UserEmail = s.User.Email,
                 Status = s.Status,
                 RequestedAt = s.RequestedAt,
+                CompletedAt = s.CompletedAt,
+                ConfirmationCode = s.ConfirmationCode,
             });
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

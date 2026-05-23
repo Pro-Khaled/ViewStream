@@ -36,6 +36,16 @@ namespace ViewStream.Application.Queries.Friendship
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(f => f.User.FullName.Contains(request.SearchTerm) || f.Friend.FullName.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(f => f.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(f => f.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(f => f.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(f => f.UpdatedAt <= request.UpdatedTo.Value);
+
             var projected = query.ProjectTo<AdminFriendshipListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

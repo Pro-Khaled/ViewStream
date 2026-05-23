@@ -112,5 +112,11 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when this payment method was added.</summary>
         public DateTime? CreatedAt { get; set; }
+        public string Provider { get; set; } = string.Empty;
+        public string? CardType { get; set; }
+        public short? ExpiryMonth { get; set; }
+        public short? ExpiryYear { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
+

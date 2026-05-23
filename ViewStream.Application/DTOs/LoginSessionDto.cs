@@ -91,5 +91,9 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets a value indicating whether the session is currently active.</summary>
         public bool? IsActive { get; set; }
+        public DateTime ExpiresAt { get; set; }
+        public string? IpAddress { get; set; }
+        public string? UserAgent { get; set; }
     }
 }
+

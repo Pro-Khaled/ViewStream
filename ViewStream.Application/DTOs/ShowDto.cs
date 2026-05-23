@@ -243,5 +243,10 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the total number of episodes across all seasons.</summary>
         public int EpisodeCount { get; set; }
+        public string? Description { get; set; }
+        public string? BackdropUrl { get; set; }
+        public string? TrailerUrl { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }
+

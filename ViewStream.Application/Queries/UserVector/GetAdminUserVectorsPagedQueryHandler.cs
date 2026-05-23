@@ -33,6 +33,16 @@ namespace ViewStream.Application.Queries.UserVector
                 query = query.Where(s => s.Profile != null && s.Profile.Name.Contains(term));
             }
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(s => s.LastUpdated >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(s => s.LastUpdated <= request.UpdatedTo.Value);
+
             var projected = query.ProjectTo<AdminUserVectorListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

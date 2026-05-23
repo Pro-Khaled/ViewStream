@@ -42,6 +42,9 @@ namespace ViewStream.Application.Queries.Credit
                 PersonPhotoUrl = s.Person.PhotoUrl,
                 Role = s.Role,
                 CharacterName = s.CharacterName,
+                ShowId = s.ShowId,
+                SeasonId = s.SeasonId,
+                EpisodeId = s.EpisodeId,
                 TargetType = s.Show != null ? "Show" : s.Season != null ? "Season" : "Episode",
                 TargetTitle = s.Show != null ? s.Show.Title : s.Season != null ? s.Season.Show.Title + " S" + s.Season.SeasonNumber : s.Episode.Title,
             });

@@ -184,5 +184,12 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the item was added.</summary>
         public DateTime? AddedAt { get; set; }
+        public long? SeasonId { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public decimal? UserScore { get; set; }
+        public DateOnly? StartedAt { get; set; }
+        public DateOnly? CompletedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
+

@@ -36,6 +36,11 @@ namespace ViewStream.Application.Queries.UserLibrary
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(ul => (ul.Show != null && ul.Show.Title.Contains(request.SearchTerm)) || ul.Profile.Name.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(ul => ul.AddedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(ul => ul.AddedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminUserLibraryListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

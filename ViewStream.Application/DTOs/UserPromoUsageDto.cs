@@ -40,5 +40,9 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the promo code was used.</summary>
         public DateTime? UsedAt { get; set; }
+        public string UserEmail { get; set; } = string.Empty;
+        public string PromoCodeCode { get; set; } = string.Empty;
+        public DateTime? CreatedAt { get; set; }
     }
 }
+

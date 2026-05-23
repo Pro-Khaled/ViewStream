@@ -40,6 +40,14 @@ namespace ViewStream.Application.Queries.ShowAvailability
                     sa.Show.Title.Contains(request.SearchTerm) ||
                     sa.CountryCodeNavigation.Name.Contains(request.SearchTerm));
 
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(sa => sa.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(sa => sa.UpdatedAt <= request.UpdatedTo.Value);
+
+            // AvailableFrom / AvailableUntil are business date fields, not audit fields,
+            // so they are intentionally NOT filtered by the AdminPagedQuery date range params.
+                
             var projected = query.ProjectTo<AdminShowAvailabilityListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

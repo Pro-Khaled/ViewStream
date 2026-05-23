@@ -39,6 +39,16 @@ namespace ViewStream.Application.Queries.SharedList
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(sl => sl.Name.Contains(request.SearchTerm) || sl.OwnerProfile.Name.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(sl => sl.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(sl => sl.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.DeletedFrom.HasValue)
+                query = query.Where(sl => sl.DeletedAt >= request.DeletedFrom.Value);
+            if (request.DeletedTo.HasValue)
+                query = query.Where(sl => sl.DeletedAt <= request.DeletedTo.Value);
+
             var projected = query.ProjectTo<AdminSharedListListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

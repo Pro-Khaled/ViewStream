@@ -18,6 +18,12 @@ public partial class ContentTag
     [StringLength(30)]
     public string? Category { get; set; }
 
+    /// <summary>UTC timestamp when the tag was created.</summary>
+    public DateTime? CreatedAt { get; set; }
+
+    /// <summary>Soft-delete flag – true means the tag is logically deleted.</summary>
+    public bool IsDeleted { get; set; }
+
     [ForeignKey("TagId")]
     [InverseProperty("Tags")]
     public virtual ICollection<Show> Shows { get; set; } = new List<Show>();

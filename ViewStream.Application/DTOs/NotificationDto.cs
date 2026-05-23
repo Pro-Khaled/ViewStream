@@ -85,5 +85,8 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets a value indicating whether the notification was read.</summary>
         public bool? IsRead { get; set; }
+        public string? NotificationType { get; set; }
+        public string? DataJson { get; set; }
     }
 }
+

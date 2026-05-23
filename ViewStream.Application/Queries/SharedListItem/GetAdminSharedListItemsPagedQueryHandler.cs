@@ -37,6 +37,11 @@ namespace ViewStream.Application.Queries.SharedListItem
                     (s.List != null && s.List.Name.Contains(term)));
             }
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.AddedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.AddedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminSharedListItemListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

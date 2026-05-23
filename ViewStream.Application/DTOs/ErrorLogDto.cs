@@ -97,5 +97,10 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the error occurred.</summary>
         public DateTime? OccurredAt { get; set; }
+
+        public long? UserId { get; set; }
+        public string? UserEmail { get; set; }
+        public string? StackTrace { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

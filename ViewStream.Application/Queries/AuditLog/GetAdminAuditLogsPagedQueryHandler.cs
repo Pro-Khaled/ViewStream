@@ -20,6 +20,21 @@ namespace ViewStream.Application.Queries.AuditLog
             query = query.Include(e => e.ChangedByUser);
 
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.ChangedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.ChangedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(s => s.ChangedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(s => s.ChangedAt <= request.UpdatedTo.Value);
+
+            if (request.DeletedFrom.HasValue)
+                query = query.Where(s => s.ChangedAt >= request.DeletedFrom.Value);
+            if (request.DeletedTo.HasValue)
+                query = query.Where(s => s.ChangedAt <= request.DeletedTo.Value);
+
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 var term = request.SearchTerm.Trim();
@@ -44,7 +59,11 @@ namespace ViewStream.Application.Queries.AuditLog
                 TableName = s.TableName,
                 RecordId = s.RecordId,
                 Action = s.Action,
+                ChangedByUserId = s.ChangedByUserId,
                 ChangedByUserName = s.ChangedByUser != null ? s.ChangedByUser.UserName : null,
+                IpAddress = s.IpAddress,
+                UserAgent = s.UserAgent,
+                Notes = s.Notes,
                 ChangedAt = s.ChangedAt,
             });
 

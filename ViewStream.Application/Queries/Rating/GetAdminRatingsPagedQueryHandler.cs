@@ -36,6 +36,16 @@ namespace ViewStream.Application.Queries.Rating
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(r => r.Show.Title.Contains(request.SearchTerm) || r.Profile.Name.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(r => r.RatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(r => r.RatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(r => r.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(r => r.UpdatedAt <= request.UpdatedTo.Value);
+
             var projected = query.ProjectTo<AdminRatingListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

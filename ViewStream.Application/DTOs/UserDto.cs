@@ -186,5 +186,7 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the list of role names assigned to the user.</summary>
         public List<string> Roles { get; set; } = new();
+        public DateTime? DeletedAt { get; set; }
     }
 }
+

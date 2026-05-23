@@ -36,6 +36,11 @@ namespace ViewStream.Application.Queries.UserPromoUsage
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(upu => upu.User.Email.Contains(request.SearchTerm) || upu.PromoCode.Code.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(upu => upu.UsedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(upu => upu.UsedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminUserPromoUsageListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

@@ -126,5 +126,11 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the episode was last watched.</summary>
         public DateTime? WatchedAt { get; set; }
+        public string EpisodeTitle { get; set; } = string.Empty;
+        public string ShowTitle { get; set; } = string.Empty;
+        public int? TotalSeconds { get; set; }
+        public string? ShowPosterUrl { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }
+

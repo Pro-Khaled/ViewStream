@@ -120,5 +120,9 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the title of the episode this subtitle belongs to.</summary>
         public string EpisodeTitle { get; set; } = string.Empty;
+        public long EpisodeId { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }
+

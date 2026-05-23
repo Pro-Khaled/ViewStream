@@ -43,6 +43,11 @@ namespace ViewStream.Application.Queries.LoginSession
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(ls => (ls.IpAddress != null && ls.IpAddress.Contains(request.SearchTerm)) || ls.SessionToken.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(ls => ls.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(ls => ls.CreatedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminLoginSessionListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

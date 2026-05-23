@@ -158,5 +158,9 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets a value indicating whether this profile has been soft-deleted.</summary>
         public bool? IsDeleted { get; set; }
+        public string? AvatarIcon { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public DateTime? DeletedAt { get; set; }
     }
 }
+

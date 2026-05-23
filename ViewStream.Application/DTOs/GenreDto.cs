@@ -71,5 +71,11 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the number of shows associated with this genre.</summary>
         public int ShowCount { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the genre was created.</summary>
+        public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Gets or sets whether the genre is soft-deleted.</summary>
+        public bool? IsDeleted { get; set; }
     }
 }

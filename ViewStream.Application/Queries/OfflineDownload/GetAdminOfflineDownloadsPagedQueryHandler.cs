@@ -33,6 +33,24 @@ namespace ViewStream.Application.Queries.OfflineDownload
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(od => od.Episode.Title.Contains(request.SearchTerm) || od.Profile.Name.Contains(request.SearchTerm));
 
+            // Date-range filters: OfflineDownload has no CreatedAt/UpdatedAt/DeletedAt/IsDeleted,
+            // but it does have DownloadedAt and ExpiresAt.
+            // So we map AdminPagedQuery's CreatedFrom/To => DownloadedAt and UpdatedFrom/To => ExpiresAt.
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(od => od.DownloadedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(od => od.DownloadedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(od => od.ExpiresAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(od => od.ExpiresAt <= request.UpdatedTo.Value);
+
+            if (request.DeletedFrom.HasValue || request.DeletedTo.HasValue)
+            {
+                // OfflineDownload entity has no soft-delete fields; ignore DeletedFrom/DeletedTo.
+            }
+
             var projected = query.ProjectTo<AdminOfflineDownloadListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

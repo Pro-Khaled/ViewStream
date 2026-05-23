@@ -111,6 +111,15 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the ID of the profile.</summary>
         public long ProfileId { get; set; }
 
+        /// <summary>Gets or sets the video quality of the download.</summary>
+        public string? DownloadQuality { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the download license expires.</summary>
+        public DateTime? ExpiresAt { get; set; }
+
+        /// <summary>Gets or sets the local encrypted file path on the client device.</summary>
+        public string? FilePath { get; set; }
+
         /// <summary>Gets or sets the UTC timestamp when the download completed.</summary>
         public DateTime? DownloadedAt { get; set; }
     }

@@ -121,6 +121,12 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the unique identifier of the audio track.</summary>
         public long Id { get; set; }
 
+        /// <summary>Gets or sets the ID of the episode this audio track belongs to.</summary>
+        public long? EpisodeId { get; set; }
+
+        /// <summary>Gets or sets the public URL of the audio file.</summary>
+        public string? AudioUrl { get; set; }
+
         /// <summary>Gets or sets the BCP-47 language code.</summary>
         public string LanguageCode { get; set; } = string.Empty;
 
@@ -130,6 +136,12 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets a value indicating whether this is the default track for the episode.</summary>
         public bool? IsDefault { get; set; }
 
+        /// <summary>Gets or sets the UTC timestamp when this record was last updated.</summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when this audio track was soft-deleted.</summary>
+        public DateTime? DeletedAt { get; set; }
+
         /// <summary>Gets or sets a value indicating whether this record has been soft-deleted.</summary>
         public bool IsDeleted { get; set; }
 
@@ -137,6 +149,6 @@ namespace ViewStream.Application.DTOs
         public DateTime? CreatedAt { get; set; }
 
         /// <summary>Gets or sets the title of the episode this audio track belongs to.</summary>
-        public string EpisodeTitle { get; set; } = string.Empty;
+        public string? EpisodeTitle { get; set; }
     }
 }

@@ -91,5 +91,13 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the URL to download the invoice PDF.</summary>
         public string? InvoicePdfUrl { get; set; }
+        public long UserId { get; set; }
+        public string UserEmail { get; set; } = string.Empty;
+        public string? SubscriptionPlan { get; set; }
+        public DateTime? PaidAt { get; set; }
+        public string? TransactionId { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
+

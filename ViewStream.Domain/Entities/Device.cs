@@ -27,6 +27,12 @@ public partial class Device
 
     public bool? IsTrusted { get; set; }
 
+    /// <summary>UTC timestamp when the device was first registered.</summary>
+    public DateTime? CreatedAt { get; set; }
+
+    /// <summary>UTC timestamp when the device record was last updated.</summary>
+    public DateTime? UpdatedAt { get; set; }
+
     [InverseProperty("Device")]
     public virtual ICollection<LoginSession> LoginSessions { get; set; } = new List<LoginSession>();
 

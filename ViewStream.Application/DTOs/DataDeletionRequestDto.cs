@@ -71,6 +71,9 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the unique identifier of the deletion request.</summary>
         public long Id { get; set; }
 
+        /// <summary>Gets or sets the ID of the user requesting deletion.</summary>
+        public long UserId { get; set; }
+
         /// <summary>Gets or sets the email of the user requesting deletion.</summary>
         public string UserEmail { get; set; } = string.Empty;
 
@@ -79,5 +82,11 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the request was made.</summary>
         public DateTime? RequestedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the deletion was completed, if applicable.</summary>
+        public DateTime? CompletedAt { get; set; }
+
+        /// <summary>Gets or sets the secure confirmation code associated with the request.</summary>
+        public string? ConfirmationCode { get; set; }
     }
 }

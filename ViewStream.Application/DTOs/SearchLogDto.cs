@@ -96,5 +96,9 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the search was performed.</summary>
         public DateTime? SearchAt { get; set; }
+        public long? ProfileId { get; set; }
+        public long? ClickedShowId { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }
+

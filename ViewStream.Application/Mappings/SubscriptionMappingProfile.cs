@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -13,10 +13,10 @@ namespace ViewStream.Application.Mappings
                 .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User.Email));
             CreateMap<CreateSubscriptionDto, Subscription>();
             CreateMap<UpdateSubscriptionDto, Subscription>();
-        
             CreateMap<Subscription, AdminSubscriptionListItemDto>()
                 .ForMember(d => d.UserEmail, opt => opt.MapFrom(src => src.User.Email));
           }
     }
 }
+
 

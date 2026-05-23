@@ -21,6 +21,15 @@ public partial class Person
     [StringLength(500)]
     public string? PhotoUrl { get; set; }
 
+    /// <summary>UTC timestamp when the person record was created.</summary>
+    public DateTime? CreatedAt { get; set; }
+
+    /// <summary>UTC timestamp when the person record was last modified.</summary>
+    public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>Soft-delete flag – true means the person is logically deleted.</summary>
+    public bool IsDeleted { get; set; }
+
     [InverseProperty("Person")]
     public virtual ICollection<Credit> Credits { get; set; } = new List<Credit>();
 

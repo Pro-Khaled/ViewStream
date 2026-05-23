@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -27,8 +27,11 @@ namespace ViewStream.Application.Mappings
             CreateMap<UpdatePromoCodeDto, PromoCode>();
         
             CreateMap<PromoCode, AdminPromoCodeListItemDto>()
-                .ForMember(d => d.IsValid, opt => opt.Ignore())
-                .ForMember(d => d.UsedCount, opt => opt.Ignore());
+                .ForMember(d => d.IsValid, opt => opt.MapFrom(src =>
+                    src.ValidFrom <= DateOnly.FromDateTime(DateTime.UtcNow) &&
+                    (!src.ValidUntil.HasValue || src.ValidUntil.Value >= DateOnly.FromDateTime(DateTime.UtcNow)) &&
+                    (!src.MaxUses.HasValue || src.UsedCount < src.MaxUses)))
+                .ForMember(d => d.UsedCount, opt => opt.MapFrom(src => src.UsedCount ?? 0));
           }
     }
 }

@@ -125,5 +125,10 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the interaction occurred.</summary>
         public DateTime? CreatedAt { get; set; }
+        public long ProfileId { get; set; }
+        public long ShowId { get; set; }
+        public decimal? Weight { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
+

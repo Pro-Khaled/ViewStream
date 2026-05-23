@@ -22,6 +22,21 @@ namespace ViewStream.Application.Queries.AudioTrack
             if (!request.IncludeDeleted)
                 query = query.Where(s => s.IsDeleted != true);
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(s => s.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(s => s.UpdatedAt <= request.UpdatedTo.Value);
+
+            if (request.DeletedFrom.HasValue)
+                query = query.Where(s => s.DeletedAt >= request.DeletedFrom.Value);
+            if (request.DeletedTo.HasValue)
+                query = query.Where(s => s.DeletedAt <= request.DeletedTo.Value);
+
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 var term = request.SearchTerm.Trim();
@@ -41,9 +56,13 @@ namespace ViewStream.Application.Queries.AudioTrack
             var projected = query.Select(s => new AdminAudioTrackListItemDto
             {
                 Id = s.Id,
+                EpisodeId = s.EpisodeId,
+                AudioUrl = s.AudioUrl,
                 LanguageCode = s.LanguageCode,
                 TrackType = s.TrackType,
                 IsDefault = s.IsDefault,
+                UpdatedAt = s.UpdatedAt,
+                DeletedAt = s.DeletedAt,
                 IsDeleted = s.IsDeleted ?? false,
                 CreatedAt = s.CreatedAt,
                 EpisodeTitle = s.Episode.Title,

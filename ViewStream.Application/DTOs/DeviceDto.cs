@@ -108,5 +108,11 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets a value indicating whether the device is trusted.</summary>
         public bool? IsTrusted { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the device was first registered.</summary>
+        public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the device record was last updated.</summary>
+        public DateTime? UpdatedAt { get; set; }
     }
 }

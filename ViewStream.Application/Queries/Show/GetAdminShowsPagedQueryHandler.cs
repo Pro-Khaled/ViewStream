@@ -39,6 +39,21 @@ namespace ViewStream.Application.Queries.Show
             if (request.ReleaseYear.HasValue)
                 query = query.Where(s => s.ReleaseYear == request.ReleaseYear.Value);
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.AddedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.AddedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(s => s.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(s => s.UpdatedAt <= request.UpdatedTo.Value);
+
+            if (request.DeletedFrom.HasValue)
+                query = query.Where(s => s.DeletedAt >= request.DeletedFrom.Value);
+            if (request.DeletedTo.HasValue)
+                query = query.Where(s => s.DeletedAt <= request.DeletedTo.Value);
+
             var projected = query.ProjectTo<AdminShowListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

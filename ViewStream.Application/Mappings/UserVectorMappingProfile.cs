@@ -11,6 +11,10 @@ namespace ViewStream.Application.Mappings
         {
             CreateMap<UserVector, UserVectorDto>()
                 .ForMember(dest => dest.ProfileName, opt => opt.MapFrom(src => src.Profile.Name));
+            CreateMap<UserVector, AdminUserVectorListItemDto>()
+                .ForMember(dest => dest.ProfileName, opt => opt.MapFrom(src => src.Profile.Name));
+
         }
     }
 }
+

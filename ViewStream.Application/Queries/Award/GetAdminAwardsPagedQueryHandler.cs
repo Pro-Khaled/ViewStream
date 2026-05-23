@@ -32,6 +32,8 @@ namespace ViewStream.Application.Queries.Award
                 Name = s.Name,
                 Category = s.Category,
                 Year = s.Year,
+                PersonAwardCount = s.PersonAwards.Count(),
+                ShowAwardCount = s.ShowAwards.Count()
             });
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

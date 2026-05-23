@@ -16,6 +16,11 @@ namespace ViewStream.Application.Mappings
             CreateMap<LoginSession, LoginSessionListItemDto>()
                 .ForMember(dest => dest.DeviceName, opt => opt.MapFrom(src => src.Device != null ? src.Device.DeviceName : null))
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.RevokedAt == null && src.ExpiresAt > DateTime.UtcNow));
+            CreateMap<LoginSession, AdminLoginSessionListItemDto>()
+                .ForMember(dest => dest.DeviceName, opt => opt.MapFrom(src => src.Device != null ? src.Device.DeviceName : null))
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.RevokedAt == null && src.ExpiresAt > DateTime.UtcNow));
+
         }
     }
 }
+

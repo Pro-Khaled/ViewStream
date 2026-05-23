@@ -22,5 +22,10 @@ namespace ViewStream.Application.DTOs
         /// Gets or sets the last updated timestamp.
         /// </summary>
         public DateTime? LastUpdated { get; set; }
+
+        /// <summary>
+        /// Gets or sets the raw JSON embedding vector for this show.
+        /// </summary>
+        public string? EmbeddingJson { get; set; }
     }
 }

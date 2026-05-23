@@ -20,6 +20,9 @@ public partial class Rating
 
     public DateTime? RatedAt { get; set; }
 
+    /// <summary>UTC timestamp when the rating was last modified (updated after initial submission).</summary>
+    public DateTime? UpdatedAt { get; set; }
+
     [ForeignKey("ProfileId")]
     [InverseProperty("Ratings")]
     public virtual Profile Profile { get; set; } = null!;

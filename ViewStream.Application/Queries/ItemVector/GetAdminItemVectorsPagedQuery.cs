@@ -1,12 +1,15 @@
+#nullable enable
 using MediatR;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 
-namespace ViewStream.Application.Queries.ItemVector
+namespace ViewStream.Application.Queries.ItemVector;
+
+public record GetAdminItemVectorsPagedQuery : AdminPagedQuery, IRequest<PagedResult<AdminItemVectorListItemDto>>
 {
-    // Minimal admin paged query so ViewStream.API compiles.
-    // TODO: Implement real admin item-vectors paging (filters/sorting/db query).
-    public record GetAdminItemVectorsPagedQuery(
+    public long? ShowId { get; init; }
+
+    public GetAdminItemVectorsPagedQuery(
         int pageNumber = 1,
         int pageSize = 20,
         string? searchTerm = null,
@@ -14,6 +17,8 @@ namespace ViewStream.Application.Queries.ItemVector
         bool sortDescending = false,
         bool includeDeleted = false,
         long? showId = null
-    ) : AdminPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted),
-        IRequest<PagedResult<AdminItemVectorListItemDto>>;
+    ) : base(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted)
+    {
+        ShowId = showId;
+    }
 }

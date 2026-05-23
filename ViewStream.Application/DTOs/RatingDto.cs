@@ -94,5 +94,14 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the rating was submitted.</summary>
         public DateTime? RatedAt { get; set; }
+
+        /// <summary>Gets or sets the creation timestamp (alias for RatedAt) for admin dashboard consistency.</summary>
+        public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the rating was last modified.</summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        public string ProfileName { get; set; } = string.Empty;
+        public string ShowTitle { get; set; } = string.Empty;
     }
 }

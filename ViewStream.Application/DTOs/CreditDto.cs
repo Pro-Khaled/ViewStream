@@ -153,6 +153,15 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the character name, if applicable.</summary>
         public string? CharacterName { get; set; }
 
+        /// <summary>Gets or sets the ID of the show (if this credit targets a show).</summary>
+        public long? ShowId { get; set; }
+
+        /// <summary>Gets or sets the ID of the season (if this credit targets a season).</summary>
+        public long? SeasonId { get; set; }
+
+        /// <summary>Gets or sets the ID of the episode (if this credit targets an episode).</summary>
+        public long? EpisodeId { get; set; }
+
         /// <summary>Gets or sets the type of target credited.</summary>
         public string? TargetType { get; set; }
 

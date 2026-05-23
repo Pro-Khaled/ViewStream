@@ -31,8 +31,13 @@ namespace ViewStream.Application.Queries.PlaybackEvent
 
             if (request.EpisodeId.HasValue)
                 query = query.Where(s => s.EpisodeId == request.EpisodeId.Value);
-if (request.ProfileId.HasValue)
+            if (request.ProfileId.HasValue)
                 query = query.Where(s => s.ProfileId == request.ProfileId.Value);
+
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
 
             var projected = query.Select(s => new AdminPlaybackEventListItemDto
             {
@@ -43,6 +48,10 @@ if (request.ProfileId.HasValue)
                 PositionSeconds = s.PositionSeconds,
                 Quality = s.Quality,
                 CreatedAt = s.CreatedAt,
+                BitrateKbps = s.BitrateKbps,
+                DeviceType = s.DeviceType,
+                IpAddress = s.IpAddress,
+                UserAgent = s.UserAgent
             });
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

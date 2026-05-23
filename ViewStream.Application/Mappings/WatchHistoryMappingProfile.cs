@@ -24,6 +24,15 @@ namespace ViewStream.Application.Mappings
                 .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Episode.Season.Show.Title))
                 .ForMember(dest => dest.ShowPosterUrl, opt => opt.MapFrom(src => src.Episode.Season.Show.PosterUrl))
                 .ForMember(dest => dest.TotalSeconds, opt => opt.MapFrom(src => src.Episode.RuntimeSeconds));
+            CreateMap<WatchHistory, AdminWatchHistoryListItemDto>()
+                .ForMember(dest => dest.EpisodeTitle, opt => opt.MapFrom(src => src.Episode.Title))
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Episode.Season.Show.Title))
+                .ForMember(dest => dest.ShowPosterUrl, opt => opt.MapFrom(src => src.Episode.Season.Show.PosterUrl))
+                .ForMember(dest => dest.TotalSeconds, opt => opt.MapFrom(src => src.Episode.RuntimeSeconds))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Profile.UserId))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.WatchedAt));
+
         }
     }
 }
+

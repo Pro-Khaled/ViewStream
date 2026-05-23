@@ -20,6 +20,16 @@ namespace ViewStream.Application.Queries.ContentReport
             query = query.Include(e => e.Profile);             query = query.Include(e => e.Show);             query = query.Include(e => e.Episode);
 
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.ReportedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.ReportedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(s => s.ResolvedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(s => s.ResolvedAt <= request.UpdatedTo.Value);
+
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 var term = request.SearchTerm.Trim();
@@ -32,18 +42,23 @@ namespace ViewStream.Application.Queries.ContentReport
 
             if (!string.IsNullOrWhiteSpace(request.Status))
                 query = query.Where(s => s.Status == request.Status);
-if (!string.IsNullOrWhiteSpace(request.TargetType))
+            if (!string.IsNullOrWhiteSpace(request.TargetType))
                 query = query.Where(s => request.TargetType == "Show" ? s.ShowId != null : request.TargetType == "Episode" ? s.EpisodeId != null : true);
 
             var projected = query.Select(s => new AdminContentReportListItemDto
             {
                 Id = s.Id,
+                ProfileId = s.ProfileId,
                 ProfileName = s.Profile.Name,
+                ShowId = s.ShowId,
+                EpisodeId = s.EpisodeId,
                 TargetType = s.ShowId != null ? "Show" : "Episode",
                 TargetTitle = s.Show != null ? s.Show.Title : s.Episode != null ? s.Episode.Title : "",
                 Reason = s.Reason,
+                Description = s.Description,
                 Status = s.Status,
                 ReportedAt = s.ReportedAt,
+                ResolvedAt = s.ResolvedAt
             });
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

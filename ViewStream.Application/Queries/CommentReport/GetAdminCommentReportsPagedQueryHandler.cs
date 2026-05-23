@@ -32,14 +32,23 @@ namespace ViewStream.Application.Queries.CommentReport
             if (!string.IsNullOrWhiteSpace(request.Status))
                 query = query.Where(s => s.Status == request.Status);
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
+
             var projected = query.Select(s => new AdminCommentReportListItemDto
             {
                 Id = s.Id,
                 CommentId = s.CommentId,
                 CommentText = s.Comment.CommentText,
+                Details = s.Details,
                 ReportedByProfileName = s.ReportedByProfile.Name,
                 Reason = s.Reason,
                 Status = s.Status,
+                ReviewedByUserId = s.ReviewedByUserId,
+                ReviewedByUserName = s.ReviewedByUser != null ? s.ReviewedByUser.UserName : null,
+                ReviewedAt = s.ReviewedAt,
                 CreatedAt = s.CreatedAt,
             });
 

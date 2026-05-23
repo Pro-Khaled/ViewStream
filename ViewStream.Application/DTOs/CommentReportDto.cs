@@ -119,6 +119,9 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the text of the reported comment.</summary>
         public string? CommentText { get; set; }
 
+        /// <summary>Gets or sets the text details of the report (optional).</summary>
+        public string? Details { get; set; }
+
         /// <summary>Gets or sets the display name of the profile that submitted the report.</summary>
         public string? ReportedByProfileName { get; set; }
 
@@ -128,7 +131,18 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the current moderation status.</summary>
         public string? Status { get; set; }
 
+        /// <summary>Gets or sets the ID of the admin user who reviewed the report.</summary>
+        public long? ReviewedByUserId { get; set; }
+
+        /// <summary>Gets or sets the display name of the admin who reviewed the report.</summary>
+        public string? ReviewedByUserName { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the report was reviewed.</summary>
+        public DateTime? ReviewedAt { get; set; }
+
         /// <summary>Gets or sets the UTC timestamp when the report was submitted.</summary>
         public DateTime? CreatedAt { get; set; }
+
+        // Soft-delete fields are not part of CommentReport entity, so they are intentionally omitted.
     }
 }

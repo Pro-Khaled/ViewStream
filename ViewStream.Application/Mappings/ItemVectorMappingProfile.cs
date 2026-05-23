@@ -11,6 +11,9 @@ namespace ViewStream.Application.Mappings
         {
             CreateMap<ItemVector, ItemVectorDto>()
                 .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title));
+            CreateMap<ItemVector, AdminItemVectorListItemDto>()
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
+                .ForMember(dest => dest.EmbeddingJson, opt => opt.MapFrom(src => src.EmbeddingJson));
         }
     }
 }

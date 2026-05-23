@@ -16,6 +16,8 @@ namespace ViewStream.Application.Mappings
             CreateMap<OfflineDownload, OfflineDownloadListItemDto>()
                 .ForMember(dest => dest.EpisodeTitle, opt => opt.MapFrom(src => src.Episode.Title))
                 .ForMember(dest => dest.DeviceName, opt => opt.MapFrom(src => src.Device.DeviceName));
+
+            CreateMap<OfflineDownload, AdminOfflineDownloadListItemDto>();
         }
     }
 }

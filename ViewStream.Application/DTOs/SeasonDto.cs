@@ -123,6 +123,9 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the unique identifier of the season.</summary>
         public long Id { get; set; }
 
+        /// <summary>Gets or sets the ID of the show this season belongs to.</summary>
+        public long? ShowId { get; set; }
+
         /// <summary>Gets or sets the season number.</summary>
         public short SeasonNumber { get; set; }
 
@@ -140,6 +143,12 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when this record was created.</summary>
         public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when this record was last updated.</summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when this season was soft-deleted, if applicable.</summary>
+        public DateTime? DeletedAt { get; set; }
 
         /// <summary>Gets or sets the title of the show this season belongs to.</summary>
         public string ShowTitle { get; set; } = string.Empty;

@@ -39,6 +39,11 @@ namespace ViewStream.Application.Queries.WatchHistory
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(wh => wh.Episode.Title.Contains(request.SearchTerm) || wh.Profile.Name.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(wh => wh.WatchedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(wh => wh.WatchedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminWatchHistoryListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -20,7 +20,10 @@ namespace ViewStream.Application.Queries.ErrorLog
             query = query.Include(e => e.User);
 
 
-            
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.OccurredAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.OccurredAt <= request.CreatedTo.Value);
 
             if (!string.IsNullOrWhiteSpace(request.ErrorCode))
                 query = query.Where(s => s.ErrorCode == request.ErrorCode);
@@ -34,6 +37,10 @@ if (!string.IsNullOrWhiteSpace(request.Endpoint))
                 ErrorMessage = s.ErrorMessage,
                 Endpoint = s.Endpoint,
                 OccurredAt = s.OccurredAt,
+                UserId = s.UserId,
+                UserEmail = s.User != null ? s.User.Email : null,
+                StackTrace = s.StackTrace,
+                CreatedAt = s.OccurredAt
             });
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

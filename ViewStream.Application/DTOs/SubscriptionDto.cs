@@ -107,5 +107,8 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the UTC timestamp when the subscription was initially created.</summary>
         public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public long? PaymentMethodId { get; set; }
     }
 }
+

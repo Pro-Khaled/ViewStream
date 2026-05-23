@@ -206,8 +206,20 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the title of the episode.</summary>
         public string? Title { get; set; }
 
+        /// <summary>Gets or sets the optional synopsis/description of the episode.</summary>
+        public string? Description { get; set; }
+
+        /// <summary>Gets or sets the public URL of the episode video.</summary>
+        public string? VideoUrl { get; set; }
+
         /// <summary>Gets or sets the UTC timestamp when this record was created.</summary>
         public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when this record was last updated.</summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when this episode was soft-deleted.</summary>
+        public DateTime? DeletedAt { get; set; }
 
         /// <summary>Gets or sets a value indicating whether this episode has been soft-deleted.</summary>
         public bool? IsDeleted { get; set; }

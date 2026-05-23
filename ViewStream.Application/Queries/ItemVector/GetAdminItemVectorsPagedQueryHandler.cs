@@ -46,8 +46,8 @@ namespace ViewStream.Application.Queries.ItemVector
                     .AsNoTracking();
 
                 // includeDeleted consistency: ItemVector entity has no IsDeleted column; ignore IncludeDeleted.
-                if (request.showId.HasValue)
-                    query = query.Where(v => v.ShowId == request.showId.Value);
+                if (request.ShowId.HasValue)
+                    query = query.Where(v => v.ShowId == request.ShowId.Value);
 
                 if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 {
@@ -56,6 +56,11 @@ namespace ViewStream.Application.Queries.ItemVector
                                              v.Show.Title != null &&
                                              v.Show.Title.Contains(term));
                 }
+
+                if (request.UpdatedFrom.HasValue)
+                    query = query.Where(v => v.LastUpdated >= request.UpdatedFrom.Value);
+                if (request.UpdatedTo.HasValue)
+                    query = query.Where(v => v.LastUpdated <= request.UpdatedTo.Value);
 
                 // Sorting
                 if (!string.IsNullOrWhiteSpace(request.SortBy))

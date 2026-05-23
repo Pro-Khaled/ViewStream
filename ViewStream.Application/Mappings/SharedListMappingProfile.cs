@@ -17,6 +17,11 @@ namespace ViewStream.Application.Mappings
             CreateMap<SharedList, SharedListListItemDto>()
                 .ForMember(dest => dest.OwnerProfileName, opt => opt.MapFrom(src => src.OwnerProfile.Name))
                 .ForMember(dest => dest.ItemCount, opt => opt.MapFrom(src => src.SharedListItems.Count));
+
+            CreateMap<SharedList, AdminSharedListListItemDto>()
+                .ForMember(dest => dest.OwnerProfileName, opt => opt.MapFrom(src => src.OwnerProfile.Name))
+                .ForMember(dest => dest.ItemCount, opt => opt.MapFrom(src => src.SharedListItems.Count));
         }
     }
 }
+

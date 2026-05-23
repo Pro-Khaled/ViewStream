@@ -58,6 +58,11 @@ namespace ViewStream.Application.Queries.PersonalizedRow
                         r.Profile.Name.Contains(term));
                 }
 
+                if (request.CreatedFrom.HasValue)
+                    query = query.Where(r => r.GeneratedAt >= request.CreatedFrom.Value);
+                if (request.CreatedTo.HasValue)
+                    query = query.Where(r => r.GeneratedAt <= request.CreatedTo.Value);
+
                 // Sorting:
                 // Supported sortBy values:
                 // - generatedat

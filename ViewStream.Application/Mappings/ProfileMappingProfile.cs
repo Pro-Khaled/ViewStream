@@ -20,6 +20,9 @@ namespace ViewStream.Application.Mappings
 
             CreateMap<CreateProfileDto, Profile>();
             CreateMap<UpdateProfileDto, Profile>();
+            CreateMap<Profile, AdminProfileListItemDto>();
+
         }
     }
 }
+

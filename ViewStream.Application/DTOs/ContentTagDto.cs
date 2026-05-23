@@ -84,5 +84,11 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the number of shows associated with this tag.</summary>
         public int ShowCount { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the tag was created.</summary>
+        public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Gets or sets whether the tag is soft-deleted.</summary>
+        public bool IsDeleted { get; set; }
     }
 }

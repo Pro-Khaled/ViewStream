@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
@@ -19,17 +19,27 @@ namespace ViewStream.Application.Queries.Genre
 
             query = query.Include(e => e.Shows);
 
+            // Soft-delete filter
+            if (!request.IncludeDeleted)
+                query = query.Where(g => g.IsDeleted != true);
 
+            // Date-range filters
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(g => g.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(g => g.CreatedAt <= request.CreatedTo.Value);
+
+            // Text search
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
-                query = query.Where(s => s.Name.Contains(request.SearchTerm));
+                query = query.Where(g => g.Name.Contains(request.SearchTerm));
 
-            
-
-            var projected = query.Select(s => new AdminGenreListItemDto
+            var projected = query.Select(g => new AdminGenreListItemDto
             {
-                Id = s.Id,
-                Name = s.Name,
-                ShowCount = s.Shows.Count,
+                Id = g.Id,
+                Name = g.Name,
+                ShowCount = g.Shows.Count,
+                CreatedAt = g.CreatedAt,
+                IsDeleted = g.IsDeleted,
             });
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))
@@ -38,12 +48,13 @@ namespace ViewStream.Application.Queries.Genre
                 projected = request.SortBy.ToLower() switch
                 {
                     "showcount" => desc ? projected.OrderByDescending(x => x.ShowCount) : projected.OrderBy(x => x.ShowCount),
+                    "createdat" => desc ? projected.OrderByDescending(x => x.CreatedAt) : projected.OrderBy(x => x.CreatedAt),
                     _ => projected.OrderByPropertyName(request.SortBy, desc)
                 };
             }
             else
             {
-                projected = projected.OrderBy(s => s.Name);
+                projected = projected.OrderBy(g => g.Name);
             }
 
             var totalCount = await projected.CountAsync(cancellationToken);

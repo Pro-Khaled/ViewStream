@@ -131,5 +131,9 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the current status of the friendship.</summary>
         public string? Status { get; set; }
+        public string? UserName { get; set; }
+        public string? UserFullName { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
+

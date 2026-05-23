@@ -111,7 +111,24 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the video quality.</summary>
         public string? Quality { get; set; }
 
+        /// <summary>Gets or sets the current bitrate in Kbps.</summary>
+        public int? BitrateKbps { get; set; }
+
+        /// <summary>Gets or sets the cumulative number of buffering events in this session.</summary>
+        public int? BufferingCount { get; set; }
+
+        /// <summary>Gets or sets the type of device playing the video.</summary>
+        public string? DeviceType { get; set; }
+
+        /// <summary>Gets or sets the IP address of the client.</summary>
+        public string? IpAddress { get; set; }
+
+        /// <summary>Gets or sets the user agent string of the client.</summary>
+        public string? UserAgent { get; set; }
+
         /// <summary>Gets or sets the UTC timestamp when the event was recorded.</summary>
         public DateTime? CreatedAt { get; set; }
+
     }
 }
+

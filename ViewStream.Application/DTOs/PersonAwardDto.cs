@@ -67,5 +67,7 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the year the award was given.</summary>
         public int? AwardYear { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }
+

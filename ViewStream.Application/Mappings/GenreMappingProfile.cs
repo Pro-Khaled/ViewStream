@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ViewStream.Application.DTOs;
 using ViewStream.Domain.Entities;
 using MappingProfile = AutoMapper.Profile;
@@ -20,7 +20,7 @@ namespace ViewStream.Application.Mappings
             CreateMap<UpdateGenreDto, Genre>();
         
         CreateMap<Genre, AdminGenreListItemDto>()
-            .ForMember(d => d.ShowCount, opt => opt.Ignore());
+            .ForMember(d => d.ShowCount, opt => opt.MapFrom(src => src.Shows.Count));
 }
     }
 }

@@ -15,6 +15,12 @@ public partial class Genre
     [StringLength(50)]
     public string Name { get; set; } = null!;
 
+    /// <summary>UTC timestamp when the genre was created.</summary>
+    public DateTime? CreatedAt { get; set; }
+
+    /// <summary>Soft-delete flag – true means the genre is logically deleted.</summary>
+    public bool IsDeleted { get; set; }
+
     [ForeignKey("GenreId")]
     [InverseProperty("Genres")]
     public virtual ICollection<Show> Shows { get; set; } = new List<Show>();

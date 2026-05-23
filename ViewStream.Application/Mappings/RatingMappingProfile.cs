@@ -17,6 +17,13 @@ namespace ViewStream.Application.Mappings
             CreateMap<Rating, RatingListItemDto>()
                 .ForMember(dest => dest.ProfileName, opt => opt.MapFrom(src => src.Profile.Name))
                 .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => src.Rating1));
+
+            CreateMap<Rating, AdminRatingListItemDto>()
+                .ForMember(dest => dest.Score, opt => opt.MapFrom(src => (int)src.Rating1))
+                .ForMember(dest => dest.ProfileName, opt => opt.MapFrom(src => src.Profile.Name))
+                .ForMember(dest => dest.ShowTitle, opt => opt.MapFrom(src => src.Show.Title))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.RatedAt));
         }
     }
 }
+

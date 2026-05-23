@@ -121,5 +121,10 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the display name of the profile that owns this list.</summary>
         public string? OwnerProfileName { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? ShareCode { get; set; }
+        public int ItemCount { get; set; }
     }
 }
+

@@ -23,6 +23,8 @@ namespace ViewStream.Application.Mappings
             // Entity → ShowListItemDto
             CreateMap<Show, ShowListItemDto>()
                 .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres.Select(g => g.Name)));
+            CreateMap<Show, AdminShowListItemDto>();
+
 
             // CreateShowDto → Show (ignore navigation collections)
             CreateMap<CreateShowDto, Show>()
@@ -45,4 +47,5 @@ namespace ViewStream.Application.Mappings
 }
     }
 }
+
 

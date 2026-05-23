@@ -45,6 +45,11 @@ namespace ViewStream.Application.Queries.WatchParty
                     (s.HostProfile != null && s.HostProfile.Name.Contains(term)));
             }
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.StartedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.StartedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminWatchPartyListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

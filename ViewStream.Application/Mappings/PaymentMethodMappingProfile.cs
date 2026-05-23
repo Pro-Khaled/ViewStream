@@ -13,6 +13,9 @@ namespace ViewStream.Application.Mappings
             CreateMap<PaymentMethod, PaymentMethodDto>();
             CreateMap<CreatePaymentMethodDto, PaymentMethod>();
             CreateMap<UpdatePaymentMethodDto, PaymentMethod>();
+            CreateMap<PaymentMethod, AdminPaymentMethodListItemDto>();
+
         }
     }
 }
+

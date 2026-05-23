@@ -24,6 +24,9 @@ public partial class ShowAvailability
 
     public string? LicensingNotes { get; set; }
 
+    /// <summary>UTC timestamp when this availability record was last updated.</summary>
+    public DateTime? UpdatedAt { get; set; }
+
     [ForeignKey("CountryCode")]
     [InverseProperty("ShowAvailabilities")]
     public virtual Country CountryCodeNavigation { get; set; } = null!;

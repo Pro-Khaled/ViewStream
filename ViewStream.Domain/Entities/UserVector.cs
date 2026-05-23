@@ -15,6 +15,9 @@ public partial class UserVector
 
     public DateTime? LastUpdated { get; set; }
 
+    /// <summary>UTC timestamp when the vector was first generated.</summary>
+    public DateTime? CreatedAt { get; set; }
+
     [ForeignKey("ProfileId")]
     [InverseProperty("UserVector")]
     public virtual Profile Profile { get; set; } = null!;

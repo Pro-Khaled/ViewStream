@@ -14,6 +14,9 @@ namespace ViewStream.Application.Mappings
                 .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : null))
                 .ForMember(dest => dest.SubscriptionPlan, opt => opt.MapFrom(src => src.Subscription != null ? src.Subscription.PlanType : null));
             CreateMap<Invoice, InvoiceListItemDto>();
+            CreateMap<Invoice, AdminInvoiceListItemDto>()
+                .ForMember(dest => dest.UserEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : null))
+                .ForMember(dest => dest.SubscriptionPlan, opt => opt.MapFrom(src => src.Subscription != null ? src.Subscription.PlanType : null));
         }
     }
 }

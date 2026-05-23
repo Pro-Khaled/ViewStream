@@ -109,10 +109,22 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the URL to the person's photo.</summary>
         public string? PhotoUrl { get; set; }
 
+        /// <summary>Gets or sets the person's date of birth.</summary>
+        public DateOnly? BirthDate { get; set; }
+
         /// <summary>Gets or sets the total number of credits.</summary>
         public int CreditCount { get; set; }
 
         /// <summary>Gets or sets the total number of awards.</summary>
         public int AwardCount { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when this record was created.</summary>
+        public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when this record was last updated.</summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>Gets or sets whether the person is soft-deleted.</summary>
+        public bool? IsDeleted { get; set; }
     }
 }

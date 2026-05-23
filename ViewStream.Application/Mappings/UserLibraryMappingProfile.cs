@@ -24,6 +24,10 @@ namespace ViewStream.Application.Mappings
                     src.Show != null ? src.Show.PosterUrl :
                     src.Season != null ? src.Season.Show.PosterUrl : null))
                 .ForMember(dest => dest.ItemType, opt => opt.MapFrom(src => src.ShowId != null ? "Show" : "Season"));
+            CreateMap<UserLibrary, AdminUserLibraryListItemDto>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Profile.UserId));
+
         }
     }
 }
+

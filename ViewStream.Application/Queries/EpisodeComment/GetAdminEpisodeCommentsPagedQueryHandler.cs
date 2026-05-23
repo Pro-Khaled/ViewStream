@@ -30,6 +30,21 @@ namespace ViewStream.Application.Queries.EpisodeComment
             if (!request.IncludeDeleted)
                 query = query.Where(ec => ec.IsDeleted != true);
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(ec => ec.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(ec => ec.CreatedAt <= request.CreatedTo.Value);
+
+            if (request.UpdatedFrom.HasValue)
+                query = query.Where(ec => ec.UpdatedAt >= request.UpdatedFrom.Value);
+            if (request.UpdatedTo.HasValue)
+                query = query.Where(ec => ec.UpdatedAt <= request.UpdatedTo.Value);
+
+            if (request.DeletedFrom.HasValue)
+                query = query.Where(ec => ec.DeletedAt >= request.DeletedFrom.Value);
+            if (request.DeletedTo.HasValue)
+                query = query.Where(ec => ec.DeletedAt <= request.DeletedTo.Value);
+
             if (request.EpisodeId.HasValue)
                 query = query.Where(ec => ec.EpisodeId == request.EpisodeId.Value);
 

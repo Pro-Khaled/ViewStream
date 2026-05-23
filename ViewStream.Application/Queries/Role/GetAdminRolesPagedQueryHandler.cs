@@ -30,6 +30,11 @@ namespace ViewStream.Application.Queries.Role
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
                 query = query.Where(s => s.Name != null && s.Name.Contains(request.SearchTerm));
 
+            if (request.CreatedFrom.HasValue)
+                query = query.Where(s => s.CreatedAt >= request.CreatedFrom.Value);
+            if (request.CreatedTo.HasValue)
+                query = query.Where(s => s.CreatedAt <= request.CreatedTo.Value);
+
             var projected = query.ProjectTo<AdminRoleListItemDto>(_mapper.ConfigurationProvider);
 
             if (!string.IsNullOrWhiteSpace(request.SortBy))

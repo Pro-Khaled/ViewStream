@@ -140,8 +140,20 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the UTC timestamp when the comment was created.</summary>
         public DateTime? CreatedAt { get; set; }
 
+        /// <summary>Gets or sets the UTC timestamp when the comment was last updated.</summary>
+        public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>Gets or sets the UTC timestamp when the comment was soft-deleted.</summary>
+        public DateTime? DeletedAt { get; set; }
+
         /// <summary>Gets or sets a value indicating whether the comment has been soft-deleted.</summary>
         public bool? IsDeleted { get; set; }
+
+        /// <summary>Gets or sets the number of likes this comment has received.</summary>
+        public int LikeCount { get; set; }
+
+        /// <summary>Gets or sets the number of direct replies to this comment.</summary>
+        public int ReplyCount { get; set; }
 
         /// <summary>Gets or sets a value indicating whether the comment has been edited.</summary>
         public bool? IsEdited { get; set; }

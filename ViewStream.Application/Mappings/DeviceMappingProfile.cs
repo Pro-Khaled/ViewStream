@@ -14,6 +14,7 @@ namespace ViewStream.Application.Mappings
             CreateMap<Device, DeviceListItemDto>();
             CreateMap<CreateDeviceDto, Device>();
             CreateMap<UpdateDeviceDto, Device>();
+            CreateMap<Device, AdminDeviceListItemDto>();
         }
     }
 }
