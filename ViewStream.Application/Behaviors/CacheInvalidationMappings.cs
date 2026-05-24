@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ViewStream.Application.Commands.AudioTrack.CreateAudioTrack;
 using ViewStream.Application.Commands.AudioTrack.DeleteAudioTrack;
 using ViewStream.Application.Commands.AudioTrack.RestoreAudioTrack;
@@ -38,6 +35,7 @@ using ViewStream.Application.Commands.Episode.RestoreEpisode;
 using ViewStream.Application.Commands.Episode.UpdateEpisode;
 using ViewStream.Application.Commands.EpisodeComment.CreateEpisodeComment;
 using ViewStream.Application.Commands.EpisodeComment.DeleteEpisodeComment;
+using ViewStream.Application.Commands.EpisodeComment.RestoreEpisodeComment;
 using ViewStream.Application.Commands.EpisodeComment.UpdateEpisodeComment;
 using ViewStream.Application.Commands.Friendship.RespondToFriendRequest;
 using ViewStream.Application.Commands.Friendship.SendFriendRequest;
@@ -71,6 +69,7 @@ using ViewStream.Application.Commands.PersonAward.AddPersonAward;
 using ViewStream.Application.Commands.PersonAward.RemovePersonAward;
 using ViewStream.Application.Commands.Profile.CreateProfile;
 using ViewStream.Application.Commands.Profile.DeleteProfile;
+using ViewStream.Application.Commands.Profile.RestoreProfile;
 using ViewStream.Application.Commands.Profile.UpdateProfile;
 using ViewStream.Application.Commands.PromoCode.CreatePromoCode;
 using ViewStream.Application.Commands.PromoCode.DeletePromoCode;
@@ -88,6 +87,8 @@ using ViewStream.Application.Commands.Season.RestoreSeason;
 using ViewStream.Application.Commands.Season.UpdateSeason;
 using ViewStream.Application.Commands.SharedList.CreateSharedList;
 using ViewStream.Application.Commands.SharedList.DeleteSharedList;
+using ViewStream.Application.Commands.SharedList.GenerateShareCode;
+using ViewStream.Application.Commands.SharedList.RestoreSharedList;
 using ViewStream.Application.Commands.SharedList.UpdateSharedList;
 using ViewStream.Application.Commands.SharedListItem.AddShowToSharedList;
 using ViewStream.Application.Commands.SharedListItem.RemoveShowFromSharedList;
@@ -108,7 +109,9 @@ using ViewStream.Application.Commands.Subtitle.DeleteSubtitle;
 using ViewStream.Application.Commands.Subtitle.RestoreSubtitle;
 using ViewStream.Application.Commands.Subtitle.UpdateSubtitle;
 using ViewStream.Application.Commands.User.AdminUpdateUser;
+using ViewStream.Application.Commands.User.BlockUser;
 using ViewStream.Application.Commands.User.DeleteUser;
+using ViewStream.Application.Commands.User.RestoreUser;
 using ViewStream.Application.Commands.User.UnblockUser;
 using ViewStream.Application.Commands.UserInteraction.CreateUserInteraction;
 using ViewStream.Application.Commands.UserLibrary.CreateUserLibrary;
@@ -130,18 +133,18 @@ namespace ViewStream.Application.Behaviors
     {
         public static IReadOnlyDictionary<Type, string[]> Mappings { get; } = new Dictionary<Type, string[]>
         {
-                        // ==================== SHOW ====================
+            // ==================== SHOW ====================
             { typeof(CreateShowCommand), new[] { "GetShowsPagedQuery_*", "GetAdminShowsPagedQuery_*" } },
             { typeof(UpdateShowCommand), new[]
                 {
                     "GetShowsPagedQuery_*",
                     "GetShowByIdQuery_*{Id}*",
                     "GetAdminShowsPagedQuery_*",
-                    "GetGenresPagedQuery_*",          // because show may change genres
+                    "GetGenresPagedQuery_*",
                     "GetAllGenresQuery_*",
-                    "GetContentTagsPagedQuery_*",      // show tags might change
+                    "GetContentTagsPagedQuery_*",
                     "GetAllContentTagsQuery_*",
-                    "GetActiveWatchPartiesPagedQuery_*" // trailer updates affect watch parties
+                    "GetActiveWatchPartiesPagedQuery_*"
                 }
             },
             { typeof(DeleteShowCommand), new[]
@@ -247,7 +250,7 @@ namespace ViewStream.Application.Behaviors
                     "GetGenresPagedQuery_*",
                     "GetAllGenresQuery_*",
                     "GetAdminGenresPagedQuery_*",
-                    "GetShowsPagedQuery_*"        // because shows have genres
+                    "GetShowsPagedQuery_*"
                 }
             },
             { typeof(DeleteGenreCommand), new[]
@@ -430,7 +433,8 @@ namespace ViewStream.Application.Behaviors
                     "GetAvailabilitiesByShowQuery_*",
                     "GetAvailabilitiesByCountryQuery_*",
                     "GetShowAvailabilityQuery_*",
-                    "GetShowByIdQuery_*{ShowId}*"
+                    "GetShowByIdQuery_*{ShowId}*",
+                    "GetAdminShowAvailabilitiesPagedQuery_*"
                 }
             },
             { typeof(UpdateShowAvailabilityCommand), new[]
@@ -438,7 +442,8 @@ namespace ViewStream.Application.Behaviors
                     "GetAvailabilitiesByShowQuery_*",
                     "GetAvailabilitiesByCountryQuery_*",
                     "GetShowAvailabilityQuery_*",
-                    "GetShowByIdQuery_*{ShowId}*"
+                    "GetShowByIdQuery_*{ShowId}*",
+                    "GetAdminShowAvailabilitiesPagedQuery_*"
                 }
             },
             { typeof(DeleteShowAvailabilityCommand), new[]
@@ -446,17 +451,18 @@ namespace ViewStream.Application.Behaviors
                     "GetAvailabilitiesByShowQuery_*",
                     "GetAvailabilitiesByCountryQuery_*",
                     "GetShowAvailabilityQuery_*",
-                    "GetShowByIdQuery_*{ShowId}*"
+                    "GetShowByIdQuery_*{ShowId}*",
+                    "GetAdminShowAvailabilitiesPagedQuery_*"
                 }
             },
 
             // ==================== PERSON AWARD ====================
-            { typeof(AddPersonAwardCommand), new[] { "GetPersonAwardsQuery_*", "GetPersonByIdQuery_*{PersonId}*" } },
-            { typeof(RemovePersonAwardCommand), new[] { "GetPersonAwardsQuery_*", "GetPersonByIdQuery_*{PersonId}*" } },
+            { typeof(AddPersonAwardCommand), new[] { "GetPersonAwardsQuery_*", "GetPersonByIdQuery_*{PersonId}*", "GetAdminPersonAwardsPagedQuery_*" } },
+            { typeof(RemovePersonAwardCommand), new[] { "GetPersonAwardsQuery_*", "GetPersonByIdQuery_*{PersonId}*", "GetAdminPersonAwardsPagedQuery_*" } },
 
             // ==================== SHOW AWARD ====================
-            { typeof(AddShowAwardCommand), new[] { "GetShowAwardsQuery_*", "GetShowByIdQuery_*{ShowId}*" } },
-            { typeof(RemoveShowAwardCommand), new[] { "GetShowAwardsQuery_*", "GetShowByIdQuery_*{ShowId}*" } },
+            { typeof(AddShowAwardCommand), new[] { "GetShowAwardsQuery_*", "GetShowByIdQuery_*{ShowId}*", "GetAdminShowAwardsPagedQuery_*" } },
+            { typeof(RemoveShowAwardCommand), new[] { "GetShowAwardsQuery_*", "GetShowByIdQuery_*{ShowId}*", "GetAdminShowAwardsPagedQuery_*" } },
 
             // ==================== PROMO CODE ====================
             { typeof(CreatePromoCodeCommand), new[] { "GetPromoCodesPagedQuery_*", "GetAdminPromoCodesPagedQuery_*" } },
@@ -482,7 +488,8 @@ namespace ViewStream.Application.Behaviors
                 {
                     "GetSharedListsByProfileQuery_*",
                     "GetPublicSharedListsPagedQuery_*",
-                    "GetSharedListByIdQuery_*"
+                    "GetSharedListByIdQuery_*",
+                    "GetAdminSharedListsPagedQuery_*"
                 }
             },
             { typeof(UpdateSharedListCommand), new[]
@@ -490,7 +497,8 @@ namespace ViewStream.Application.Behaviors
                     "GetSharedListByIdQuery_*{Id}*",
                     "GetSharedListsByProfileQuery_*",
                     "GetPublicSharedListsPagedQuery_*",
-                    "GetSharedListByShareCodeQuery_*"
+                    "GetSharedListByShareCodeQuery_*",
+                    "GetAdminSharedListsPagedQuery_*"
                 }
             },
             { typeof(DeleteSharedListCommand), new[]
@@ -498,6 +506,22 @@ namespace ViewStream.Application.Behaviors
                     "GetSharedListByIdQuery_*{Id}*",
                     "GetSharedListsByProfileQuery_*",
                     "GetPublicSharedListsPagedQuery_*",
+                    "GetSharedListByShareCodeQuery_*",
+                    "GetAdminSharedListsPagedQuery_*"
+                }
+            },
+            { typeof(RestoreSharedListCommand), new[]
+                {
+                    "GetSharedListByIdQuery_*{Id}*",
+                    "GetSharedListsByProfileQuery_*",
+                    "GetPublicSharedListsPagedQuery_*",
+                    "GetSharedListByShareCodeQuery_*",
+                    "GetAdminSharedListsPagedQuery_*"
+                }
+            },
+            { typeof(GenerateShareCodeCommand), new[]
+                {
+                    "GetSharedListByIdQuery_*{Id}*",
                     "GetSharedListByShareCodeQuery_*"
                 }
             },
@@ -507,14 +531,16 @@ namespace ViewStream.Application.Behaviors
                 {
                     "GetItemsBySharedListQuery_*",
                     "GetSharedListByIdQuery_*{ListId}*",
-                    "GetSharedListsByProfileQuery_*"
+                    "GetSharedListsByProfileQuery_*",
+                    "GetAdminSharedListItemsPagedQuery_*"
                 }
             },
             { typeof(RemoveShowFromSharedListCommand), new[]
                 {
                     "GetItemsBySharedListQuery_*",
                     "GetSharedListByIdQuery_*{ListId}*",
-                    "GetSharedListsByProfileQuery_*"
+                    "GetSharedListsByProfileQuery_*",
+                    "GetAdminSharedListItemsPagedQuery_*"
                 }
             },
 
@@ -527,9 +553,38 @@ namespace ViewStream.Application.Behaviors
                     "SearchUsersQuery_*"
                 }
             },
-            { typeof(Commands.User.BlockUser.BlockUserCommand), new[] { "GetAdminUsersPagedQuery_*", "GetUserByIdQuery_*{UserId}*", "SearchUsersQuery_*" } },
-            { typeof(UnblockUserCommand), new[] { "GetAdminUsersPagedQuery_*", "GetUserByIdQuery_*{UserId}*", "SearchUsersQuery_*" } },
-            { typeof(DeleteUserCommand), new[] { "GetAdminUsersPagedQuery_*", "GetUserByIdQuery_*{UserId}*", "SearchUsersQuery_*" } },
+            { typeof(BlockUserCommand), new[]
+                {
+                    "GetAdminUsersPagedQuery_*",
+                    "GetUserByIdQuery_*{UserId}*",
+                    "SearchUsersQuery_*",
+                    "GetCurrentUserQuery_*"
+                }
+            },
+            { typeof(UnblockUserCommand), new[]
+                {
+                    "GetAdminUsersPagedQuery_*",
+                    "GetUserByIdQuery_*{UserId}*",
+                    "SearchUsersQuery_*",
+                    "GetCurrentUserQuery_*"
+                }
+            },
+            { typeof(DeleteUserCommand), new[]
+                {
+                    "GetAdminUsersPagedQuery_*",
+                    "GetUserByIdQuery_*{UserId}*",
+                    "SearchUsersQuery_*",
+                    "GetCurrentUserQuery_*"
+                }
+            },
+            { typeof(RestoreUserCommand), new[]
+                {
+                    "GetAdminUsersPagedQuery_*",
+                    "GetUserByIdQuery_*{UserId}*",
+                    "SearchUsersQuery_*",
+                    "GetCurrentUserQuery_*"
+                }
+            },
 
             // ==================== USER ROLE ====================
             { typeof(AssignRoleToUserCommand), new[]
@@ -576,6 +631,15 @@ namespace ViewStream.Application.Behaviors
                     "GetUserLibrarySummaryQuery_*"
                 }
             },
+            { typeof(RestoreProfileCommand), new[]
+                {
+                    "GetProfileByIdQuery_*{Id}*",
+                    "GetProfilesByUserQuery_*",
+                    "GetCurrentUserQuery_*",
+                    "GetPersonalizedRowsByProfileQuery_*",
+                    "GetUserLibrarySummaryQuery_*"
+                }
+            },
 
             // ==================== USER INTERACTION ====================
             { typeof(CreateUserInteractionCommand), new[]
@@ -591,7 +655,8 @@ namespace ViewStream.Application.Behaviors
                 {
                     "GetUserLibraryPagedQuery_*",
                     "GetUserLibrarySummaryQuery_*",
-                    "GetUserLibraryByTargetQuery_*"
+                    "GetUserLibraryByTargetQuery_*",
+                    "GetAdminUserLibrariesPagedQuery_*"
                 }
             },
             { typeof(UpdateUserLibraryCommand), new[]
@@ -599,7 +664,8 @@ namespace ViewStream.Application.Behaviors
                     "GetUserLibraryByIdQuery_*{Id}*",
                     "GetUserLibraryPagedQuery_*",
                     "GetUserLibrarySummaryQuery_*",
-                    "GetUserLibraryByTargetQuery_*"
+                    "GetUserLibraryByTargetQuery_*",
+                    "GetAdminUserLibrariesPagedQuery_*"
                 }
             },
             { typeof(DeleteUserLibraryCommand), new[]
@@ -607,7 +673,8 @@ namespace ViewStream.Application.Behaviors
                     "GetUserLibraryByIdQuery_*{Id}*",
                     "GetUserLibraryPagedQuery_*",
                     "GetUserLibrarySummaryQuery_*",
-                    "GetUserLibraryByTargetQuery_*"
+                    "GetUserLibraryByTargetQuery_*",
+                    "GetAdminUserLibrariesPagedQuery_*"
                 }
             },
 
@@ -616,7 +683,8 @@ namespace ViewStream.Application.Behaviors
                 {
                     "GetWatchHistoryPagedQuery_*",
                     "GetContinueWatchingQuery_*",
-                    "GetUserLibraryPagedQuery_*"        // may affect "watching" status
+                    "GetUserLibraryPagedQuery_*",
+                    "GetAdminWatchHistoriesPagedQuery_*"
                 }
             },
 
@@ -626,7 +694,8 @@ namespace ViewStream.Application.Behaviors
                     "GetRatingsByShowQuery_*",
                     "GetShowRatingSummaryQuery_*",
                     "GetUserRatingForShowQuery_*",
-                    "GetShowByIdQuery_*{ShowId}*"
+                    "GetShowByIdQuery_*{ShowId}*",
+                    "GetAdminRatingsPagedQuery_*"
                 }
             },
             { typeof(DeleteRatingCommand), new[]
@@ -634,7 +703,8 @@ namespace ViewStream.Application.Behaviors
                     "GetRatingsByShowQuery_*",
                     "GetShowRatingSummaryQuery_*",
                     "GetUserRatingForShowQuery_*",
-                    "GetShowByIdQuery_*{ShowId}*"
+                    "GetShowByIdQuery_*{ShowId}*",
+                    "GetAdminRatingsPagedQuery_*"
                 }
             },
 
@@ -643,14 +713,16 @@ namespace ViewStream.Application.Behaviors
                 {
                     "GetRootCommentsPagedQuery_*",
                     "GetRepliesByParentQuery_*",
-                    "GetCommentWithRepliesQuery_*"
+                    "GetCommentWithRepliesQuery_*",
+                    "GetAdminEpisodeCommentsPagedQuery_*"
                 }
             },
             { typeof(UpdateEpisodeCommentCommand), new[]
                 {
                     "GetCommentWithRepliesQuery_*{Id}*",
                     "GetRootCommentsPagedQuery_*",
-                    "GetRepliesByParentQuery_*"
+                    "GetRepliesByParentQuery_*",
+                    "GetAdminEpisodeCommentsPagedQuery_*"
                 }
             },
             { typeof(DeleteEpisodeCommentCommand), new[]
@@ -658,7 +730,17 @@ namespace ViewStream.Application.Behaviors
                     "GetCommentWithRepliesQuery_*{Id}*",
                     "GetRootCommentsPagedQuery_*",
                     "GetRepliesByParentQuery_*",
-                    "GetCommentReactionSummaryQuery_*"
+                    "GetCommentReactionSummaryQuery_*",
+                    "GetAdminEpisodeCommentsPagedQuery_*"
+                }
+            },
+            { typeof(RestoreEpisodeCommentCommand), new[]
+                {
+                    "GetCommentWithRepliesQuery_*{Id}*",
+                    "GetRootCommentsPagedQuery_*",
+                    "GetRepliesByParentQuery_*",
+                    "GetCommentReactionSummaryQuery_*",
+                    "GetAdminEpisodeCommentsPagedQuery_*"
                 }
             },
 
@@ -667,14 +749,16 @@ namespace ViewStream.Application.Behaviors
                 {
                     "GetCommentReactionSummaryQuery_*",
                     "GetReactionsByCommentQuery_*",
-                    "GetUserReactionForCommentQuery_*"
+                    "GetUserReactionForCommentQuery_*",
+                    "GetAdminCommentLikesPagedQuery_*"
                 }
             },
             { typeof(DeleteCommentLikeCommand), new[]
                 {
                     "GetCommentReactionSummaryQuery_*",
                     "GetReactionsByCommentQuery_*",
-                    "GetUserReactionForCommentQuery_*"
+                    "GetUserReactionForCommentQuery_*",
+                    "GetAdminCommentLikesPagedQuery_*"
                 }
             },
 
@@ -758,8 +842,7 @@ namespace ViewStream.Application.Behaviors
             },
 
             // ==================== INVOICE ====================
-            // Invoices are never modified after creation.
-            // No invalidation needed for read-only invoice data.
+            // Invoices are never modified after creation. No invalidation needed.
 
             // ==================== PERMISSION & ROLE ====================
             { typeof(CreatePermissionCommand), new[] { "GetAllPermissionsQuery_*", "GetPermissionsByGroupQuery_*", "GetPermissionByIdQuery_*" } },
@@ -768,7 +851,7 @@ namespace ViewStream.Application.Behaviors
                     "GetPermissionByIdQuery_*{Id}*",
                     "GetAllPermissionsQuery_*",
                     "GetPermissionsByGroupQuery_*",
-                    "GetRoleByIdQuery_*"          // roles contain permissions
+                    "GetRoleByIdQuery_*"
                 }
             },
             { typeof(DeletePermissionCommand), new[]
@@ -788,21 +871,24 @@ namespace ViewStream.Application.Behaviors
                 {
                     "GetActiveWatchPartiesPagedQuery_*",
                     "GetWatchPartyByIdQuery_*",
-                    "GetWatchPartyByCodeQuery_*"
+                    "GetWatchPartyByCodeQuery_*",
+                    "GetAdminWatchPartiesPagedQuery_*"
                 }
             },
             { typeof(UpdateWatchPartyCommand), new[]
                 {
                     "GetWatchPartyByIdQuery_*{Id}*",
                     "GetActiveWatchPartiesPagedQuery_*",
-                    "GetWatchPartyByCodeQuery_*"
+                    "GetWatchPartyByCodeQuery_*",
+                    "GetAdminWatchPartiesPagedQuery_*"
                 }
             },
             { typeof(EndWatchPartyCommand), new[]
                 {
                     "GetWatchPartyByIdQuery_*{Id}*",
                     "GetActiveWatchPartiesPagedQuery_*",
-                    "GetWatchPartyByCodeQuery_*"
+                    "GetWatchPartyByCodeQuery_*",
+                    "GetAdminWatchPartiesPagedQuery_*"
                 }
             },
             { typeof(JoinWatchPartyCommand), new[] { "GetParticipantsByPartyQuery_*" } },
@@ -818,15 +904,15 @@ namespace ViewStream.Application.Behaviors
             // Error logs are write‑only, no invalidation needed.
 
             // ==================== PERSONALIZED ROW ====================
-            { typeof(UpsertPersonalizedRowCommand), new[] { "GetPersonalizedRowsByProfileQuery_*" } },
-            { typeof(DeletePersonalizedRowCommand), new[] { "GetPersonalizedRowsByProfileQuery_*" } },
-            { typeof(RegenerateRecommendationsCommand), new[] { "GetPersonalizedRowsByProfileQuery_*" } },
+            { typeof(UpsertPersonalizedRowCommand), new[] { "GetPersonalizedRowsByProfileQuery_*", "GetAdminPersonalizedRowsPagedQuery_*" } },
+            { typeof(DeletePersonalizedRowCommand), new[] { "GetPersonalizedRowsByProfileQuery_*", "GetAdminPersonalizedRowsPagedQuery_*" } },
+            { typeof(RegenerateRecommendationsCommand), new[] { "GetPersonalizedRowsByProfileQuery_*", "GetAdminPersonalizedRowsPagedQuery_*" } },
 
             // ==================== ITEM VECTOR ====================
             { typeof(UpsertItemVectorCommand), new[] { "GetItemVectorByShowIdQuery_*", "GetShowByIdQuery_*{ShowId}*" } },
 
             // ==================== USER VECTOR ====================
-            { typeof(UpsertUserVectorCommand), new[] { "GetUserVectorByProfileIdQuery_*" } },
+            { typeof(UpsertUserVectorCommand), new[] { "GetUserVectorByProfileIdQuery_*", "GetAdminUserVectorsPagedQuery_*" } },
 
             // ==================== PUSH TOKEN ====================
             { typeof(RegisterPushTokenCommand), new[] { "GetUserPushTokensQuery_*" } },
@@ -841,7 +927,8 @@ namespace ViewStream.Application.Behaviors
                     "GetFriendsQuery_*",
                     "GetFriendshipSummaryQuery_*",
                     "GetPendingRequestsQuery_*",
-                    "SearchFriendsQuery_*"
+                    "SearchFriendsQuery_*",
+                    "GetAdminFriendshipsPagedQuery_*"
                 }
             },
             { typeof(RespondToFriendRequestCommand), new[]
@@ -849,32 +936,33 @@ namespace ViewStream.Application.Behaviors
                     "GetFriendsQuery_*",
                     "GetFriendshipSummaryQuery_*",
                     "GetPendingRequestsQuery_*",
-                    "SearchFriendsQuery_*"
+                    "SearchFriendsQuery_*",
+                    "GetAdminFriendshipsPagedQuery_*"
                 }
             },
             { typeof(Commands.Friendship.BlockUser.BlockUserCommand), new[]
                 {
                     "GetFriendsQuery_*",
                     "GetFriendshipSummaryQuery_*",
-                    "SearchFriendsQuery_*"
+                    "SearchFriendsQuery_*",
+                    "GetAdminFriendshipsPagedQuery_*"
                 }
             },
             { typeof(UnfriendCommand), new[]
                 {
                     "GetFriendsQuery_*",
                     "GetFriendshipSummaryQuery_*",
-                    "SearchFriendsQuery_*"
+                    "SearchFriendsQuery_*",
+                    "GetAdminFriendshipsPagedQuery_*"
                 }
             },
 
             // ==================== OFFLINE DOWNLOAD ====================
-            { typeof(CreateOfflineDownloadCommand), new[] { "GetProfileDownloadsQuery_*" } },
-            { typeof(DeleteOfflineDownloadCommand), new[] { "GetProfileDownloadsQuery_*" } },
+            { typeof(CreateOfflineDownloadCommand), new[] { "GetProfileDownloadsQuery_*", "GetAdminOfflineDownloadsPagedQuery_*" } },
+            { typeof(DeleteOfflineDownloadCommand), new[] { "GetProfileDownloadsQuery_*", "GetAdminOfflineDownloadsPagedQuery_*" } },
 
             // ==================== PLAYBACK EVENT ====================
             // Playback events are write‑only, no invalidation needed (admin queries have very short TTL anyway).
         };
-
-
     }
 }
