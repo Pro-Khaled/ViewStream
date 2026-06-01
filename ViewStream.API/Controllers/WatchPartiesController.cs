@@ -8,8 +8,9 @@ using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchParty;
 using Microsoft.AspNetCore.RateLimiting;
-
 using ViewStream.Application.Commands.WatchParty.EndWatchParty;
+using ViewStream.Application.Commands.WatchParty.ForceCloseWatchParty;
+using ViewStream.Application.Commands.WatchParty.DeleteWatchPartyAdmin;
 
 namespace ViewStream.Api.Controllers;
 
@@ -263,4 +264,43 @@ public class AdminWatchPartiesController : ControllerBase
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Force closes (ends) an active watch party as administrator.
+    /// </summary>
+    /// <param name="id">The ID of the watch party to end.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpPost("{id:long}/end")]
+    [Authorize(Roles = "SuperAdmin,Moderator")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ForceClose(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new ForceCloseWatchPartyCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Permanently or soft deletes a watch party as administrator.
+    /// </summary>
+    /// <param name="id">The ID of the watch party to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new DeleteWatchPartyAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
 }

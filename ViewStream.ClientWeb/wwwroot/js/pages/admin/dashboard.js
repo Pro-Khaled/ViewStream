@@ -1,4 +1,4 @@
-﻿pages.adminDashboard = (() => {
+pages.adminDashboard = (() => {
     let state = { stats: null, loading: true };
     async function load() {
         state.loading = true; render();

@@ -194,4 +194,41 @@ public class AdminSubscriptionsController : ControllerBase
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Retrieves a specific subscription by ID for administrators.
+    /// </summary>
+    /// <param name="id">The ID of the subscription.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The requested subscription.</returns>
+    [HttpGet("{id:long}")]
+    [ProducesResponseType(typeof(AdminSubscriptionListItemDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AdminSubscriptionListItemDto>> GetSubscription(long id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetSubscriptionByIdAdminQuery(id), cancellationToken);
+        if (result == null) return NotFound();
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Cancels a subscription as administrator.
+    /// </summary>
+    /// <param name="id">The ID of the subscription to cancel.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpPost("{id:long}/cancel")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CancelSubscription(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new CancelSubscriptionCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
 }

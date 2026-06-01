@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -7,6 +7,8 @@ using ViewStream.Application.Commands.WatchPartyParticipant.LeaveWatchParty;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.WatchPartyParticipant;
 using Microsoft.AspNetCore.RateLimiting;
+using ViewStream.Application.Commands.WatchPartyParticipant.RemoveWatchPartyParticipantAdmin;
+using ViewStream.Application.Common;
 
 namespace ViewStream.Api.Controllers;
 
@@ -108,4 +110,78 @@ public class WatchPartyParticipantsController : ControllerBase
     }
 
     #endregion
+}
+
+[ApiController]
+[Route("api/v1/admin/watchpartyparticipants")]
+[EnableRateLimiting("AdminRateLimit")]
+[Authorize(Roles = "SuperAdmin,ContentManager,Moderator")]
+[Produces("application/json")]
+public class AdminWatchPartyParticipantsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public AdminWatchPartyParticipantsController(IMediator mediator) => _mediator = mediator;
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Retrieves a paginated list of watch party participants for the admin dashboard.
+    /// </summary>
+    /// <param name="pageNumber">Page number (1-indexed).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="searchTerm">Optional search term.</param>
+    /// <param name="sortBy">Optional field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="includeDeleted">Whether to include soft-deleted records.</param>
+    /// <param name="watchPartyId">Optional watch party ID filter.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A paginated list of watch party participants.</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(PagedResult<WatchPartyParticipantDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<ActionResult<PagedResult<WatchPartyParticipantDto>>> GetAdminPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false,
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] long? watchPartyId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetAdminWatchPartyParticipantsPagedQuery(
+            pageNumber,
+            pageSize,
+            searchTerm,
+            sortBy,
+            sortDescending,
+            includeDeleted,
+            watchPartyId
+        );
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Removes a participant from a watch party as administrator.
+    /// </summary>
+    /// <param name="partyId">The ID of the watch party.</param>
+    /// <param name="profileId">The ID of the participant profile.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{partyId:long}/{profileId:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(long partyId, long profileId, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new RemoveWatchPartyParticipantAdminCommand(partyId, profileId, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
 }

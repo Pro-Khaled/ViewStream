@@ -1,4 +1,4 @@
-﻿pages.personDetail = (() => {
+pages.personDetail = (() => {
     let state = { person: null, credits: [], loading: true };
 
     async function load(id) {

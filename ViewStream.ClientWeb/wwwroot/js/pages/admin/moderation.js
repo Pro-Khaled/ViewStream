@@ -1,4 +1,4 @@
-﻿pages.adminModeration = (() => {
+pages.adminModeration = (() => {
     let state = { commentReports: [], contentReports: [], loading: true };
     async function loadData() {
         state.loading = true; render();

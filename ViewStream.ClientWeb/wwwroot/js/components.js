@@ -1,4 +1,4 @@
-﻿const Comp = (() => {
+const Comp = (() => {
     function pageLoader() { return '<div class="flex items-center justify-center py-20"><div class="spinner"></div></div>'; }
     function emptyState(icon, msg) { return `<div class="empty-state"><i class="fas ${icon}"></i><p>${toast.esc(msg)}</p></div>`; }
     function statCard(value, label, icon, color = 'text-vs-accent') {

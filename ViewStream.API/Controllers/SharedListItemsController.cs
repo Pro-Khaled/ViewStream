@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.SharedListItem.AddShowToSharedList;
+using ViewStream.Application.Commands.SharedListItem.DeleteSharedListItemAdmin;
 using ViewStream.Application.Commands.SharedListItem.RemoveShowFromSharedList;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.SharedListItem;
@@ -215,5 +216,31 @@ public class AdminSharedListItemsController : ControllerBase
 
         // Command returns the DTO; return 201 per requirement.
         return CreatedAtAction(nameof(GetAdminPaged), new { }, item);
+    }
+
+    /// <summary>
+    /// Permanently deletes a shared list item record (hard delete). SuperAdmin only.
+    /// </summary>
+    /// <param name="id">The ID (ShowId) of the shared list item to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Shared list item hard-deleted successfully.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="404">Item not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> DeleteSharedListItem(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        var result = await _mediator.Send(new DeleteSharedListItemAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 }

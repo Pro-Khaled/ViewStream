@@ -1,4 +1,4 @@
-﻿pages.register = {
+pages.register = {
     render() {
         return `<div class="min-h-screen flex items-center justify-center p-4 hero-gradient">
             <div class="w-full max-w-md">

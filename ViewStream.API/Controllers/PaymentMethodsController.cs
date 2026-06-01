@@ -9,6 +9,7 @@ using ViewStream.Application.Commands.PaymentMethod.UpdatePaymentMethod;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.PaymentMethod;
 using Microsoft.AspNetCore.RateLimiting;
+using ViewStream.Application.Commands.PaymentMethod.DeletePaymentMethodAdmin;
 using ViewStream.Application.Common;
 
 namespace ViewStream.Api.Controllers;
@@ -226,5 +227,26 @@ public class AdminPaymentMethodsController : ControllerBase
         var query = new GetAdminPaymentMethodsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Deletes a specific payment method as administrator.
+    /// </summary>
+    /// <param name="id">The ID of the payment method.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new DeletePaymentMethodAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 }

@@ -104,10 +104,10 @@ pages.adminContentSub = (() => {
             let row = `<tr>
                 <td class="text-vs-muted text-sm">${item.id || item.code}</td>
                 <td class="font-medium text-vs-text">${toast.esc(item.name)}</td>`;
-            if (type === 'tags') row += `<td class="text-xs text-vs-dim">${toast.esc(item.category || '—')}</td>`;
-            if (type !== 'persons') row += `<td class="text-sm text-vs-dim">${item.showCount ?? '—'}</td>`;
-            if (type === 'persons') row += `<td class="text-xs text-vs-dim">${toast.esc(item.nationality || '—')}</td>
-                <td class="text-sm text-vs-dim">${item.creditCount ?? '—'}</td>`;
+            if (type === 'tags') row += `<td class="text-xs text-vs-dim">${toast.esc(item.category || 'â€”')}</td>`;
+            if (type !== 'persons') row += `<td class="text-sm text-vs-dim">${item.showCount ?? 'â€”'}</td>`;
+            if (type === 'persons') row += `<td class="text-xs text-vs-dim">${toast.esc(item.nationality || 'â€”')}</td>
+                <td class="text-sm text-vs-dim">${item.creditCount ?? 'â€”'}</td>`;
             row += `<td class="text-right">
                 <div class="flex items-center justify-end gap-1.5">
                     <button class="btn btn-ghost btn-sm edit-item-btn" data-index="${data.indexOf(item)}" title="Edit"><i class="fas fa-edit text-xs"></i></button>

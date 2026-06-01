@@ -1,4 +1,4 @@
-﻿const store = (() => {
+const store = (() => {
     const _listeners = [];
     const _state = {
         user: null, isAuthenticated: false,

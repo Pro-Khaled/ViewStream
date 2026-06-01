@@ -1,9 +1,10 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ViewStream.Application.Commands.Device.CreateDevice;
 using ViewStream.Application.Commands.Device.DeleteDevice;
+using ViewStream.Application.Commands.Device.DeleteDeviceAdmin;
 using ViewStream.Application.Commands.Device.UpdateDevice;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Device;
@@ -162,6 +163,9 @@ public class AdminDevicesController : ControllerBase
 
     public AdminDevicesController(IMediator mediator) => _mediator = mediator;
 
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
     /// <summary>
     /// Retrieves a paginated list of devices for the admin dashboard.
     /// </summary>
@@ -196,5 +200,31 @@ public class AdminDevicesController : ControllerBase
         var query = new GetAdminDevicesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, userId);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Permanently deletes a device record (hard delete). SuperAdmin only.
+    /// </summary>
+    /// <param name="id">The ID of the device to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Device hard-deleted successfully.</response>
+    /// <response code="401">Unauthorized - authentication required.</response>
+    /// <response code="403">Forbidden - insufficient permissions.</response>
+    /// <response code="404">Device not found.</response>
+    /// <response code="429">Too many requests. Please wait before trying again.</response>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> DeleteDevice(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new DeleteDeviceAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 }

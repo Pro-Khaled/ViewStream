@@ -7,6 +7,7 @@ using ViewStream.Application.Commands.OfflineDownload.DeleteOfflineDownload;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.OfflineDownload;
 using Microsoft.AspNetCore.RateLimiting;
+using ViewStream.Application.Commands.OfflineDownload.DeleteOfflineDownloadAdmin;
 using ViewStream.Application.Common;
 
 namespace ViewStream.Api.Controllers;
@@ -149,6 +150,27 @@ public class AdminOfflineDownloadsController : ControllerBase
         var query = new GetAdminOfflineDownloadsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Deletes a specific offline download record as administrator.
+    /// </summary>
+    /// <param name="id">The ID of the download record.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new DeleteOfflineDownloadAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 }
 

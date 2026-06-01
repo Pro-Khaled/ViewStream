@@ -58,7 +58,7 @@ pages.adminMisc = (() => {
 
         const rows = invoiceListState.data.items?.map(inv => `<tr>
             <td class="text-vs-muted text-sm">${inv.id}</td>
-            <td class="font-medium text-vs-text">${toast.esc(inv.userEmail || '—')}</td>
+            <td class="font-medium text-vs-text">${toast.esc(inv.userEmail || 'â€”')}</td>
             <td>$${(inv.amount || 0).toFixed(2)}</td>
             <td>${utils.statusBadge(inv.status)}</td>
             <td class="text-vs-muted text-sm">${utils.formatDateShort(inv.invoiceDate)}</td>
@@ -181,7 +181,7 @@ pages.adminMisc = (() => {
                     ${Comp.detailRow('User Email', toast.esc(r.userEmail))}
                     ${Comp.detailRow('Status', utils.statusBadge(r.status))}
                     ${Comp.detailRow('Requested At', utils.formatDateShort(r.requestedAt))}
-                    ${Comp.detailRow('Confirmation Code', '<span class="font-mono">' + toast.esc(r.confirmationCode || '—') + '</span>')}
+                    ${Comp.detailRow('Confirmation Code', '<span class="font-mono">' + toast.esc(r.confirmationCode || 'â€”') + '</span>')}
                 </div>`,
                 {
                     footer: `<button class="btn btn-secondary" onclick="modal.close()">Close</button>

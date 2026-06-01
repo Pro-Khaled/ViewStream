@@ -9,7 +9,7 @@ using ViewStream.Application.Common;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.UserLibrary;
 using Microsoft.AspNetCore.RateLimiting;
-
+using ViewStream.Application.Commands.UserLibrary.DeleteUserLibraryAdmin;
 
 namespace ViewStream.Api.Controllers;
 
@@ -271,5 +271,26 @@ public class AdminUserLibrariesController : ControllerBase
         var query = new GetAdminUserLibrariesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Deletes a specific library entry as administrator.
+    /// </summary>
+    /// <param name="id">The ID of the library entry.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new DeleteUserLibraryAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 }

@@ -9,6 +9,7 @@ using ViewStream.Application.Commands.Profile.SwitchActiveProfile;
 using ViewStream.Application.Commands.Profile.UpdateProfile;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.Profile;
+using ViewStream.Application.Commands.Profile.AdminDeleteProfile;
 using Microsoft.AspNetCore.RateLimiting;
 using ViewStream.Application.Common;
 
@@ -257,6 +258,43 @@ public class AdminProfilesController : ControllerBase
         var query = new GetAdminProfilesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Retrieves a specific profile by ID for administrators.
+    /// </summary>
+    /// <param name="id">The ID of the profile.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The requested profile.</returns>
+    [HttpGet("{id:long}")]
+    [ProducesResponseType(typeof(ProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProfileDto>> GetProfile(long id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new GetProfileByIdAdminQuery(id), cancellationToken);
+        if (result == null) return NotFound();
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Deletes a specific profile as administrator.
+    /// </summary>
+    /// <param name="id">The ID of the profile to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteProfile(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new AdminDeleteProfileCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 
     /// <summary>

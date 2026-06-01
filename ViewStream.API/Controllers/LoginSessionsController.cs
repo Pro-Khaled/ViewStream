@@ -9,6 +9,8 @@ using ViewStream.Application.Queries.LoginSession;
 using Microsoft.AspNetCore.RateLimiting;
 using ViewStream.Application.Common;
 
+using ViewStream.Application.Commands.LoginSession.RevokeLoginSessionAdmin;
+
 namespace ViewStream.Api.Controllers;
 
 [ApiController]
@@ -107,6 +109,9 @@ public class AdminLoginSessionsController : ControllerBase
 
     public AdminLoginSessionsController(IMediator mediator) => _mediator = mediator;
 
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
     /// <summary>
     /// Retrieves a paginated list of login sessions for the admin dashboard.
     /// </summary>
@@ -139,6 +144,43 @@ public class AdminLoginSessionsController : ControllerBase
         var query = new GetAdminLoginSessionsPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Revokes (deletes) a specific login session.
+    /// </summary>
+    /// <param name="id">The ID of the session to revoke.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Session revoked successfully.</response>
+    /// <response code="404">Session not found.</response>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RevokeSession(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new RevokeLoginSessionAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Revokes all login sessions for a specific user.
+    /// </summary>
+    /// <param name="userId">The ID of the user whose sessions should be revoked.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">All sessions revoked successfully.</response>
+    [HttpDelete("user/{userId:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> RevokeAllForUser(long userId, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        await _mediator.Send(new RevokeAllUserSessionsCommand(userId, adminUserId), cancellationToken);
+        return NoContent();
     }
 }
 

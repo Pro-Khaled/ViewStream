@@ -305,4 +305,23 @@ public class AdminRatingsController : ControllerBase
         // Upsert command does not distinguish created vs updated reliably; return 200 OK (acceptable per requirements).
         return Ok(rating);
     }
+
+    /// <summary>
+    /// Deletes a specific rating as administrator.
+    /// </summary>
+    /// <param name="profileId">The ID of the profile.</param>
+    /// <param name="showId">The ID of the show.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{profileId:long}/{showId:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteRating(long profileId, long showId, CancellationToken cancellationToken)
+    {
+        var adminUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        var result = await _mediator.Send(new DeleteRatingCommand(profileId, showId, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
+    }
 }

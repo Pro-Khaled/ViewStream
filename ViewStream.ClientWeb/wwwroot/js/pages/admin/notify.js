@@ -20,11 +20,11 @@ pages.adminNotify = {
             const body = document.getElementById('an-body').value;
             const type = document.getElementById('an-type').value;
             try {
-                // Pass both email and userId:0 — backend resolves userId from email
+                // Pass both email and userId:0 â€” backend resolves userId from email
                 await api.post('/admin/notifications', { email, userId: 0, title, body, notificationType: type });
                 toast.success('Notification sent to ' + email);
                 e.target.reset();
             } catch (err) { toast.error(err.message); }
         });
     }
-};
+};

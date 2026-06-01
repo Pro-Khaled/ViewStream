@@ -7,7 +7,7 @@ using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.UserPromoUsage;
 using Microsoft.AspNetCore.RateLimiting;
 using ViewStream.Application.Common;
-
+using ViewStream.Application.Commands.UserPromoUsage.DeleteUserPromoUsageAdmin;
 
 namespace ViewStream.Api.Controllers;
 
@@ -136,5 +136,27 @@ public class AdminUserPromoUsagesController : ControllerBase
         var query = new GetAdminUserPromoUsagesPagedQuery(pageNumber, pageSize, searchTerm, sortBy, sortDescending, includeDeleted, userId, promoCodeId);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    private long GetCurrentUserId() =>
+        long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+    /// <summary>
+    /// Deletes a user promo usage record as administrator.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="promoCodeId">The ID of the promo code.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{userId:long}/{promoCodeId:int}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(long userId, int promoCodeId, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new DeleteUserPromoUsageAdminCommand(userId, promoCodeId, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 }

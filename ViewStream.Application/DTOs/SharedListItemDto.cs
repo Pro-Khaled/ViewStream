@@ -69,17 +69,32 @@ namespace ViewStream.Application.DTOs
     /// </summary>
     public class AdminSharedListItemListItemDto
     {
+        /// <summary>Synthetic identifier for frontend use (mapped from ShowId).</summary>
+        public long Id { get; set; }
+
         /// <summary>Gets or sets the ID of the shared list.</summary>
         public long ListId { get; set; }
 
         /// <summary>Gets or sets the ID of the show.</summary>
         public long ShowId { get; set; }
 
-        /// <summary>Gets or sets the title of the show.</summary>
+        /// <summary>Gets or sets the title of the show (also exposed as ContentTitle).</summary>
         public string? ShowTitle { get; set; }
+
+        /// <summary>Gets or sets the content title for the admin frontend.</summary>
+        public string? ContentTitle { get; set; }
+
+        /// <summary>Gets or sets the content type label for the admin frontend.</summary>
+        public string? ContentType { get; set; }
+
+        /// <summary>Gets or sets the list title for the admin frontend.</summary>
+        public string? ListTitle { get; set; }
 
         /// <summary>Gets or sets the display name of the profile that added this item.</summary>
         public string? AddedByProfileName { get; set; }
+
+        /// <summary>Gets or sets the email of the user who added this item.</summary>
+        public string? AddedByEmail { get; set; }
 
         /// <summary>Gets or sets the UTC timestamp when the item was added.</summary>
         public DateTime? AddedAt { get; set; }
@@ -87,4 +102,3 @@ namespace ViewStream.Application.DTOs
         public string? ListName { get; set; }
     }
 }
-

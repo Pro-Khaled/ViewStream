@@ -1,4 +1,4 @@
-﻿pages.persons = (() => {
+pages.persons = (() => {
     let state = { persons: [], loading: true };
 
     async function load() {

@@ -1,4 +1,4 @@
-﻿pages.adminErrors = (() => {
+pages.adminErrors = (() => {
     let state = { page: 1, filters: {}, data: null, loading: true };
     let sortKey = 'occurredAt';
     let sortDir = 'desc';

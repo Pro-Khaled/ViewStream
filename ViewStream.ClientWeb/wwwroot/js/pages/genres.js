@@ -1,4 +1,4 @@
-﻿pages.genres = (() => {
+pages.genres = (() => {
     let state = { genres: [], loading: true };
 
     async function load() {

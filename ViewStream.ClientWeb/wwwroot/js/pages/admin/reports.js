@@ -1,4 +1,4 @@
-﻿pages.adminReports = (() => {
+pages.adminReports = (() => {
     let activeTab = 'comments'; // 'comments' or 'content'
     let commentState = { page: 1, status: '', data: null, loading: true };
     let contentState = { page: 1, status: '', targetType: '', data: null, loading: true };
@@ -9,7 +9,7 @@
     async function loadComments() {
         commentState.loading = true; render();
         try {
-            commentState.data = await api.get('/admin/reports/comments', {
+            commentState.data = await api.get('/admin/commentreports', {
                 page: commentState.page,
                 pageSize: CONFIG.PAGE_SIZE,
                 status: commentState.status || undefined,
@@ -23,7 +23,7 @@
     async function loadContent() {
         contentState.loading = true; render();
         try {
-            contentState.data = await api.get('/admin/reports/content', {
+            contentState.data = await api.get('/admin/contentreports', {
                 page: contentState.page,
                 pageSize: CONFIG.PAGE_SIZE,
                 status: contentState.status || undefined,
@@ -159,7 +159,7 @@
     async function showCommentDetail(id) {
         modal.open('Comment Report #' + id, Comp.pageLoader());
         try {
-            const r = await api.get(`/admin/reports/comments/${id}`);
+            const r = await api.get(`/admin/commentreports/${id}`);
             modal.open('Comment Report #' + r.id,
                 `<div class="detail-grid">
                     ${Comp.detailRow('ID', r.id)}
@@ -175,7 +175,7 @@
                 }
             );
             document.getElementById('cr-update')?.addEventListener('click', async () => {
-                await api.put(`/admin/reports/comments/${id}/status`, { status: document.getElementById('cr-status-select').value });
+                await api.put(`/admin/commentreports/${id}/status`, { status: document.getElementById('cr-status-select').value });
                 toast.success('Status updated');
                 modal.close();
                 loadComments();
@@ -186,7 +186,7 @@
     async function showContentDetail(id) {
         modal.open('Content Report #' + id, Comp.pageLoader());
         try {
-            const r = await api.get(`/admin/reports/content/${id}`);
+            const r = await api.get(`/admin/contentreports/${id}`);
             modal.open('Content Report #' + r.id,
                 `<div class="detail-grid">
                     ${Comp.detailRow('ID', r.id)}
@@ -202,7 +202,7 @@
                 }
             );
             document.getElementById('ctr-update')?.addEventListener('click', async () => {
-                await api.put(`/admin/reports/content/${id}/status`, { status: document.getElementById('ctr-status-select').value });
+                await api.put(`/admin/contentreports/${id}/status`, { status: document.getElementById('ctr-status-select').value });
                 toast.success('Status updated');
                 modal.close();
                 loadContent();

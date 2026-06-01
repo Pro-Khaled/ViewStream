@@ -1,4 +1,4 @@
-﻿const CONFIG = {
+const CONFIG = {
     API_BASE: 'https://localhost:7163/api/v1',   // your real backend URL
     TOKEN_KEY: 'vs_access_token',
     REFRESH_KEY: 'vs_refresh_token',

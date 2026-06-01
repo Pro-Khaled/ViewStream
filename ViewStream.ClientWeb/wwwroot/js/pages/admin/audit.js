@@ -1,4 +1,4 @@
-﻿pages.adminAudit = (() => {
+pages.adminAudit = (() => {
     let state = { page: 1, filters: {}, data: null, loading: true };
     let sortKey = 'changedAt';
     let sortDir = 'desc';

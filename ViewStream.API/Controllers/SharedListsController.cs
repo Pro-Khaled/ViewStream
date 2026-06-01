@@ -9,6 +9,7 @@ using ViewStream.Application.Commands.SharedList.UpdateSharedList;
 using ViewStream.Application.Commands.SharedList.RestoreSharedList;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Queries.SharedList;
+using ViewStream.Application.Commands.SharedList.DeleteSharedListAdmin;
 using Microsoft.AspNetCore.RateLimiting;
 using ViewStream.Application.Common;
 
@@ -268,6 +269,24 @@ public class AdminSharedListsController : ControllerBase
         if (!restored)
             return NotFound();
 
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Deletes a specific shared list as administrator.
+    /// </summary>
+    /// <param name="id">The ID of the shared list to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteSharedList(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await _mediator.Send(new DeleteSharedListAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
         return NoContent();
     }
 }

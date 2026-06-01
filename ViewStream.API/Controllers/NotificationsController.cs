@@ -7,10 +7,10 @@ using ViewStream.Application.Commands.Notification.MarkAllNotificationsAsRead;
 using ViewStream.Application.Commands.Notification.MarkNotificationAsRead;
 using ViewStream.Application.Commands.Notification.CreateNotification;
 using ViewStream.Application.DTOs;
+using ViewStream.Application.Commands.Notification.DeleteNotificationAdmin;
 using ViewStream.Application.Queries.Notification;
 using Microsoft.AspNetCore.RateLimiting;
 using ViewStream.Application.Common;
-
 
 namespace ViewStream.Api.Controllers;
 
@@ -206,5 +206,25 @@ public class AdminNotificationsController : ControllerBase
         var userId = GetCurrentUserId();
         var notification = await _mediator.Send(new CreateNotificationCommand(dto, userId), cancellationToken);
         return CreatedAtAction(nameof(SendNotification), null, notification);
+    }
+
+    /// <summary>
+    /// Deletes a notification by ID.
+    /// </summary>
+    /// <param name="id">The ID of the notification to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Notification deleted successfully.</response>
+    /// <response code="404">Notification not found.</response>
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "SuperAdmin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteNotification(long id, CancellationToken cancellationToken)
+    {
+        var adminUserId = GetCurrentUserId();
+        var result = await _mediator.Send(new DeleteNotificationAdminCommand(id, adminUserId), cancellationToken);
+        if (!result) return NotFound();
+        return NoContent();
     }
 }

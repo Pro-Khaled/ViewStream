@@ -1,4 +1,4 @@
-﻿pages.notFound = {
+pages.notFound = {
     render() {
         return `<div class="flex flex-col items-center justify-center py-32 text-center">
             <div class="w-24 h-24 rounded-full bg-vs-card flex items-center justify-center mb-6">

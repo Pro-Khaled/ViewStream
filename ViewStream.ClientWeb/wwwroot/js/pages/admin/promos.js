@@ -1,4 +1,4 @@
-﻿pages.adminPromos = (() => {
+pages.adminPromos = (() => {
     let state = { page: 1, data: null, loading: true };
     let sortKey = 'code';
     let sortDir = 'asc';

@@ -1,4 +1,4 @@
-﻿pages.adminDeletion = (() => {
+pages.adminDeletion = (() => {
     let state = { page: 1, data: null, loading: true };
     let sortKey = 'requestedAt';
     let sortDir = 'desc';

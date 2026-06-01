@@ -148,7 +148,7 @@ pages.confirmEmail = {
         return `<div class="min-h-screen flex items-center justify-center p-4">
             <div class="card p-8 w-full max-w-md text-center" id="confirm-container">
                 <div class="spinner mx-auto mb-4"></div>
-                <p class="text-muted">Verifying your email…</p>
+                <p class="text-muted">Verifying your emailâ€¦</p>
             </div>
         </div>`;
     },

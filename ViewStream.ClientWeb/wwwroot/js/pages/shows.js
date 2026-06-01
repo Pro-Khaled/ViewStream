@@ -1,4 +1,4 @@
-﻿pages.shows = (() => {
+pages.shows = (() => {
     let state = { page: 1, search: '', genreId: '', year: '', orderBy: '', data: null, genres: [], loading: true };
 
     async function load() {
@@ -13,13 +13,16 @@
                     genreId: state.genreId || undefined,
                     year: state.year || undefined,
                     orderBy: state.orderBy || undefined,
-                    isDescending: true
+                    isDescending: state.orderBy ? true : undefined
                 }),
                 api.get('/genres/all')
             ]);
             state.data = showsRes;
             state.genres = genresRes;
-        } catch (err) { toast.error('Failed to load shows'); state.data = null; }
+        } catch (err) {
+            toast.error('Failed to load shows: ' + err.message);
+            state.data = null;
+        }
         state.loading = false;
         render();
     }
@@ -31,16 +34,37 @@
         let h = Comp.pageHeader('Shows', 'Browse the catalog');
 
         // Search & filter bar
-        h += `<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div class="flex items-center gap-3 w-full sm:w-auto">
-                <div class="relative flex-1 sm:w-56">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-vs-muted text-sm"></i>
-                    <input type="text" id="shows-search" value="${toast.esc(state.search)}" placeholder="Search..." class="w-full bg-vs-card border border-vs-border rounded-lg pl-9 pr-4 py-2 text-sm text-vs-text placeholder:text-vs-muted focus:outline-none focus:border-vs-accent/50 transition-all">
+        h += `<div class="card p-4 mb-6">
+            <div class="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full">
+                <div class="relative flex-1 w-full">
+                    <label class="form-label">Search</label>
+                    <div class="relative mt-1">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-vs-muted text-sm"></i>
+                        <input type="text" id="shows-search" value="${toast.esc(state.search)}" placeholder="Search shows..." class="w-full bg-vs-surface border border-vs-border rounded-lg pl-9 pr-4 py-2 text-sm text-vs-text placeholder:text-vs-muted focus:outline-none focus:border-vs-accent/50 transition-all">
+                    </div>
                 </div>
-                <select id="shows-genre" class="bg-vs-card border border-vs-border rounded-lg px-3 py-2 text-sm text-vs-text focus:outline-none focus:border-vs-accent/50">
-                    <option value="">All Genres</option>
-                    ${state.genres.map(g => `<option value="${g.id}" ${state.genreId == g.id ? 'selected' : ''}>${toast.esc(g.name)}</option>`).join('')}
-                </select>
+                <div class="w-full sm:w-48">
+                    <label class="form-label">Genre</label>
+                    <select id="shows-genre" class="w-full bg-vs-surface border border-vs-border rounded-lg px-3 py-2 text-sm text-vs-text focus:outline-none focus:border-vs-accent/50 mt-1">
+                        <option value="">All Genres</option>
+                        ${state.genres.map(g => `<option value="${g.id}" ${state.genreId == g.id ? 'selected' : ''}>${toast.esc(g.name)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="w-full sm:w-28">
+                    <label class="form-label">Release Year</label>
+                    <input type="number" id="shows-year" value="${state.year || ''}" placeholder="e.g. 2026" class="w-full bg-vs-surface border border-vs-border rounded-lg px-3 py-2 text-sm text-vs-text focus:outline-none focus:border-vs-accent/50 mt-1">
+                </div>
+                <div class="w-full sm:w-48">
+                    <label class="form-label">Sort By</label>
+                    <select id="shows-order-by" class="w-full bg-vs-surface border border-vs-border rounded-lg px-3 py-2 text-sm text-vs-text focus:outline-none focus:border-vs-accent/50 mt-1">
+                        <option value="">Default Order</option>
+                        <option value="addedAt" ${state.orderBy === 'addedAt' ? 'selected' : ''}>Recently Added</option>
+                        <option value="imdbRating" ${state.orderBy === 'imdbRating' ? 'selected' : ''}>IMDb Rating</option>
+                        <option value="rottenTomatoesScore" ${state.orderBy === 'rottenTomatoesScore' ? 'selected' : ''}>Tomatoes Score</option>
+                        <option value="releaseYear" ${state.orderBy === 'releaseYear' ? 'selected' : ''}>Release Year</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-sm w-full sm:w-auto h-[38px] mt-1" id="shows-filter-btn">Filter</button>
             </div>
         </div>`;
 
@@ -57,63 +81,46 @@
         }
 
         c.innerHTML = h;
+        bindEvents();
+    }
 
-        // Bind events
+    function bindEvents() {
         const searchInput = document.getElementById('shows-search');
         const genreSelect = document.getElementById('shows-genre');
-        let searchTimeout;
-        searchInput?.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                state.search = searchInput.value.trim();
-                state.genreId = genreSelect.value;
-                state.page = 1;
-                load();
-            }, 400);
-        });
-        genreSelect?.addEventListener('change', () => {
-            state.genreId = genreSelect.value;
-            state.search = searchInput.value.trim();
+        const yearInput = document.getElementById('shows-year');
+        const orderBySelect = document.getElementById('shows-order-by');
+        const filterBtn = document.getElementById('shows-filter-btn');
+
+        const applyFilters = () => {
+            state.search = searchInput?.value.trim() || '';
+            state.genreId = genreSelect?.value || '';
+            state.year = yearInput?.value.trim() || '';
+            state.orderBy = orderBySelect?.value || '';
             state.page = 1;
             load();
-        });
+        };
 
-        // Detail modal on card click (delegated)
-        c.addEventListener('click', e => {
+        filterBtn?.addEventListener('click', applyFilters);
+
+        // Also allow pressing Enter in inputs to submit
+        const pressEnter = e => { if (e.key === 'Enter') applyFilters(); };
+        searchInput?.addEventListener('keypress', pressEnter);
+        yearInput?.addEventListener('keypress', pressEnter);
+
+        // Automatic reload on dropdown change for UX
+        genreSelect?.addEventListener('change', applyFilters);
+        orderBySelect?.addEventListener('change', applyFilters);
+
+        // Card click navigates to showDetail page instead of intercepting
+        const c = document.getElementById('shows-content');
+        c?.addEventListener('click', e => {
             const card = e.target.closest('.show-card');
             if (card) {
                 e.preventDefault();
-                const id = card.getAttribute('href').split('/').pop();
-                showDetail(parseInt(id));
+                const path = card.getAttribute('href');
+                window.location.hash = path;
             }
         });
-    }
-
-    async function showDetail(id) {
-        modal.open('Show Details', Comp.pageLoader(), { large: true });
-        try {
-            const show = await api.get(`/shows/${id}`);
-            const genres = (show.genres || []).map(g => `<span class="badge badge-info">${toast.esc(g)}</span>`).join(' ');
-            const tags = (show.tags || []).map(t => `<span class="badge badge-muted">${toast.esc(t)}</span>`).join(' ');
-            modal.open(`Show #${show.id}`,
-                `<div class="detail-grid">
-                    ${Comp.detailRow('ID', show.id)}
-                    ${Comp.detailRow('Title', toast.esc(show.title))}
-                    ${Comp.detailRow('Description', show.description ? utils.truncate(show.description, 200) : '—')}
-                    ${Comp.detailRow('Release Year', show.releaseYear || '—')}
-                    ${Comp.detailRow('Maturity', show.maturityRating || '—')}
-                    ${Comp.detailRow('Runtime', show.runtimeMinutes ? show.runtimeMinutes + ' min' : '—')}
-                    ${Comp.detailRow('IMDb', show.imdbRating || '—')}
-                    ${Comp.detailRow('Tomatoes', show.rottenTomatoesScore != null ? show.rottenTomatoesScore + '%' : '—')}
-                    ${Comp.detailRow('Seasons', show.seasonCount)}
-                    ${Comp.detailRow('Episodes', show.episodeCount)}
-                    ${Comp.detailRow('Added', utils.formatDate(show.addedAt))}
-                    ${Comp.detailRow('Updated', utils.formatDate(show.updatedAt))}
-                </div>
-                <div class="mt-4"><div class="detail-label mb-2">Genres</div><div class="flex flex-wrap gap-2">${genres}</div></div>
-                ${tags ? `<div class="mt-4"><div class="detail-label mb-2">Tags</div><div class="flex flex-wrap gap-2">${tags}</div></div>` : ''}`,
-                { large: true });
-        } catch (err) { toast.error('Failed to load show details'); modal.close(); }
     }
 
     return {
