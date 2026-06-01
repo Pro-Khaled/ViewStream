@@ -12,8 +12,8 @@ using ViewStream.Infrastructure.Persistence;
 namespace ViewStream.Infrastructure.Migrations
 {
     [DbContext(typeof(ViewStreamDbContext))]
-    [Migration("20260523223718_add-to-some-table-createdat_isdeleted")]
-    partial class addtosometablecreatedat_isdeleted
+    [Migration("20260525183839_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2233,19 +2233,9 @@ namespace ViewStream.Infrastructure.Migrations
                     b.Property<long>("Id")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("RoleId1")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("UserId1")
-                        .HasColumnType("bigint");
-
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
-
-                    b.HasIndex("RoleId1");
-
-                    b.HasIndex("UserId1");
 
                     b.ToTable("UserRoles", (string)null);
                 });
@@ -3093,27 +3083,11 @@ namespace ViewStream.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ViewStream.Domain.Entities.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ViewStream.Domain.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ViewStream.Domain.Entities.User", "User")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.UserToken", b =>
@@ -3291,11 +3265,6 @@ namespace ViewStream.Infrastructure.Migrations
                     b.Navigation("UserPromoUsages");
                 });
 
-            modelBuilder.Entity("ViewStream.Domain.Entities.Role", b =>
-                {
-                    b.Navigation("UserRoles");
-                });
-
             modelBuilder.Entity("ViewStream.Domain.Entities.Season", b =>
                 {
                     b.Navigation("Credits");
@@ -3373,8 +3342,6 @@ namespace ViewStream.Infrastructure.Migrations
                     b.Navigation("Subscriptions");
 
                     b.Navigation("UserPromoUsages");
-
-                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("ViewStream.Domain.Entities.WatchParty", b =>
