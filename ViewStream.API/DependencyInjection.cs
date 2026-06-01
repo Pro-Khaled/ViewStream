@@ -58,7 +58,7 @@ namespace ViewStream.API
             {
                 options.AddPolicy("AllowClient", policy =>
                 {
-                    policy.WithOrigins("https://localhost:7259") // Client URL 
+                    policy.WithOrigins("https://localhost:7259", "http://localhost:5014") // Client URL 
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
