@@ -1,0 +1,13 @@
+services:
+  viewstream.api:
+    image: ${DOCKER_REGISTRY-}viewstreamapi
+    build:
+      context: .
+      dockerfile: ViewStream.API/Dockerfile
+
+  viewstream.clientweb:
+    image: ${DOCKER_REGISTRY-}viewstreamclientweb
+    build:
+      context: .
+      dockerfile: ViewStream.ClientWeb/Dockerfile
+
