@@ -31,6 +31,9 @@ public partial class Episode
 
     public DateOnly? ReleaseDate { get; set; }
 
+    public string? HlsMasterUrl { get; set; }
+    public int? DurationSeconds { get; set; }
+
     public bool? IsDeleted { get; set; }
 
     public DateTime? DeletedAt { get; set; }

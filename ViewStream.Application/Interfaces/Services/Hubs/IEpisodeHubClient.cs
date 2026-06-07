@@ -17,5 +17,8 @@ namespace ViewStream.Application.Interfaces.Services.Hubs
         // New methods for audio and subtitles
         Task SendAudioTrackFileUpdatedAsync(AudioTrackDto audioTrack, CancellationToken cancellationToken = default);
         Task SendSubtitleFileUpdatedAsync(SubtitleDto subtitle, CancellationToken cancellationToken = default);
+
+        // New method for HLS transcoding completion
+        Task NotifyEpisodeUpdated(long episodeId, CancellationToken cancellationToken = default);
     }
 }

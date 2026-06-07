@@ -1,3 +1,4 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -22,6 +23,10 @@ namespace ViewStream.Application
 
             // Register AutoMapper
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+            // Register FluentValidation validators
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 
             //Register AuditLogBehavior for all IAuditableCommand handlers

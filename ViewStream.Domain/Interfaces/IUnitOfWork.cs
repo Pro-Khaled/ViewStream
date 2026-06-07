@@ -77,5 +77,8 @@ namespace ViewStream.Domain.Interfaces
         IWatchPartyParticipantRepository WatchPartyParticipants { get; }
 
         IRefreshTokenRepository RefreshTokens { get; }
+
+        IVideoProcessingJobRepository VideoProcessingJobs { get; }
+
     }
 }

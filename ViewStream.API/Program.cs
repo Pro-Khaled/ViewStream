@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -5,6 +6,7 @@ using ViewStream.Api.Hubs;
 using ViewStream.Api.Middleware;
 using ViewStream.API;
 using ViewStream.API.Hubs;
+using ViewStream.API.Jobs;
 using ViewStream.Infrastructure.Seeding;
 using ViewStream.Shared.Options;
 var builder = WebApplication.CreateBuilder(args);
@@ -64,8 +66,23 @@ app.UseHttpsRedirection();
 //app.MapGet("/config-test", (IOptions<JwtOptions> opts) =>
 //    new { opts.Value.Key, opts.Value.Issuer, opts.Value.Audience });
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+    RequestPath = "/uploads"
+});
+
 app.MapControllers();
 app.MapHub<EpisodeHub>("/hubs/episode");
 app.MapHub<ShowHub>("/hubs/show");
+app.MapHub<NotificationHub>("/hubs/notification");
+
+// Health Checks endpoint
+app.MapHealthChecks("/health");
+
+RecurringJob.AddOrUpdate<NotificationRetryJob>(
+    "notification-retry",
+    job => job.Execute(),
+    Cron.Hourly);
 
 app.Run();

@@ -3,9 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Hangfire;
+using Hangfire.SqlServer;
+using MassTransit;
 using ViewStream.Application.Interfaces.Services;
 using ViewStream.Domain.Entities;
 using ViewStream.Domain.Interfaces;
+using ViewStream.Infrastructure.MessageBus;
 using ViewStream.Infrastructure.Persistence;
 using ViewStream.Infrastructure.Repositories;
 using ViewStream.Infrastructure.Services;
@@ -91,7 +95,48 @@ namespace ViewStream.Infrastructure
             // Register Audit Context
             services.AddScoped<IAuditContext, AuditContext>();
 
+            // Register Hangfire with SQL Server storage
+            services.AddHangfire((serviceProvider, config) =>
+            {
+                var connectionOptions = serviceProvider.GetRequiredService<IOptions<DatabaseConnectionOptions>>().Value;
+                var hangfireOptions = serviceProvider.GetRequiredService<IOptions<HangfireOptions>>().Value;
 
+                config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                      .UseSimpleAssemblyNameTypeSerializer()
+                      .UseRecommendedSerializerSettings()
+                      .UseSqlServerStorage(
+                          connectionOptions.DefaultConnection,
+                          new SqlServerStorageOptions
+                          {
+                              CommandBatchMaxTimeout = TimeSpan.FromSeconds(hangfireOptions.CommandBatchMaxTimeoutSeconds),
+                              SlidingInvisibilityTimeout = TimeSpan.FromSeconds(hangfireOptions.SlidingInvisibilityTimeoutSeconds),
+                              QueuePollInterval = TimeSpan.FromMilliseconds(hangfireOptions.QueuePollIntervalMilliseconds),
+                              UseRecommendedIsolationLevel = true,
+                              DisableGlobalLocks = hangfireOptions.DisableGlobalLocks
+                          });
+            });
+
+            services.AddHangfireServer();
+
+            // Register Thumbnail Service
+            services.AddScoped<IThumbnailService, ThumbnailService>();
+
+            // Register MassTransit with RabbitMQ
+            services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    var rabbitOptions = context.GetRequiredService<IOptions<RabbitMQOptions>>().Value;
+                    cfg.Host(rabbitOptions.Host, "/", h =>
+                    {
+                        h.Username(rabbitOptions.Username);
+                        h.Password(rabbitOptions.Password);
+                    });
+                });
+            });
+
+            services.AddMassTransitHostedService();
+            services.AddScoped<IMessageBus, MassTransitMessageBus>();
 
 
             return services;

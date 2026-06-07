@@ -129,6 +129,9 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
 
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+    public DbSet<VideoProcessingJob> VideoProcessingJobs { get; set; } = null!;
+
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -896,6 +899,15 @@ public partial class ViewStreamDbContext : IdentityDbContext<User, Role, long, U
             entity.HasOne(d => d.Profile).WithMany(p => p.WatchPartyParticipants)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__WatchPart__Profi__7EF6D905");
+        });
+
+        modelBuilder.Entity<VideoProcessingJob>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Episode)
+                  .WithMany()
+                  .HasForeignKey(e => e.EpisodeId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         OnModelCreatingPartial(modelBuilder);

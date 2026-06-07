@@ -7,6 +7,7 @@ namespace ViewStream.Infrastructure.Services;
 public class LocalFileStorageService : IFileStorageService
 {
     private readonly IWebHostEnvironment _environment;
+    private readonly string _webRootPath;                     // Physical root (wwwroot)
     private readonly string _videoFolder = "uploads/episodes";
     private readonly string _thumbnailFolder = "uploads/thumbnails";
     private readonly string _posterFolder = "uploads/shows/posters";
@@ -19,6 +20,7 @@ public class LocalFileStorageService : IFileStorageService
     public LocalFileStorageService(IWebHostEnvironment environment)
     {
         _environment = environment;
+        _webRootPath = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
     }
 
     // Episode files
@@ -104,5 +106,48 @@ public class LocalFileStorageService : IFileStorageService
         var fullPath = Path.Combine(_environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath.TrimStart('/'));
         if (File.Exists(fullPath))
             File.Delete(fullPath);
+    }
+
+    public async Task DownloadToLocalAsync(string remotePath, string localPath)
+    {
+        var fullSourcePath = Path.Combine(_webRootPath, remotePath.TrimStart('/'));
+        if (!File.Exists(fullSourcePath))
+            throw new FileNotFoundException($"File not found: {fullSourcePath}");
+        using var sourceStream = new FileStream(fullSourcePath, FileMode.Open, FileAccess.Read);
+        using var destStream = new FileStream(localPath, FileMode.Create, FileAccess.Write);
+        await sourceStream.CopyToAsync(destStream);
+    }
+
+    public async Task UploadDirectoryAsync(string localDirectory, string remotePrefix)
+    {
+        var targetDir = Path.Combine(_webRootPath, remotePrefix.TrimStart('/'));
+        Directory.CreateDirectory(targetDir);
+        foreach (var filePath in Directory.GetFiles(localDirectory, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(localDirectory, filePath);
+            var destPath = Path.Combine(targetDir, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+            using var sourceStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            using var destStream = new FileStream(destPath, FileMode.Create, FileAccess.Write);
+            await sourceStream.CopyToAsync(destStream);
+        }
+    }
+
+    public async Task<string> UploadFileAsync(string localPath, string remotePath)
+    {
+        var destPath = Path.Combine(_webRootPath, remotePath.TrimStart('/'));
+        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+        using var sourceStream = new FileStream(localPath, FileMode.Open, FileAccess.Read);
+        using var destStream = new FileStream(destPath, FileMode.Create, FileAccess.Write);
+        await sourceStream.CopyToAsync(destStream);
+        return remotePath; // returns the relative path (e.g., "thumbnails/123.png")
+    }
+
+    public string GetPublicUrl(string remotePath)
+    {
+        // Return a relative URL that the static files middleware can serve.
+        if (!remotePath.StartsWith('/'))
+            remotePath = "/" + remotePath;
+        return remotePath;
     }
 }

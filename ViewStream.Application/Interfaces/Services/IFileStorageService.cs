@@ -24,6 +24,12 @@ namespace ViewStream.Application.Interfaces.Services
         // Audio Track
         Task<string> SaveAudioFileAsync(IFormFile file, long audioTrackId, CancellationToken cancellationToken = default);
         void DeleteFile(string filePath);
+
+
+        Task DownloadToLocalAsync(string remotePath, string localPath);
+        Task UploadDirectoryAsync(string localDirectory, string remotePrefix);
+        Task<string> UploadFileAsync(string localPath, string remotePath);
+        string GetPublicUrl(string remotePath);
     }
 
 }

@@ -1,10 +1,11 @@
 using Asp.Versioning;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using System.Reflection;
+using Hangfire;
+using RabbitMQ.Client;
 using ViewStream.API.Extensions;
+using ViewStream.API.Services;
 using ViewStream.API.Services.Hubs;
 using ViewStream.Application;
+using ViewStream.Application.Interfaces.Services;
 using ViewStream.Application.Interfaces.Services.Hubs;
 using ViewStream.Domain;
 using ViewStream.Infrastructure;
@@ -77,6 +78,32 @@ namespace ViewStream.API
                 config.ApiVersionReader = new UrlSegmentApiVersionReader();
             });
 
+            // Register RabbitMQ Connection as a Singleton
+            services.AddSingleton<IConnection>(sp =>
+            {
+                var factory = new ConnectionFactory
+                {
+                    HostName = configuration["RabbitMQ:Host"],
+                    UserName = configuration["RabbitMQ:Username"],
+                    Password = configuration["RabbitMQ:Password"],
+                    Port = int.Parse(configuration["RabbitMQ:Port"]!)
+                };
+
+                // Block on the async method to get the connection synchronously.
+                // This is acceptable during application startup.
+                return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+            });
+
+            // Health Checks
+            services.AddHealthChecks()
+                .AddSqlServer(configuration.GetConnectionString("DefaultConnection"))
+                .AddRedis(configuration["Redis:ConnectionString"])
+                .AddRabbitMQ(sp => sp.GetRequiredService<IConnection>()) // Reuse the singleton
+                .AddHangfire(options => { options.MinimumAvailableServers = 1; });
+
+
+            services.AddScoped<IInAppNotificationSender, InAppNotificationSender>();
+
             return services;
         }
 
@@ -103,6 +130,9 @@ namespace ViewStream.API
             app.UseStaticFiles();
 
             app.UseRateLimiter();
+
+            // Hangfire Dashboard
+            app.UseHangfireDashboard("/hangfire");
 
             return app;
         }

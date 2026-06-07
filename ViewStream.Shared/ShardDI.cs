@@ -33,6 +33,11 @@ namespace ViewStream.Shared
             services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<CacheOptions>>().Value);
 
 
+            services.Configure<RabbitMQOptions>(configuration.GetSection(RabbitMQOptions.SectionName));
+            services.Configure<HangfireOptions>(configuration.GetSection(HangfireOptions.SectionName));
+
+            services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+
             return services;
         }
     }
