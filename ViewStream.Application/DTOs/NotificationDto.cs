@@ -61,6 +61,9 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets additional contextual data serialized as JSON.</summary>
         public string? DataJson { get; set; }
+
+        public string? Channel { get; set; }  // "Email", "Push", "InApp", "All"
+
     }
 
     /// <summary>

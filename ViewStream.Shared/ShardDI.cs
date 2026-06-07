@@ -38,6 +38,9 @@ namespace ViewStream.Shared
 
             services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
 
+            services.Configure<FirebaseOptions>(configuration.GetSection(FirebaseOptions.SectionName));
+
+
             return services;
         }
     }

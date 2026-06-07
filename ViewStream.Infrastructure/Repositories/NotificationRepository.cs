@@ -1,5 +1,6 @@
-using ViewStream.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using ViewStream.Domain.Entities;
+using ViewStream.Domain.Interfaces;
 using ViewStream.Infrastructure.Persistence;
 
 namespace ViewStream.Infrastructure.Repositories
@@ -11,6 +12,14 @@ namespace ViewStream.Infrastructure.Repositories
     {
         public NotificationRepository(ViewStreamDbContext context) : base(context)
         {
+        }
+
+        public async Task<IEnumerable<Notification>> GetFailedPendingAsync(int maxRetryCount = 5)
+        {
+            return await _dbSet
+                .Where(n => n.Status == "Failed" && n.RetryCount < maxRetryCount)
+                .OrderBy(n => n.CreatedAt)
+                .ToListAsync();
         }
 
         // TODO: Implement custom methods specific to Notification here

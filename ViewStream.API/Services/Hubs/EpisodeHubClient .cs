@@ -45,5 +45,11 @@ namespace ViewStream.API.Services.Hubs
             await _hubContext.Clients.Group($"episode-{subtitle.EpisodeId}")
                 .SendAsync("SubtitleFileUpdated", subtitle, cancellationToken);
         }
+
+        // New method implementation
+        public async Task NotifyEpisodeUpdated(long episodeId, CancellationToken cancellationToken = default)
+        {
+            await _hubContext.Clients.Group($"episode-{episodeId}").SendAsync("EpisodeUpdated", episodeId, cancellationToken);
+        }
     }
 }

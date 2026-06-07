@@ -11,5 +11,8 @@ namespace ViewStream.Domain.Interfaces
         // Example:
         // Task<> GetByNameAsync(string name);
         // Task<IEnumerable<Notification>> GetActiveAsync();
+
+        Task<IEnumerable<Notification>> GetFailedPendingAsync(int maxRetryCount = 5);
+
     }
 }

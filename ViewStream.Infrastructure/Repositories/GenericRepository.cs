@@ -85,5 +85,10 @@ namespace ViewStream.Infrastructure.Repositories
         {
             return _dbSet.AsQueryable();
         }
+
+        public async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.ToListAsync(cancellationToken);
+        }
     }
 }

@@ -73,6 +73,9 @@ namespace ViewStream.Infrastructure.UnitOfWorks
 
         public IRefreshTokenRepository RefreshTokens { get; private set; }
 
+        public IVideoProcessingJobRepository VideoProcessingJobs { get; private set; }
+
+
         public UnitOfWork(ViewStreamDbContext context)
         {
             _context = context;
@@ -132,6 +135,7 @@ namespace ViewStream.Infrastructure.UnitOfWorks
             WatchParties = new WatchPartyRepository(_context);
             WatchPartyParticipants = new WatchPartyParticipantRepository(_context);
             RefreshTokens = new RefreshTokenRepository(_context);
+            VideoProcessingJobs = new VideoProcessingJobRepository(_context);
         }
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

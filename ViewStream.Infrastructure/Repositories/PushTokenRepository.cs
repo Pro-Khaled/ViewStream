@@ -1,5 +1,6 @@
-using ViewStream.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using ViewStream.Domain.Entities;
+using ViewStream.Domain.Interfaces;
 using ViewStream.Infrastructure.Persistence;
 
 namespace ViewStream.Infrastructure.Repositories
@@ -11,6 +12,11 @@ namespace ViewStream.Infrastructure.Repositories
     {
         public PushTokenRepository(ViewStreamDbContext context) : base(context)
         {
+        }
+
+        public async Task<IEnumerable<PushToken>> GetByUserIdAsync(long userId)
+        {
+            return await _dbSet.Where(t => t.UserId == userId).ToListAsync();
         }
 
         // TODO: Implement custom methods specific to PushToken here

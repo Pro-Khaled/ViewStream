@@ -66,5 +66,12 @@ namespace ViewStream.Domain.Interfaces
         /// Returns an IQueryable for building advanced queries.
         /// </summary>
         IQueryable<T> GetQueryable();
+
+        /// <summary>
+        /// Gets all entities of type T.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>All entities.</returns>
+        Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default);
     }
 }

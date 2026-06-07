@@ -25,6 +25,14 @@ public partial class Notification
 
     public bool? IsRead { get; set; }
 
+    public string Channel { get; set; } = "All";           // "Email", "Push", "InApp", "All"
+    public string Status { get; set; } = "Pending";        // Pending, Sent, Failed
+    public int RetryCount { get; set; } = 0;
+    public DateTime? ScheduledAt { get; set; }
+    public DateTime? SentAt { get; set; }
+    public string? ErrorMessage { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
     public DateTime? CreatedAt { get; set; }
 
     [ForeignKey("UserId")]

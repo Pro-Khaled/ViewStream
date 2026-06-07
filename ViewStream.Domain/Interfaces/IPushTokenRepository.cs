@@ -11,5 +11,8 @@ namespace ViewStream.Domain.Interfaces
         // Example:
         // Task<> GetByNameAsync(string name);
         // Task<IEnumerable<PushToken>> GetActiveAsync();
+
+        Task<IEnumerable<PushToken>> GetByUserIdAsync(long userId);
+
     }
 }
