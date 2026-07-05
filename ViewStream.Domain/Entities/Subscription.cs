@@ -27,6 +27,16 @@ public partial class Subscription
 
     public long? PaymentMethodId { get; set; }
 
+    [StringLength(100)]
+    public string? StripeSubscriptionId { get; set; }
+
+    [StringLength(100)]
+    public string? StripeCustomerId { get; set; }
+
+    public int PaymentFailureCount { get; set; }
+
+    public DateTime? EndsAt { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     [InverseProperty("Subscription")]

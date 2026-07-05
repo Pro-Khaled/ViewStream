@@ -46,8 +46,8 @@ namespace ViewStream.API
 
             // Add SignalR Hubs and Clients
             services.AddScoped<IEpisodeHubClient, EpisodeHubClient>();
-
             services.AddScoped<IShowHubClient, ShowHubClient>();
+            services.AddScoped<IAdminNotificationHubClient, AdminNotificationHubClient>();
 
             // Add Redis caching (including distributed cache and MediatR behavior)
             services.AddRedisCaching(configuration);

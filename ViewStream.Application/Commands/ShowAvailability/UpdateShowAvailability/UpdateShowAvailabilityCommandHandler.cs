@@ -15,17 +15,20 @@ namespace ViewStream.Application.Commands.ShowAvailability.UpdateShowAvailabilit
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAuditContext _auditContext;
+        private readonly IAvailabilityCache _availabilityCache;
         private readonly ILogger<UpdateShowAvailabilityCommandHandler> _logger;
 
         public UpdateShowAvailabilityCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IAuditContext auditContext,
+            IAvailabilityCache availabilityCache,
             ILogger<UpdateShowAvailabilityCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _auditContext = auditContext;
+            _availabilityCache = availabilityCache;
             _logger = logger;
         }
 
@@ -50,6 +53,9 @@ namespace ViewStream.Application.Commands.ShowAvailability.UpdateShowAvailabilit
             _mapper.Map(request.Dto, entity);
             _unitOfWork.ShowAvailabilities.Update(entity);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Invalidate availability cache for this show/country combination
+            await _availabilityCache.InvalidateAsync(entity.ShowId, entity.CountryCode);
 
             _auditContext.SetAudit<ShowAvailability, object>(
                 tableName: "ShowAvailabilities",

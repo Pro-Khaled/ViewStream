@@ -33,6 +33,16 @@ namespace ViewStream.Application.Commands.Device.CreateDevice
             _logger.LogInformation("Registering device for UserId: {UserId}, DeviceId: {DeviceId}",
                 request.UserId, request.Dto.DeviceId);
 
+            // Enforce maximum of 10 registered devices per user
+            var deviceCount = (await _unitOfWork.Devices.FindAsync(
+                d => d.UserId == request.UserId,
+                cancellationToken: cancellationToken)).Count();
+
+            if (deviceCount >= 10)
+            {
+                throw new InvalidOperationException("Users are limited to a maximum of 10 registered devices.");
+            }
+
             var device = _mapper.Map<Device>(request.Dto);
             device.UserId = request.UserId;
             device.LastActive = DateTime.UtcNow;

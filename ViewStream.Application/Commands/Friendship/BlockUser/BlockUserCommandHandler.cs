@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -49,6 +49,12 @@ namespace ViewStream.Application.Commands.Friendship.BlockUser
             {
                 friendship.Status = "blocked";
                 friendship.UpdatedAt = DateTime.UtcNow;
+                // Ensure the blocker is always the UserId for consistent block directionality
+                if (friendship.UserId != request.UserId)
+                {
+                    friendship.UserId = request.UserId;
+                    friendship.FriendId = request.FriendId;
+                }
                 _unitOfWork.Friendships.Update(friendship);
             }
             else
@@ -62,6 +68,23 @@ namespace ViewStream.Application.Commands.Friendship.BlockUser
                     CreatedAt = DateTime.UtcNow
                 };
                 await _unitOfWork.Friendships.AddAsync(friendship, cancellationToken);
+            }
+
+            // Auto-unfriend: remove any other friendship records between the two users
+            // that are not this block entry (e.g., an "accepted" or "pending" record in the opposite direction)
+            var otherRecords = await _unitOfWork.Friendships.FindAsync(
+                f => ((f.UserId == request.UserId && f.FriendId == request.FriendId) ||
+                      (f.UserId == request.FriendId && f.FriendId == request.UserId)) &&
+                     f.Status != "blocked",
+                asNoTracking: false,
+                cancellationToken: cancellationToken);
+
+            var recordsToRemove = otherRecords.ToList();
+            if (recordsToRemove.Count > 0)
+            {
+                _unitOfWork.Friendships.DeleteRange(recordsToRemove);
+                _logger.LogInformation("Auto-unfriended {Count} friendship record(s) between User {UserId} and User {FriendId}",
+                    recordsToRemove.Count, request.UserId, request.FriendId);
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);

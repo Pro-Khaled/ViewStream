@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +14,7 @@ namespace ViewStream.Application.Queries.EpisodeComment
     public record GetRootCommentsPagedQuery(
         long EpisodeId,
         int Page = 1,
-        int PageSize = 20
+        int PageSize = 20,
+        long? CurrentUserId = null
     ) : IRequest<PagedResult<EpisodeCommentListItemDto>>;
 }

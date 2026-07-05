@@ -35,6 +35,9 @@ public partial class Profile
 
     public DateTime? UpdatedAt { get; set; }
 
+    [StringLength(50)]
+    public string? RecommendationAlgorithm { get; set; }
+
     [InverseProperty("Profile")]
     public virtual ICollection<CommentLike> CommentLikes { get; set; } = new List<CommentLike>();
 

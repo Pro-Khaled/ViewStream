@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs;
 using ViewStream.Application.Helpers;
 using ViewStream.Application.Interfaces.Services;
+using ViewStream.Application.Interfaces.Services.Hubs;
 using ViewStream.Domain.Interfaces;
 
 namespace ViewStream.Application.Commands.ContentReport.CreateContentReport
@@ -15,17 +16,20 @@ namespace ViewStream.Application.Commands.ContentReport.CreateContentReport
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAuditContext _auditContext;
+        private readonly IAdminNotificationHubClient _adminHubClient;
         private readonly ILogger<CreateContentReportCommandHandler> _logger;
 
         public CreateContentReportCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IAuditContext auditContext,
+            IAdminNotificationHubClient adminHubClient,
             ILogger<CreateContentReportCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _auditContext = auditContext;
+            _adminHubClient = adminHubClient;
             _logger = logger;
         }
 
@@ -70,6 +74,40 @@ namespace ViewStream.Application.Commands.ContentReport.CreateContentReport
             );
 
             _logger.LogInformation("Content report created with Id: {ReportId}", report.Id);
+
+            // Auto-hide at 5 reports threshold for episodes
+            if (dto.EpisodeId.HasValue)
+            {
+                var reportCount = (await _unitOfWork.ContentReports.FindAsync(
+                    r => r.EpisodeId == dto.EpisodeId.Value,
+                    cancellationToken: cancellationToken)).Count();
+
+                if (reportCount >= 5)
+                {
+                    var episodes = await _unitOfWork.Episodes.FindAsync(
+                        e => e.Id == dto.EpisodeId.Value,
+                        cancellationToken: cancellationToken);
+                    var episode = episodes.FirstOrDefault();
+
+                    if (episode != null && !episode.IsHidden)
+                    {
+                        episode.IsHidden = true;
+                        _unitOfWork.Episodes.Update(episode);
+                        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                        _logger.LogWarning("Episode {EpisodeId} auto-hidden after {Count} reports",
+                            dto.EpisodeId.Value, reportCount);
+
+                        // Broadcast SignalR alert to admins
+                        await _adminHubClient.SendModerationAlertAsync(
+                            "Episode",
+                            episode.Id,
+                            reportCount,
+                            $"Episode '{episode.Title}' auto-hidden due to report threshold.",
+                            cancellationToken);
+                    }
+                }
+            }
 
             var result = await _unitOfWork.ContentReports.FindAsync(
                 r => r.Id == report.Id,

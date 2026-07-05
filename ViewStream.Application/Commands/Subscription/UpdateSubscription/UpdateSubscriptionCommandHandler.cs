@@ -15,17 +15,20 @@ namespace ViewStream.Application.Commands.Subscription.UpdateSubscription
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAuditContext _auditContext;
+        private readonly IStripeService _stripeService;
         private readonly ILogger<UpdateSubscriptionCommandHandler> _logger;
 
         public UpdateSubscriptionCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IAuditContext auditContext,
+            IStripeService stripeService,
             ILogger<UpdateSubscriptionCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _auditContext = auditContext;
+            _stripeService = stripeService;
             _logger = logger;
         }
 
@@ -41,6 +44,17 @@ namespace ViewStream.Application.Commands.Subscription.UpdateSubscription
             }
 
             var oldValues = _mapper.Map<SubscriptionDto>(sub);
+
+            // If StripeSubscriptionId exists and the plan changes, sync it to Stripe
+            if (!string.IsNullOrEmpty(sub.StripeSubscriptionId) && 
+                !string.IsNullOrEmpty(request.Dto.PlanType) && 
+                sub.PlanType != request.Dto.PlanType)
+            {
+                _logger.LogInformation("Updating Stripe subscription {StripeSubscriptionId} to plan {PlanType}", 
+                    sub.StripeSubscriptionId, request.Dto.PlanType);
+                await _stripeService.UpdateSubscriptionAsync(sub.StripeSubscriptionId, request.Dto.PlanType);
+            }
+
             _mapper.Map(request.Dto, sub);
             _unitOfWork.Subscriptions.Update(sub);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

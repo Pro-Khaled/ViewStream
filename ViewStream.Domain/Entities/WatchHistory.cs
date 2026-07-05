@@ -23,6 +23,8 @@ public partial class WatchHistory
 
     public bool? Completed { get; set; }
 
+    public DateTime? CompletedAt { get; set; }
+
     [ForeignKey("EpisodeId")]
     [InverseProperty("WatchHistories")]
     public virtual Episode Episode { get; set; } = null!;

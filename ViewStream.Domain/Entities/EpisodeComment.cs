@@ -25,6 +25,8 @@ public partial class EpisodeComment
 
     public bool? IsDeleted { get; set; }
 
+    public bool IsHidden { get; set; }
+
     public DateTime? DeletedAt { get; set; }
 
     public DateTime? CreatedAt { get; set; }

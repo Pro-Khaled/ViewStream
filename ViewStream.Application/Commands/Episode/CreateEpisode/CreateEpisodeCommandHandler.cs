@@ -40,6 +40,15 @@ namespace ViewStream.Application.Commands.Episode.CreateEpisode
         {
             _logger.LogInformation("Creating episode for SeasonId: {SeasonId}", request.Dto.SeasonId);
 
+            // Validate season and associated show
+            var season = await _unitOfWork.Repository<Season>().GetByIdAsync<long>(request.Dto.SeasonId, cancellationToken);
+            if (season == null || season.IsDeleted == true)
+                throw new ArgumentException("Season not found or is inactive.");
+
+            var show = await _unitOfWork.Shows.GetByIdAsync<long>(season.ShowId, cancellationToken);
+            if (show == null || show.IsDeleted == true)
+                throw new ArgumentException("Associated show was not found or is deleted.");
+
             // 1. Save raw video file (if provided)
             string? rawVideoUrl = request.Dto.VideoUrl;
             if (request.Dto.VideoFile != null)

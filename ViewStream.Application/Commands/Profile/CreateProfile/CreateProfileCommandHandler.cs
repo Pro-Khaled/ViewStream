@@ -33,6 +33,16 @@ namespace ViewStream.Application.Commands.Profile.CreateProfile
             _logger.LogInformation("Creating profile for UserId: {UserId}, Name: {ProfileName}",
                 request.UserId, request.Dto.Name);
 
+            // Enforce maximum of 5 profiles per user
+            var activeProfilesCount = (await _unitOfWork.Profiles.FindAsync(
+                p => p.UserId == request.UserId && p.IsDeleted != true,
+                cancellationToken: cancellationToken)).Count();
+
+            if (activeProfilesCount >= 5)
+            {
+                throw new InvalidOperationException("Users are limited to a maximum of 5 profiles.");
+            }
+
             var profile = _mapper.Map<Profile>(request.Dto);
             profile.UserId = request.UserId;
             profile.CreatedAt = DateTime.UtcNow;

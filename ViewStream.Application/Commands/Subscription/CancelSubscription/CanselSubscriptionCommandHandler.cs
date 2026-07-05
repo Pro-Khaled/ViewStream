@@ -14,17 +14,20 @@ namespace ViewStream.Application.Commands.Subscription.DeleteSubscription
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAuditContext _auditContext;
+        private readonly IStripeService _stripeService;
         private readonly ILogger<CancelSubscriptionCommandHandler> _logger;
 
         public CancelSubscriptionCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IAuditContext auditContext,
+            IStripeService stripeService,
             ILogger<CancelSubscriptionCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _auditContext = auditContext;
+            _stripeService = stripeService;
             _logger = logger;
         }
 
@@ -40,6 +43,14 @@ namespace ViewStream.Application.Commands.Subscription.DeleteSubscription
             }
 
             var oldValues = _mapper.Map<SubscriptionDto>(sub);
+
+            // Sync cancellation to Stripe if StripeSubscriptionId is set
+            if (!string.IsNullOrEmpty(sub.StripeSubscriptionId))
+            {
+                _logger.LogInformation("Cancelling Stripe subscription {StripeSubscriptionId}", sub.StripeSubscriptionId);
+                await _stripeService.CancelSubscriptionAsync(sub.StripeSubscriptionId);
+            }
+
             sub.Status = "canceled";
             sub.EndDate = DateOnly.FromDateTime(DateTime.UtcNow);
             sub.AutoRenew = false;

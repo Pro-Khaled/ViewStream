@@ -198,7 +198,7 @@ public class UsersController : ControllerBase
         if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
             return Ok(new List<UserPublicSearchResultDto>());
 
-        var results = await _mediator.Send(new SearchUsersQuery(q, limit), cancellationToken);
+        var results = await _mediator.Send(new SearchUsersQuery(q, limit, GetCurrentUserId()), cancellationToken);
         return Ok(results);
     }
 

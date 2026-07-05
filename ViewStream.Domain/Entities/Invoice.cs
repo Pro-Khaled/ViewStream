@@ -35,6 +35,9 @@ public partial class Invoice
     [StringLength(100)]
     public string? TransactionId { get; set; }
 
+    [StringLength(100)]
+    public string? StripeInvoiceId { get; set; }
+
     [ForeignKey("SubscriptionId")]
     [InverseProperty("Invoices")]
     public virtual Subscription? Subscription { get; set; }

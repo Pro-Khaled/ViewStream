@@ -1,4 +1,4 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using ViewStream.Application.DTOs.Account;
@@ -44,6 +44,11 @@ namespace ViewStream.Application.Commands.Account.Login
 
             if (user.IsDeleted || !user.IsActive || user.IsBlocked)
                 throw new UnauthorizedAccessException("Account is disabled or blocked.");
+
+            // Check for timed suspension (Phase 5: Moderation)
+            if (user.IsBannedUntil.HasValue && user.IsBannedUntil > DateTime.UtcNow)
+                throw new UnauthorizedAccessException(
+                    $"Your account is suspended until {user.IsBannedUntil.Value:yyyy-MM-dd HH:mm} UTC due to community guideline violations.");
 
             var signInResult = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: true);
             if (!signInResult.Succeeded)

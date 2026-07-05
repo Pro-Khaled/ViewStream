@@ -62,6 +62,10 @@ public partial class User : IdentityUser<long>
 
     public DateTime? BlockedUntil { get; set; }
 
+    public int ReputationScore { get; set; } = 100;
+
+    public DateTime? IsBannedUntil { get; set; }
+
     public DateTime? DeletedAt { get; set; }
 
     public DateTime? CreatedAt { get; set; }

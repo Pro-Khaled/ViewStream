@@ -138,6 +138,45 @@ namespace ViewStream.Infrastructure
             services.AddMassTransitHostedService();
             services.AddScoped<IMessageBus, MassTransitMessageBus>();
 
+            // ─── Phase 1: Availability & Access Control ───
+            services.AddScoped<IGeoLocationService, MaxMindGeoLocationService>();
+            services.AddMemoryCache();
+            services.AddSingleton<IAvailabilityCache, InMemoryAvailabilityCache>();
+
+            // ─── Phase 2: Billing & Subscription (Stripe) ───
+            services.AddScoped<IStripeService, StripeService>();
+            services.AddScoped<IInvoicePdfService, QuestPdfInvoiceService>();
+
+            // ─── Phase 4: Progress Buffering ───
+            services.AddSingleton<InMemoryProgressBufferService>();
+            services.AddSingleton<IProgressBufferService>(sp => sp.GetRequiredService<InMemoryProgressBufferService>());
+            services.AddHostedService(sp => sp.GetRequiredService<InMemoryProgressBufferService>());
+
+            // ─── Phase 5: Content Moderation ───
+            services.AddScoped<IReputationService, ReputationService>();
+
+            // ─── Phase 6: Recommendations & Search ───
+            services.AddScoped<IInteractionTracker, InteractionTrackerService>();
+            services.AddHttpClient<ISearchEngineService, MeilisearchSearchService>();
+
+            // ─── Phase 7: Watch Party State ───
+            services.AddScoped<IWatchPartyStateService, RedisWatchPartyStateService>();
+
+            // ─── Phase 8: User Blocking ───
+            services.AddScoped<IBlockCheckService, BlockCheckService>();
+
+            // ─── Hangfire Jobs (all phases) ───
+            services.AddScoped<Infrastructure.Jobs.SubscriptionRenewalJob>();
+            services.AddScoped<Infrastructure.Jobs.DataDeletionProcessingJob>();
+            services.AddScoped<Infrastructure.Jobs.AutoApproveDeletionRequestsJob>();
+            services.AddScoped<Infrastructure.Jobs.PurgeOldWatchHistoryJob>();
+            services.AddScoped<Infrastructure.Jobs.ExpireStaleWatchPartiesJob>();
+            services.AddScoped<Infrastructure.Jobs.PurgeOldAuditLogsJob>();
+            services.AddScoped<Infrastructure.Jobs.DeactivateExpiredPromoCodesJob>();
+            services.AddScoped<Infrastructure.Jobs.SyncShowsToSearchEngineJob>();
+            services.AddScoped<Infrastructure.Jobs.RegenerateRecommendationsJob>();
+            services.AddScoped<Infrastructure.Jobs.ReRankSearchResultsJob>();
+
 
             return services;
         }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,17 +15,20 @@ namespace ViewStream.Application.Commands.Friendship.SendFriendRequest
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAuditContext _auditContext;
+        private readonly IBlockCheckService _blockCheckService;
         private readonly ILogger<SendFriendRequestCommandHandler> _logger;
 
         public SendFriendRequestCommandHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IAuditContext auditContext,
+            IBlockCheckService blockCheckService,
             ILogger<SendFriendRequestCommandHandler> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _auditContext = auditContext;
+            _blockCheckService = blockCheckService;
             _logger = logger;
         }
 
@@ -35,6 +38,10 @@ namespace ViewStream.Application.Commands.Friendship.SendFriendRequest
 
             if (request.UserId == request.Dto.FriendId)
                 throw new InvalidOperationException("You cannot send a friend request to yourself.");
+
+            // Check if either user has blocked the other
+            if (await _blockCheckService.IsBlockedAsync(request.UserId, request.Dto.FriendId))
+                throw new InvalidOperationException("Cannot send friend request to a blocked user.");
 
             var existing = await _unitOfWork.Friendships.FindAsync(
                 f => (f.UserId == request.UserId && f.FriendId == request.Dto.FriendId) ||

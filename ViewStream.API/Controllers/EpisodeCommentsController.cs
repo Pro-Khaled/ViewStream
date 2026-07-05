@@ -56,7 +56,7 @@ public class EpisodeCommentsController : ControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetRootCommentsPagedQuery(episodeId, page, pageSize), cancellationToken);
+        var result = await _mediator.Send(new GetRootCommentsPagedQuery(episodeId, page, pageSize, GetCurrentUserId()), cancellationToken);
         return Ok(result);
     }
 
@@ -102,7 +102,7 @@ public class EpisodeCommentsController : ControllerBase
         [FromQuery] int maxDepth = 3,
         CancellationToken cancellationToken = default)
     {
-        var comment = await _mediator.Send(new GetCommentWithRepliesQuery(commentId, maxDepth), cancellationToken);
+        var comment = await _mediator.Send(new GetCommentWithRepliesQuery(commentId, maxDepth, GetCurrentUserId()), cancellationToken);
         if (comment == null) return NotFound();
         return Ok(comment);
     }

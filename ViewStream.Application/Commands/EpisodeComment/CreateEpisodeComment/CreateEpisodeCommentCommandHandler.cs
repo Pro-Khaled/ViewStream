@@ -34,6 +34,20 @@ namespace ViewStream.Application.Commands.EpisodeComment.CreateEpisodeComment
             _logger.LogInformation("Creating comment for EpisodeId: {EpisodeId}, ProfileId: {ProfileId}",
                 request.Dto.EpisodeId, request.ProfileId);
 
+            if (request.Dto.ParentCommentId.HasValue)
+            {
+                var parentComments = await _unitOfWork.EpisodeComments.FindAsync(
+                    c => c.Id == request.Dto.ParentCommentId.Value && c.IsDeleted != true,
+                    cancellationToken: cancellationToken);
+                
+                var parentComment = parentComments.FirstOrDefault();
+                if (parentComment == null)
+                    throw new ArgumentException("Parent comment not found.");
+                
+                if (parentComment.EpisodeId != request.Dto.EpisodeId)
+                    throw new ArgumentException("Parent comment does not belong to the same episode.");
+            }
+
             var comment = _mapper.Map<EpisodeComment>(request.Dto);
             comment.ProfileId = request.ProfileId;
             comment.CreatedAt = DateTime.UtcNow;

@@ -54,6 +54,12 @@ namespace ViewStream.Application.DTOs
         /// <summary>Gets or sets the UTC timestamp when this show was soft-deleted, if applicable.</summary>
         public DateTime? DeletedAt { get; set; }
 
+        /// <summary>True if the show has availability starting within the next 30 days but is not yet available.</summary>
+        public bool IsComingSoon { get; set; }
+
+        /// <summary>True if the show's availability ends within the next 14 days.</summary>
+        public bool IsLeavingSoon { get; set; }
+
         /// <summary>Gets or sets the list of genre names associated with this show.</summary>
         public List<string> Genres { get; set; } = new();
 
@@ -92,6 +98,12 @@ namespace ViewStream.Application.DTOs
 
         /// <summary>Gets or sets the list of genre names associated with this show.</summary>
         public List<string> Genres { get; set; } = new();
+
+        /// <summary>True if the show has availability starting within the next 30 days but is not yet available.</summary>
+        public bool IsComingSoon { get; set; }
+
+        /// <summary>True if the show's availability ends within the next 14 days.</summary>
+        public bool IsLeavingSoon { get; set; }
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-using Hangfire;
+ï»¿using Hangfire;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 //  Configure Serilog host
 builder.Host.UseSerilog((context, services, configuration) =>
     configuration
-        .ReadFrom.Configuration(context.Configuration)   // reads appsettings.json
+        .ReadFrom.Configuration(context.Configuration)
         .Enrich.FromLogContext()
         .WriteTo.Console()
 );
@@ -22,8 +22,6 @@ builder.Host.UseSerilog((context, services, configuration) =>
 // Add API services
 builder.Services.AddApi(builder.Configuration);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -38,11 +36,10 @@ using (var scope = app.Services.CreateScope())
     await AdminSeeder.SeedAdminAsync(scope.ServiceProvider);
 }
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseApi(app.Configuration); // This sets up Swagger + JWT
+    app.UseApi(app.Configuration);
 }
 
 //Register the custom exception handling middleware
@@ -50,32 +47,24 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 
-
-//app.UseAuthorization();
-
-//app.UseStaticFiles(); // Serves files from wwwroot
-
-// Optionally, if you want to serve from a custom physical folder outside wwwroot:
-//app.UseStaticFiles(new StaticFileOptions
-//{
-//    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Uploads")),
-//    RequestPath = "/uploads"
-//});
-
-//  Temporary test endpoint – place it here
-//app.MapGet("/config-test", (IOptions<JwtOptions> opts) =>
-//    new { opts.Value.Key, opts.Value.Issuer, opts.Value.Audience });
-
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "uploads")),
     RequestPath = "/uploads"
 });
 
+// Phase 1: Geo-location middleware (resolves IP to country code)
+app.UseMiddleware<ViewStream.API.Middleware.GeoLocationMiddleware>();
+
+// Phase 3: Block API access for users with pending/approved data deletion
+app.UseMiddleware<ViewStream.API.Middleware.DataDeletionBlockMiddleware>();
+
 app.MapControllers();
 app.MapHub<EpisodeHub>("/hubs/episode");
 app.MapHub<ShowHub>("/hubs/show");
 app.MapHub<NotificationHub>("/hubs/notification");
+app.MapHub<WatchPartyHub>("/hubs/watchparty");
+app.MapHub<AdminNotificationHub>("/hubs/admin-notifications");
 
 // Health Checks endpoint
 app.MapHealthChecks("/health");
@@ -84,5 +73,8 @@ RecurringJob.AddOrUpdate<NotificationRetryJob>(
     "notification-retry",
     job => job.Execute(),
     Cron.Hourly);
+
+// Register all recurring Hangfire jobs (Phases 2-9)
+HangfireJobRegistration.RegisterAllRecurringJobs();
 
 app.Run();

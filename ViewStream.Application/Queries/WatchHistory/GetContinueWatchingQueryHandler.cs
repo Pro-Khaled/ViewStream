@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -24,8 +24,12 @@ namespace ViewStream.Application.Queries.WatchHistory
 
         public async Task<List<WatchHistoryListItemDto>> Handle(GetContinueWatchingQuery request, CancellationToken cancellationToken)
         {
+            var cutoff = DateTime.UtcNow.AddDays(-30);
+
             var histories = await _unitOfWork.WatchHistories.GetQueryable()
-                .Where(wh => wh.ProfileId == request.ProfileId && wh.Completed != true)
+                .Where(wh => wh.ProfileId == request.ProfileId
+                    && wh.Completed != true
+                    && wh.WatchedAt >= cutoff)
                 .OrderByDescending(wh => wh.WatchedAt)
                 .Take(request.Limit)
                 .Include(wh => wh.Episode).ThenInclude(e => e.Season).ThenInclude(s => s.Show)

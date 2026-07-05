@@ -371,3 +371,4 @@ FodyWeavers.xsd
 /ViewStream.sln
 /ViewStream.API/DependencyInjection.cs
 /ViewStream.Web/ViewStream.Web.csproj
+.aider*
